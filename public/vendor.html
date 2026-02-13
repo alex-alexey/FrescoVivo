@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LivePescado - Panel del Vendedor</title>
+    <link rel="stylesheet" href="vendor.css">
+</head>
+<body>
+    <div class="vendor-container">
+        <header>
+            <h1>🐟 LivePescado - Panel de Vendedor</h1>
+            <div class="status">
+                <span id="connection-status" class="status-badge offline">Desconectado</span>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <!-- Columna izquierda: Videos -->
+            <div class="video-section">
+                <h2>Mis Cámaras</h2>
+                
+                <div class="camera-controls">
+                    <button id="start-cameras" class="btn-primary">Iniciar Cámaras</button>
+                    <button id="stop-cameras" class="btn-danger" disabled>Detener Cámaras</button>
+                </div>
+
+                <div class="live-controls">
+                    <div class="live-status" id="live-status">
+                        <span class="live-dot offline"></span>
+                        <span id="live-status-text">FUERA DE LÍNEA</span>
+                    </div>
+                    <button id="go-live-btn" class="btn-success" disabled>🔴 INICIAR TRANSMISIÓN</button>
+                    <button id="stop-live-btn" class="btn-danger" style="display: none;">⏹️ DETENER TRANSMISIÓN</button>
+                </div>
+
+                <div class="vendor-cameras">
+                    <div class="camera-item main-camera">
+                        <video id="vendor-camera" autoplay muted playsinline></video>
+                        <label>Cámara Principal (Vendedor)</label>
+                        <select id="vendor-camera-select" class="camera-select"></select>
+                    </div>
+
+                    <div class="product-cameras-grid">
+                        <div class="camera-item">
+                            <video id="product-camera-1" autoplay muted playsinline></video>
+                            <label>Cámara Producto 1</label>
+                            <select id="product-camera-1-select" class="camera-select"></select>
+                        </div>
+                        <div class="camera-item">
+                            <video id="product-camera-2" autoplay muted playsinline></video>
+                            <label>Cámara Producto 2</label>
+                            <select id="product-camera-2-select" class="camera-select"></select>
+                        </div>
+                        <div class="camera-item">
+                            <video id="product-camera-3" autoplay muted playsinline></video>
+                            <label>Cámara Producto 3</label>
+                            <select id="product-camera-3-select" class="camera-select"></select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Audio del cliente durante la llamada -->
+                <div id="client-video-section" style="display: none;">
+                    <h3>Cliente Actual</h3>
+                    <div class="camera-item" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; min-height: 150px; border-radius: 8px;">
+                        <div style="text-align: center; color: white;">
+                            <div style="font-size: 3em; margin-bottom: 10px;">🎤</div>
+                            <label id="client-name-label" style="font-size: 1.2em; font-weight: bold; color: white;">Cliente</label>
+                            <div style="margin-top: 10px; font-size: 0.9em; opacity: 0.9;">Solo audio</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="call-controls">
+                    <button id="toggle-vendor-audio" class="btn-control">🎤 Silenciar</button>
+                    <button id="end-current-call" class="btn-danger" disabled>Terminar Llamada</button>
+                </div>
+            </div>
+
+            <!-- Columna derecha: Cola y pedidos -->
+            <div class="queue-section">
+                <!-- Estado de la llamada -->
+                <div class="call-status">
+                    <h3>Estado</h3>
+                    <p id="call-status-text">Sin llamada activa</p>
+                    <button id="accept-next-client" class="btn-success">Aceptar Siguiente Cliente</button>
+                </div>
+
+                <!-- Crear pedido rápido -->
+                <div id="quick-order-form" class="quick-order-form" style="display: none;">
+                    <h3>📝 Registrar Pedido</h3>
+                    <div class="order-form-content">
+                        <div class="form-group">
+                            <label>Productos</label>
+                            <textarea id="order-products" placeholder="Ej: 2kg lubina, 1kg mejillones" rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Total (€)</label>
+                            <input type="number" id="order-total" placeholder="0.00" step="0.01" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Dirección de envío</label>
+                            <input type="text" id="order-address" placeholder="Calle, número, código postal">
+                        </div>
+                        <button id="save-order-btn" class="btn-success">💾 Guardar Pedido</button>
+                    </div>
+                </div>
+
+                <!-- Cola de clientes -->
+                <div class="client-queue">
+                    <h3>Cola de Clientes <span id="queue-count" class="badge">0</span></h3>
+                    <div id="queue-list" class="queue-list">
+                        <p class="empty-message">No hay clientes en espera</p>
+                    </div>
+                </div>
+
+                <!-- Pedidos recientes -->
+                <div class="recent-orders">
+                    <h3>Pedidos Recientes <span id="orders-count" class="badge">0</span></h3>
+                    <div id="orders-list" class="orders-list">
+                        <p class="empty-message">No hay pedidos todavía</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="vendor.js"></script>
+</body>
+</html>

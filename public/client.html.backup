@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- SEO Meta Tags -->
+    <title>Pescadería Miguel Gavà | Pescado Fresco Online en Videollamada</title>
+    <meta name="description" content="Compra pescado fresco en Gavà con videollamada en directo. Pescadería Miguel te muestra el producto desde 4 cámaras antes de comprar. Entrega a domicilio en 24h.">
+    <meta name="keywords" content="pescadería Gavà, pescado fresco Gavà, comprar pescado online, pescadería online Barcelona, marisco fresco, pescado a domicilio Gavà">
+    <meta name="author" content="Pescadería Miguel">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Pescadería Miguel Gavà - Pescado Fresco en Videollamada">
+    <meta property="og:description" content="La primera pescadería de Gavà con venta en directo por videollamada. Ve el pescado antes de comprarlo.">
+    <meta property="og:image" content="/assets/og-image.jpg">
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Pescadería Miguel Gavà - Pescado Fresco Online">
+    <meta name="twitter:description" content="Compra pescado fresco viendo el producto en videollamada. Entrega en 24h en Gavà.">
+    
+    <!-- Local Business Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FishStore",
+      "name": "Pescadería Miguel",
+      "description": "Pescadería en Gavà especializada en venta de pescado fresco con atención por videollamada",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Gavà",
+        "addressLocality": "Gavà",
+        "addressRegion": "Barcelona",
+        "postalCode": "08850",
+        "addressCountry": "ES"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": "41.3056",
+        "longitude": "2.0043"
+      },
+      "telephone": "+34-XXX-XXX-XXX",
+      "priceRange": "$$",
+      "servesCuisine": "Pescado y Marisco",
+      "openingHours": "Mo-Sa 09:00-14:00, 17:00-20:00"
+    }
+    </script>
+    
+    <link rel="stylesheet" href="client.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Pantalla de bienvenida / Landing Page -->
+        <div id="welcome-screen">
+            <!-- Header / Navbar -->
+            <header class="header">
+                <div class="header-container">
+                    <div class="logo">
+                        <span class="logo-icon">🐟</span>
+                        <div class="logo-text">
+                            <span class="logo-name">Pescadería Miguel</span>
+                            <span class="logo-location">Gavà, Barcelona</span>
+                        </div>
+                    </div>
+                    <nav class="nav">
+                        <a href="#productos" class="nav-link">Productos</a>
+                        <a href="#como-funciona" class="nav-link">Cómo Funciona</a>
+                        <a href="#ventajas" class="nav-link">Ventajas</a>
+                        <button id="show-join-form" class="btn-header" disabled>
+                            <span>Comprar Ahora</span>
+                        </button>
+                    </nav>
+                </div>
+            </header>
+
+            <!-- Hero Section -->
+                <div class="hero-content">
+                    <div class="hero-text">
+                        <div id="hero-status-indicator" class="hero-status-badge offline">
+                            <span class="status-dot"></span>
+                            <span class="status-text">Fuera de línea</span>
+                        </div>
+                        <h1 class="hero-title">
+                            <span class="title-line-1">Pescado Fresco</span>
+                            <span class="title-line-2">Directo a tu Casa</span>
+                        </h1>
+                        <p class="hero-subtitle">La primera pescadería con venta en directo por videollamada</p>
+                        <p class="hero-description">Ve el producto antes de comprarlo. Miguel te muestra cada pieza desde 4 ángulos diferentes en tiempo real.</p>
+                        
+                        <div class="hero-cta">
+                            <button id="show-join-form" class="btn-hero" disabled>
+                                <span>Comprar Ahora</span>
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                    <path d="M13.5 10L6.5 17L5 15.5L10.5 10L5 4.5L6.5 3L13.5 10Z" fill="currentColor"/>
+                                </svg>
+                            </button>
+                            <button class="btn-secondary-outline" onclick="document.getElementById('como-funciona').scrollIntoView({behavior: 'smooth'})">
+                                Ver cómo funciona
+                            </button>
+                        </div>
+
+                        <div class="hero-stats">
+                            <div class="stat-item">
+                                <span class="stat-number">4</span>
+                                <span class="stat-label">Cámaras HD</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">100%</span>
+                                <span class="stat-label">Fresco</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">24h</span>
+                                <span class="stat-label">Envío rápido</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="hero-visual">
+                        <div class="visual-card floating">
+                            <div class="visual-icon">🎥</div>
+                            <h3>Videollamada en Vivo</h3>
+                            <p>Habla con Miguel directamente</p>
+                        </div>
+                        <div class="visual-card floating-delay">
+                            <div class="visual-icon">🐠</div>
+                            <h3>4 Ángulos</h3>
+                            <p>Ve cada detalle del pescado</p>
+                        </div>
+                        <div class="visual-card floating-delay-2">
+                            <div class="visual-icon">📦</div>
+                            <h3>A tu Puerta</h3>
+                            <p>Entrega en 24 horas</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="wave-divider">
+                    <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
+                        <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" fill="#ffffff"></path>
+                    </svg>
+                </div>
+            </section>
+
+            <section id="como-funciona" class="how-it-works">
+                <h2 class="section-title">Cómo Funciona</h2>
+                <div class="steps-grid">
+                    <div class="step-card">
+                        <div class="step-number">1</div>
+                        <div class="step-icon">👤</div>
+                        <h3>Únete a la Cola</h3>
+                        <p>Introduce tu nombre y entra en la lista de espera. Atendemos por orden de llegada.</p>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-number">2</div>
+                        <div class="step-icon">📹</div>
+                        <h3>Videollamada con Miguel</h3>
+                        <p>Cuando sea tu turno, conectarás en directo. Miguel te mostrará el pescado desde 4 cámaras.</p>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-number">3</div>
+                        <div class="step-icon">🛒</div>
+                        <h3>Elige y Compra</h3>
+                        <p>Decide qué quieres, añádelo al carrito y realiza el pedido con tu dirección.</p>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-number">4</div>
+                        <div class="step-icon">🚚</div>
+                        <h3>Recibe en Casa</h3>
+                        <p>Tu pedido llega fresco a tu puerta en 24 horas, listo para cocinar.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="productos" class="products-preview">
+                <h2 class="section-title">Productos Frescos del Día</h2>
+                <div class="products-grid">
+                    <div class="product-showcase">
+                        <div class="product-image">🦐</div>
+                        <h3>Marisco</h3>
+                        <p>Gambas, langostinos, almejas</p>
+                    </div>
+                    <div class="product-showcase">
+                        <div class="product-image">🐟</div>
+                        <h3>Pescado Blanco</h3>
+                        <p>Merluza, rape, lubina</p>
+                    </div>
+                    <div class="product-showcase">
+                        <div class="product-image">🐠</div>
+                        <h3>Pescado Azul</h3>
+                        <p>Salmón, atún, sardinas</p>
+                    </div>
+                    <div class="product-showcase">
+                        <div class="product-image">🦑</div>
+                        <h3>Cefalópodos</h3>
+                        <p>Pulpo, calamar, sepia</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="cta-section">
+                <div class="cta-content">
+                    <div id="vendor-status-indicator" class="status-indicator">
+                        <div class="status-dot offline"></div>
+                        <span class="status-text">Miguel no está transmitiendo</span>
+                    </div>
+                    <h2>¿Listo para Comprar Pescado Fresco?</h2>
+                    <p>Únete ahora y habla directamente con Miguel</p>
+                    <button id="show-join-form-2" class="btn-hero" disabled>Empezar Ahora</button>
+                </div>
+            </section>
+
+            <footer class="footer">
+                <p>&copy; 2026 Pescadería Miguel. Pescado fresco del mar a tu mesa.</p>
+            </footer>
+
+            <!-- Modal de unirse -->
+            <div id="join-modal" class="modal">
+                <div class="modal-content">
+                    <button class="modal-close" id="close-modal">&times;</button>
+                    <h2>Únete a la Cola</h2>
+                    <p>Ingresa tu nombre para conectar con Miguel</p>
+                    <input type="text" id="client-name" placeholder="Tu nombre completo" maxlength="50">
+                    <button id="join-btn" class="btn-primary">Unirse a la Cola</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pantalla de cola -->
+        <div id="queue-screen" style="display: none;">
+            <div class="queue-info">
+                <h2>En la cola de espera</h2>
+                <div class="position-display">
+                    <div class="position-number" id="queue-position">-</div>
+                    <p>Tu posición</p>
+                </div>
+                <p class="queue-text">Personas esperando: <span id="queue-length">0</span></p>
+                <div class="loader"></div>
+                <p class="waiting-text">Espera tu turno para ser atendido...</p>
+            </div>
+        </div>
+
+        <!-- Pantalla de videollamada -->
+        <div id="call-screen" style="display: none;">
+            <div class="call-header">
+                <h2>En llamada con Miguel - Pescadería Miguel 🐟</h2>
+                <p class="call-info">Habla con Miguel sobre el pescado fresco del día</p>
+            </div>
+
+            <div class="video-grid">
+                <div class="main-video-section">
+                    <div class="vendor-main-video">
+                        <video id="vendor-video" autoplay playsinline></video>
+                        <div class="video-label">Miguel (Vendedor)</div>
+                    </div>
+                    <div class="product-cameras-row">
+                        <div class="product-video-small">
+                            <video id="product-video-1" autoplay playsinline></video>
+                            <div class="video-label">Cámara 1</div>
+                        </div>
+                        <div class="product-video-small">
+                            <video id="product-video-2" autoplay playsinline></video>
+                            <div class="video-label">Cámara 2</div>
+                        </div>
+                        <div class="product-video-small">
+                            <video id="product-video-3" autoplay playsinline></video>
+                            <div class="video-label">Cámara 3</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="call-controls">
+                <button id="toggle-audio" class="btn-control">
+                    <span>🎤</span>
+                    <span>Silenciar</span>
+                </button>
+                <button id="leave-call" class="btn-danger">
+                    <span>📞</span>
+                    <span>Colgar</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Pantalla de finalización -->
+        <div id="end-screen" style="display: none;">
+            <div class="confirmation-card">
+                <h2>📞 Llamada Finalizada</h2>
+                <p>Gracias por contactar con Pescadería Miguel</p>
+                <p>Si deseas realizar otro pedido, puedes volver a unirte a la cola</p>
+                <button onclick="location.reload()" class="btn-primary">Volver al inicio</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="client.js"></script>
+</body>
+</html>
