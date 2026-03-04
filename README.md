@@ -1,6 +1,6 @@
-# LivePescado 🐟
+# FrescosEnVivo 🐟
 
-Plataforma de venta en directo con videoconferencia múltiple para vender pescado fresco a clientes por orden de llegada.
+Plataforma de venta en directo con videoconferencia múltiple para vender productos frescos a clientes por orden de llegada.
 
 ## Características
 
@@ -89,14 +89,14 @@ npm run dev
 ## Estructura del Proyecto
 
 ```
-LivePescado/
+FrescosEnVivo/
 ├── server.js              # Servidor principal con Socket.IO y WebRTC
 ├── package.json           # Dependencias del proyecto
 ├── README.md             # Este archivo
 └── public/               # Archivos públicos
-    ├── client.html       # Interfaz del cliente
-    ├── client.css        # Estilos del cliente
-    ├── client.js         # Lógica del cliente
+    ├── negocio.html      # Interfaz pública del negocio
+    ├── negocio.css       # Estilos del negocio
+    ├── negocio.js        # Lógica del negocio
     ├── vendor.html       # Panel del vendedor
     ├── vendor.css        # Estilos del vendedor
     └── vendor.js         # Lógica del vendedor
@@ -167,4 +167,4 @@ Para problemas o preguntas, abre un issue en el repositorio del proyecto.
 
 ---
 
-Desarrollado con ❤️ para LivePescado
+Desarrollado con ❤️ para FrescosEnVivo

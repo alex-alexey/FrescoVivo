@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<title>FrescoVivo · Tomar turno</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,700;0,800;0,900;1,700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;touch-action:none;user-select:none}
+:root{
+  --black:#0a0a0a;--white:#ffffff;
+  --g50:#fafafa;--g100:#f4f4f5;--g200:#e4e4e7;--g400:#a1a1aa;--g600:#52525b;
+  --green:#00c96e;--gdk:#009950;--teal:#00b4c8;--live:#ff3b3b;
+  --amber:#f59e0b;--ambdk:#92400e;
+  --ff-h:'Barlow Condensed',sans-serif;
+  --ff:'Inter',system-ui,sans-serif;
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+
+body{
+  font-family:var(--ff);
+  background:var(--white);
+  color:var(--black);
+  display:grid;
+  grid-template-rows:auto 1fr auto;
+  min-height:100vh;
+  /* dot pattern exact from freskovivo */
+  background-image:radial-gradient(var(--g200) 1px,transparent 1px);
+  background-size:28px 28px;
+}
+
+@keyframes blink{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.6)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes popIn{0%{opacity:0;transform:scale(.85)}100%{opacity:1;transform:scale(1)}}
+@keyframes numSpin{0%{opacity:0;transform:scale(.5) rotate(-12deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
+@keyframes qFill{from{width:10%}to{width:70%}}
+@keyframes confettiDrop{to{transform:translateY(105vh) rotate(400deg);opacity:0}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
+
+/* ══ NAV ══ */
+nav{
+  background:rgba(255,255,255,.95);backdrop-filter:blur(16px);
+  border-bottom:1.5px solid var(--g200);
+  padding:.85rem 3vw;
+  display:flex;align-items:center;justify-content:space-between;
+  position:relative;z-index:10;
+}
+.logo{display:flex;align-items:center;gap:.55rem;text-decoration:none}
+.logo-ico{width:34px;height:34px;border-radius:8px;background:var(--black);display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0}
+.logo-name{font-family:var(--ff-h);font-size:1.25rem;font-weight:900;color:var(--black)}
+.logo-name span{color:var(--green)}
+
+/* live pill */
+.live-pill{display:flex;align-items:center;gap:.45rem;padding:.38rem .9rem;border-radius:999px;font-size:.7rem;font-weight:600;border:1.5px solid var(--green);color:var(--gdk);background:rgba(0,201,110,.07)}
+.lp-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 1.2s ease-in-out infinite}
+
+/* queue info chips in nav */
+.nav-chips{display:flex;align-items:center;gap:.55rem}
+.chip{display:flex;align-items:center;gap:.4rem;padding:.35rem .75rem;border-radius:999px;background:var(--g100);border:1.5px solid var(--g200);font-size:.72rem;font-weight:600;color:var(--g600)}
+.chip-val{font-family:var(--ff-h);font-size:1rem;font-weight:900;color:var(--black);line-height:1}
+
+/* ══ MAIN AREA ══ */
+main{
+  display:flex;align-items:center;justify-content:center;
+  padding:2rem 5vw;
+  position:relative;z-index:1;
+}
+
+/* ── SCREEN: MAIN (take number) ── */
+#screenMain{
+  width:100%;max-width:680px;
+  text-align:center;
+  animation:fadeUp .5s var(--ease) both;
+}
+
+.sm-eyebrow{
+  font-family:var(--ff-h);font-size:.82rem;font-weight:800;
+  letter-spacing:.18em;text-transform:uppercase;color:var(--gdk);
+  margin-bottom:.7rem;
+}
+.sm-h1{
+  font-family:var(--ff-h);
+  font-size:clamp(3.5rem,8vw,7rem);
+  font-weight:900;text-transform:uppercase;
+  color:var(--black);line-height:.88;letter-spacing:-.01em;
+  margin-bottom:1.2rem;
+}
+.sm-h1 .outline{-webkit-text-stroke:3px var(--black);color:transparent}
+.sm-h1 .green{color:var(--green)}
+.sm-sub{font-size:clamp(.9rem,1.5vw,1.1rem);color:var(--g600);margin-bottom:3rem;line-height:1.7;max-width:480px;margin-left:auto;margin-right:auto}
+
+/* THE BIG BUTTON */
+.btn-take{
+  display:flex;align-items:center;justify-content:center;gap:1rem;
+  width:100%;max-width:520px;margin:0 auto;
+  padding:2.5rem 2rem;
+  background:var(--black);color:var(--white);
+  border:none;border-radius:999px;
+  font-family:var(--ff-h);font-size:clamp(1.8rem,4vw,2.8rem);font-weight:900;
+  text-transform:uppercase;letter-spacing:.04em;
+  cursor:pointer;
+  box-shadow:0 8px 32px rgba(0,0,0,.2),0 2px 8px rgba(0,0,0,.12);
+  transition:all .2s var(--ease);
+  animation:pulse 2.5s ease-in-out infinite;
+  position:relative;overflow:hidden;
+}
+.btn-take::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.08),transparent);
+  opacity:0;transition:opacity .2s;
+}
+.btn-take:hover{background:#222;transform:translateY(-3px);box-shadow:0 14px 40px rgba(0,0,0,.25);animation:none}
+.btn-take:hover::before{opacity:1}
+.btn-take:active{transform:scale(.97);box-shadow:0 4px 16px rgba(0,0,0,.18);animation:none}
+.btn-take:disabled{opacity:.4;cursor:not-allowed;animation:none;transform:none}
+.btn-take-ico{font-size:1em;line-height:1}
+
+/* queue summary below button */
+.sm-queue-row{
+  display:flex;align-items:center;justify-content:center;gap:1.5rem;
+  margin-top:2.5rem;flex-wrap:wrap;
+}
+.sqr-item{
+  background:var(--white);border:1.5px solid var(--g200);border-radius:14px;
+  padding:1rem 1.5rem;text-align:center;
+  transition:border-color .2s;min-width:140px;
+}
+.sqr-item:hover{border-color:var(--black)}
+.sqr-val{font-family:var(--ff-h);font-size:2.8rem;font-weight:900;color:var(--black);line-height:1;margin-bottom:.2rem}
+.sqr-val.green{color:var(--green)}
+.sqr-val.amber{color:var(--amber)}
+.sqr-lbl{font-size:.65rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--g400)}
+
+/* ── SCREEN: TICKET ── */
+#screenTicket{
+  display:none;
+  width:100%;max-width:580px;
+  text-align:center;
+}
+#screenTicket.show{
+  display:block;
+  animation:popIn .45s var(--ease) both;
+}
+
+/* ticket card */
+.ticket-card{
+  background:var(--white);
+  border:1.5px solid var(--g200);
+  border-radius:24px;
+  overflow:hidden;
+  box-shadow:0 20px 60px rgba(0,0,0,.1),0 4px 16px rgba(0,0,0,.06);
+}
+
+/* ticket top */
+.tc-top{
+  background:var(--black);
+  padding:2rem 2rem 1.6rem;
+  position:relative;overflow:hidden;
+}
+.tc-top::before{
+  content:'';position:absolute;inset:0;
+  background-image:radial-gradient(rgba(255,255,255,.03) 1px,transparent 1px);
+  background-size:20px 20px;
+}
+.tc-top-ey{
+  font-family:var(--ff-h);font-size:.78rem;font-weight:800;
+  letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.4);
+  margin-bottom:.5rem;position:relative;z-index:1;
+}
+/* THE NUMBER */
+.tc-num{
+  font-family:var(--ff-h);
+  font-size:clamp(6rem,18vw,9rem);
+  font-weight:900;color:var(--white);
+  line-height:.88;letter-spacing:-.02em;
+  position:relative;z-index:1;
+  animation:numSpin .5s var(--ease) both;
+}
+.tc-num-sub{
+  font-family:var(--ff-h);font-size:1rem;font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase;
+  color:var(--green);margin-top:.4rem;position:relative;z-index:1;
+}
+
+/* dashed separator */
+.tc-sep{
+  height:0;border:none;border-top:2px dashed var(--g200);margin:0 1.5rem;
+}
+
+/* ticket body */
+.tc-body{padding:1.5rem 2rem 2rem}
+
+/* info grid */
+.tc-info{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:1.5rem}
+.tc-info-box{
+  background:var(--g50);border:1.5px solid var(--g200);
+  border-radius:12px;padding:.85rem .9rem;
+}
+.tc-info-box.full{grid-column:1/-1}
+.tib-ico{font-size:1.2rem;margin-bottom:.35rem}
+.tib-val{font-family:var(--ff-h);font-size:1.6rem;font-weight:900;color:var(--black);line-height:1;margin-bottom:.15rem}
+.tib-lbl{font-size:.6rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--g400)}
+
+/* progress bar */
+.tc-bar-wrap{margin-bottom:1.5rem}
+.tc-bar-lbl{font-size:.65rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--g400);margin-bottom:.45rem;text-align:left}
+.tc-bar{height:4px;background:var(--g100);border-radius:2px;overflow:hidden}
+.tc-bar-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--teal));border-radius:2px;animation:qFill 2s var(--ease) both}
+
+/* done button */
+.btn-done{
+  width:100%;padding:1.1rem;
+  background:var(--black);color:var(--white);
+  border:none;border-radius:999px;
+  font-family:var(--ff-h);font-size:1.35rem;font-weight:900;
+  text-transform:uppercase;letter-spacing:.06em;
+  cursor:pointer;transition:all .2s var(--ease);
+  box-shadow:0 4px 16px rgba(0,0,0,.18);
+}
+.btn-done:hover{background:#222;transform:translateY(-2px)}
+.btn-done:active{transform:scale(.97)}
+
+/* ticket note */
+.tc-note{font-size:.72rem;color:var(--g400);margin-top:.9rem;line-height:1.6;text-align:center}
+
+/* ══ FOOTER ══ */
+footer{
+  background:rgba(255,255,255,.95);backdrop-filter:blur(12px);
+  border-top:1.5px solid var(--g200);
+  padding:.75rem 3vw;
+  display:flex;align-items:center;justify-content:space-between;
+  position:relative;z-index:10;flex-wrap:wrap;gap:.5rem;
+}
+.ft-left{font-size:.72rem;color:var(--g400);font-weight:500}
+.ft-left b{color:var(--black)}
+.ft-right{font-size:.65rem;color:var(--g400);letter-spacing:.06em;text-transform:uppercase}
+
+/* ══ CONFETTI ══ */
+.confetti-piece{
+  position:fixed;width:8px;height:8px;border-radius:1px;
+  pointer-events:none;z-index:999;
+  animation:confettiDrop 3s linear forwards;
+}
+
+/* ══ RESPONSIVE ══ */
+@media(max-width:600px){
+  .nav-chips{display:none}
+  .sm-queue-row{gap:1rem}
+  .sqr-item{min-width:100px;padding:.8rem 1rem}
+  .tc-info{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ NAV ══ -->
+<nav>
+  <a href="/" class="logo">
+    <div class="logo-ico">🐟</div>
+    <span class="logo-name">Fresco<span>Vivo</span></span>
+  </a>
+
+  <div class="nav-chips">
+    <div class="chip">
+      Atendiendo&nbsp;<span class="chip-val" id="navServing">—</span>
+    </div>
+    <div class="chip">
+      En espera&nbsp;<span class="chip-val" id="navWaiting">0</span>
+    </div>
+  </div>
+
+  <div class="live-pill">
+    <span class="lp-dot"></span>
+    <span>Tienda abierta</span>
+  </div>
+</nav>
+
+<!-- ══ MAIN ══ -->
+<main>
+
+  <!-- SCREEN: TAKE NUMBER -->
+  <div id="screenMain">
+    <p class="sm-eyebrow">Pescadería · Gavà</p>
+    <h1 class="sm-h1">
+      COGE<br/>
+      TU <span class="green">TURNO</span><br/>
+      <span class="outline">AQUÍ</span>
+    </h1>
+    <p class="sm-sub">Pulsa el botón, recibe tu número y espera a que te llamen. Los clientes online tienen turno separado.</p>
+
+    <button class="btn-take" id="takeNumberBtn">
+      <span class="btn-take-ico">✋</span>
+      <span>Tomar número</span>
+    </button>
+
+    <div class="sm-queue-row">
+      <div class="sqr-item">
+        <div class="sqr-val amber" id="sqrServing">—</div>
+        <div class="sqr-lbl">Atendiendo ahora</div>
+      </div>
+      <div class="sqr-item">
+        <div class="sqr-val" id="sqrWaiting">0</div>
+        <div class="sqr-lbl">Personas esperando</div>
+      </div>
+      <div class="sqr-item">
+        <div class="sqr-val green" id="sqrWait">~5<span style="font-size:1.4rem;font-weight:400">m</span></div>
+        <div class="sqr-lbl">Espera estimada</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN: TICKET -->
+  <div id="screenTicket">
+    <div class="ticket-card">
+
+      <!-- dark top with number -->
+      <div class="tc-top">
+        <div class="tc-top-ey">FrescoVivo · Tu turno</div>
+        <div class="tc-num" id="tcNum">#0</div>
+        <div class="tc-num-sub">✓ Número asignado</div>
+      </div>
+
+      <hr class="tc-sep"/>
+
+      <div class="tc-body">
+
+        <!-- info grid -->
+        <div class="tc-info">
+          <div class="tc-info-box">
+            <div class="tib-ico">🕐</div>
+            <div class="tib-val" id="tcTime">—</div>
+            <div class="tib-lbl">Hora de recogida</div>
+          </div>
+          <div class="tc-info-box">
+            <div class="tib-ico">👥</div>
+            <div class="tib-val" id="tcAhead">0</div>
+            <div class="tib-lbl">Delante de ti</div>
+          </div>
+          <div class="tc-info-box full">
+            <div class="tib-ico">⏱️</div>
+            <div class="tib-val" id="tcEstimate">~5 min</div>
+            <div class="tib-lbl">Tiempo estimado de espera</div>
+          </div>
+        </div>
+
+        <!-- progress -->
+        <div class="tc-bar-wrap">
+          <div class="tc-bar-lbl">Posición en la cola</div>
+          <div class="tc-bar"><div class="tc-bar-fill" id="tcBarFill"></div></div>
+        </div>
+
+        <button class="btn-done" id="doneBtn">✓ Entendido</button>
+
+        <p class="tc-note">
+          Quédate cerca. Te llamaremos por tu número.<br/>
+          ⚠️ Los clientes presenciales tienen prioridad sobre la cola online.
+        </p>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <span class="ft-left"><b>FrescoVivo</b> · Pescadería · Gavà, Barcelona</span>
+  <span class="ft-right">🌊 Pescado fresco del día</span>
+</footer>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const socket = io();
+
+/* DOM refs */
+const screenMain   = document.getElementById('screenMain');
+const screenTicket = document.getElementById('screenTicket');
+const takeBtn      = document.getElementById('takeNumberBtn');
+const doneBtn      = document.getElementById('doneBtn');
+const tcNum        = document.getElementById('tcNum');
+const tcTime       = document.getElementById('tcTime');
+const tcAhead      = document.getElementById('tcAhead');
+const tcEstimate   = document.getElementById('tcEstimate');
+const tcBarFill    = document.getElementById('tcBarFill');
+const sqrServing   = document.getElementById('sqrServing');
+const sqrWaiting   = document.getElementById('sqrWaiting');
+const sqrWait      = document.getElementById('sqrWait');
+const navServing   = document.getElementById('navServing');
+const navWaiting   = document.getElementById('navWaiting');
+
+let inStoreQueue = [];
+
+/* socket */
+socket.on('connect', () => {
+  console.log('✅ Kiosk conectado');
+  socket.emit('kiosk-connect');
+});
+
+socket.on('queues-updated', data => {
+  inStoreQueue = data.inStoreQueue || [];
+  updateDisplay();
+});
+
+socket.on('store-number-generated', client => {
+  showTicket(client);
+});
+
+socket.on('client-accepted', client => {
+  if(client.queueType === 'in-store'){
+    sqrServing.textContent = '#' + client.number;
+    navServing.textContent = '#' + client.number;
+  }
+});
+
+/* take number */
+takeBtn.addEventListener('click', () => {
+  takeBtn.disabled = true;
+  socket.emit('generate-store-number');
+  setTimeout(() => { takeBtn.disabled = false; }, 2500);
+});
+
+/* done */
+doneBtn.addEventListener('click', hideTicket);
+
+/* show ticket */
+function showTicket(client){
+  const ahead = Math.max(0, inStoreQueue.length - 1);
+  const wait  = Math.max(1, ahead * 3);
+
+  tcNum.textContent     = '#' + client.number;
+  tcTime.textContent    = new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+  tcAhead.textContent   = ahead;
+  tcEstimate.textContent= '~' + wait + ' min';
+
+  /* bar width based on position — closer to front = fuller */
+  const pct = ahead === 0 ? 95 : Math.min(85, 30 + (ahead * 8));
+  tcBarFill.style.width = pct + '%';
+
+  screenMain.style.display = 'none';
+  screenTicket.classList.add('show');
+
+  confetti();
+  beep();
+
+  /* auto-close after 12s */
+  setTimeout(hideTicket, 12000);
+}
+
+function hideTicket(){
+  screenTicket.classList.remove('show');
+  screenMain.style.display = '';
+}
+
+/* update main screen stats */
+function updateDisplay(){
+  const n = inStoreQueue.length;
+  sqrWaiting.textContent = n;
+  navWaiting.textContent = n;
+  const wait = Math.max(1, n * 3);
+  sqrWait.innerHTML = '~' + wait + '<span style="font-size:1.4rem;font-weight:400">m</span>';
+  if(n > 0) sqrServing.textContent = '#' + inStoreQueue[0].number;
+}
+
+/* confetti */
+function confetti(){
+  const cols = ['#00c96e','#0a0a0a','#f59e0b','#ff3b3b','#00b4c8','#e4e4e7'];
+  for(let i=0;i<60;i++){
+    setTimeout(()=>{
+      const p = document.createElement('div');
+      p.className = 'confetti-piece';
+      p.style.cssText = `left:${Math.random()*100}%;top:-10px;background:${cols[Math.random()*cols.length|0]};border-radius:${Math.random()>.5?'50%':'2px'};animation-delay:${Math.random()*.4}s;animation-duration:${2.5+Math.random()*1.5}s;transform:rotate(${Math.random()*360}deg)`;
+      document.body.appendChild(p);
+      setTimeout(()=>p.remove(),4000);
+    }, i*25);
+  }
+}
+
+/* beep */
+function beep(){
+  try{
+    const ctx = new(window.AudioContext||window.webkitAudioContext)();
+    [600,800,1000].forEach((freq,i)=>{
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.connect(g);g.connect(ctx.destination);
+      o.type='sine';o.frequency.value=freq;
+      const t=ctx.currentTime+i*.12;
+      g.gain.setValueAtTime(.25,t);
+      g.gain.exponentialRampToValueAtTime(.001,t+.18);
+      o.start(t);o.stop(t+.18);
+    });
+  }catch(e){}
+}
+
+/* prevent zoom */
+document.addEventListener('gesturestart', e=>e.preventDefault());
+document.addEventListener('touchmove', e=>{if(e.scale!==1)e.preventDefault()},{passive:false});
+</script>
+</body>
+</html>

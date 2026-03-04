@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FrescosEnVivo - Administración de Usuarios</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="vendor.css">
+    <style>
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .btn-new-user {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s var(--ease-out);
+        }
+
+        .btn-new-user:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(72,187,120,0.4);
+        }
+
+        .users-table {
+            background: rgba(11,46,72,0.4);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 20px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 15px;
+            color: var(--c-amber);
+            font-weight: 700;
+            border-bottom: 2px solid rgba(255,255,255,0.1);
+        }
+
+        td {
+            padding: 15px;
+            color: var(--c-pearl);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        tr:hover {
+            background: rgba(255,255,255,0.03);
+        }
+
+        .role-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .role-badge.admin {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .role-badge.empleado {
+            background: rgba(33,150,243,0.2);
+            color: #64b5f6;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .status-badge.active {
+            background: rgba(72,187,120,0.2);
+            color: #9ae6b4;
+        }
+
+        .status-badge.inactive {
+            background: rgba(245,101,101,0.2);
+            color: #feb2b2;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-action {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.85em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-edit {
+            background: rgba(33,150,243,0.2);
+            color: #64b5f6;
+        }
+
+        .btn-edit:hover {
+            background: rgba(33,150,243,0.3);
+        }
+
+        .btn-delete {
+            background: rgba(245,101,101,0.2);
+            color: #feb2b2;
+        }
+
+        .btn-delete:hover {
+            background: rgba(245,101,101,0.3);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: rgba(11,46,72,0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+
+        .modal-header {
+            font-family: var(--ff-serif);
+            color: var(--c-amber);
+            font-size: 1.8em;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: var(--c-amber);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            background: rgba(0,0,0,0.3);
+            color: var(--c-pearl);
+            font-family: var(--ff-sans);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: 2px solid var(--c-amber);
+            border-color: var(--c-amber);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 30px;
+        }
+
+        .btn-cancel {
+            flex: 1;
+            padding: 12px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: var(--c-pearl);
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .btn-save {
+            flex: 1;
+            padding: 12px;
+            background: linear-gradient(135deg, var(--c-amber), var(--c-gold));
+            color: var(--c-ink);
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="vendor-container">
+        <header>
+            <h1>👥 Administración de Usuarios</h1>
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <span id="current-user" style="color: var(--c-pearl); font-size: 0.9em;"></span>
+                <button onclick="window.location.href='/vendor'" class="btn-control">← Volver al Panel</button>
+                <button onclick="logout()" class="btn-danger">Cerrar Sesión</button>
+            </div>
+        </header>
+
+        <div class="admin-header">
+            <div>
+                <h2 style="color: var(--c-amber); font-family: var(--ff-serif); margin-bottom: 5px;">Usuarios del Sistema</h2>
+                <p style="color: var(--c-mist); font-size: 0.9em;">Gestiona los usuarios que pueden acceder al panel</p>
+            </div>
+            <button class="btn-new-user" onclick="openCreateModal()">
+                ➕ Nuevo Usuario
+            </button>
+        </div>
+
+        <div class="users-table">
+            <table id="users-table">
+                <thead>
+                    <tr>
+                        <th>Usuario</th>
+                        <th>Nombre Completo</th>
+                        <th>Email</th>
+                        <th>Rol</th>
+                        <th>Estado</th>
+                        <th>Último Acceso</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="users-tbody">
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 40px; color: var(--c-mist);">
+                            Cargando usuarios...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal para crear/editar usuario -->
+    <div id="user-modal" class="modal">
+        <div class="modal-content">
+            <h2 class="modal-header" id="modal-title">Nuevo Usuario</h2>
+            <form id="user-form">
+                <input type="hidden" id="user-id">
+                
+                <div class="form-group">
+                    <label for="username">Usuario *</label>
+                    <input type="text" id="username" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="fullName">Nombre Completo *</label>
+                    <input type="text" id="fullName" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email *</label>
+                    <input type="email" id="email" required>
+                </div>
+
+                <div class="form-group" id="password-group">
+                    <label for="password">Contraseña *</label>
+                    <input type="password" id="password" minlength="6">
+                </div>
+
+                <div class="form-group">
+                    <label for="role">Rol *</label>
+                    <select id="role" required>
+                        <option value="empleado">Empleado</option>
+                        <option value="admin">Administrador</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="status-group" style="display: none;">
+                    <label for="isActive">Estado *</label>
+                    <select id="isActive">
+                        <option value="true">Activo</option>
+                        <option value="false">Inactivo</option>
+                    </select>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeModal()">Cancelar</button>
+                    <button type="submit" class="btn-save">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let isEditMode = false;
+
+        // Cargar usuario actual
+        async function loadCurrentUser() {
+            try {
+                const response = await fetch('/api/auth/me');
+                if (!response.ok) {
+                    window.location.href = '/login';
+                    return;
+                }
+                const data = await response.json();
+                currentUser = data.user;
+                document.getElementById('current-user').textContent = `👤 ${currentUser.fullName}`;
+
+                // Verificar si es admin
+                if (currentUser.role !== 'admin') {
+                    alert('Solo administradores pueden acceder a esta página');
+                    window.location.href = '/vendor';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                window.location.href = '/login';
+            }
+        }
+
+        // Cargar usuarios
+        async function loadUsers() {
+            try {
+                const response = await fetch('/api/auth/users');
+                const data = await response.json();
+
+                const tbody = document.getElementById('users-tbody');
+                
+                if (data.users.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px;">No hay usuarios registrados</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = data.users.map(user => `
+                    <tr>
+                        <td><strong>${user.username}</strong></td>
+                        <td>${user.fullName}</td>
+                        <td>${user.email}</td>
+                        <td><span class="role-badge ${user.role}">${user.role === 'admin' ? 'Administrador' : 'Empleado'}</span></td>
+                        <td><span class="status-badge ${user.isActive ? 'active' : 'inactive'}">${user.isActive ? 'Activo' : 'Inactivo'}</span></td>
+                        <td>${user.lastLogin ? new Date(user.lastLogin).toLocaleString('es-ES') : 'Nunca'}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn-action btn-edit" onclick="editUser('${user._id}')">Editar</button>
+                                ${user._id !== currentUser.id ? `<button class="btn-action btn-delete" onclick="deleteUser('${user._id}', '${user.username}')">Eliminar</button>` : ''}
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error cargando usuarios:', error);
+            }
+        }
+
+        // Abrir modal para crear
+        function openCreateModal() {
+            isEditMode = false;
+            document.getElementById('modal-title').textContent = 'Nuevo Usuario';
+            document.getElementById('user-form').reset();
+            document.getElementById('user-id').value = '';
+            document.getElementById('password-group').style.display = 'block';
+            document.getElementById('password').required = true;
+            document.getElementById('status-group').style.display = 'none';
+            document.getElementById('user-modal').classList.add('show');
+        }
+
+        // Editar usuario
+        async function editUser(id) {
+            try {
+                const response = await fetch('/api/auth/users');
+                const data = await response.json();
+                const user = data.users.find(u => u._id === id);
+
+                if (!user) return;
+
+                isEditMode = true;
+                document.getElementById('modal-title').textContent = 'Editar Usuario';
+                document.getElementById('user-id').value = user._id;
+                document.getElementById('username').value = user.username;
+                document.getElementById('username').disabled = true;
+                document.getElementById('fullName').value = user.fullName;
+                document.getElementById('email').value = user.email;
+                document.getElementById('role').value = user.role;
+                document.getElementById('isActive').value = user.isActive.toString();
+                document.getElementById('password-group').style.display = 'none';
+                document.getElementById('password').required = false;
+                document.getElementById('status-group').style.display = 'block';
+                document.getElementById('user-modal').classList.add('show');
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Cerrar modal
+        function closeModal() {
+            document.getElementById('user-modal').classList.remove('show');
+            document.getElementById('username').disabled = false;
+        }
+
+        // Guardar usuario
+        document.getElementById('user-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const id = document.getElementById('user-id').value;
+            const userData = {
+                username: document.getElementById('username').value,
+                fullName: document.getElementById('fullName').value,
+                email: document.getElementById('email').value,
+                role: document.getElementById('role').value
+            };
+
+            if (!isEditMode) {
+                userData.password = document.getElementById('password').value;
+            } else {
+                userData.isActive = document.getElementById('isActive').value === 'true';
+            }
+
+            try {
+                const url = isEditMode ? `/api/auth/users/${id}` : '/api/auth/users';
+                const method = isEditMode ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(userData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert(data.message);
+                    closeModal();
+                    loadUsers();
+                } else {
+                    alert(data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al guardar usuario');
+            }
+        });
+
+        // Eliminar usuario
+        async function deleteUser(id, username) {
+            if (!confirm(`¿Estás seguro de eliminar al usuario "${username}"?`)) return;
+
+            try {
+                const response = await fetch(`/api/auth/users/${id}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert(data.message);
+                    loadUsers();
+                } else {
+                    alert(data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al eliminar usuario');
+            }
+        }
+
+        // Cerrar sesión
+        async function logout() {
+            try {
+                await fetch('/api/auth/logout', { method: 'POST' });
+                window.location.href = '/login';
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Inicializar
+        loadCurrentUser();
+        loadUsers();
+    </script>
+</body>
+</html>

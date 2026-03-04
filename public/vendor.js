@@ -1,9 +1,12 @@
+// @ts-nocheck
 const socket = io();
 let vendorStream = null;
 let productStreams = [null, null, null];
 let peerConnection = null;
 let activeClientId = null;
 let clientAudioElement = null; // Audio del cliente
+let currentUser = null; // Usuario actual logueado
+let isLive = false; // Estado del live
 
 const configuration = {
     iceServers: [
@@ -12,8 +15,11 @@ const configuration = {
     ]
 };
 
-// Elementos del DOM
+// Elementos del DOM - Sistema de Doble Cola
 const connectionStatus = document.getElementById('connection-status');
+const userNameSpan = document.getElementById('user-name');
+const userIconSpan = document.getElementById('user-icon');
+const logoutBtn = document.getElementById('logout-btn');
 const startCamerasBtn = document.getElementById('start-cameras');
 const stopCamerasBtn = document.getElementById('stop-cameras');
 
@@ -31,26 +37,44 @@ const clientVideoSection = document.getElementById('client-video-section');
 const clientNameLabel = document.getElementById('client-name-label');
 
 const callStatusText = document.getElementById('call-status-text');
+const activeClientInfo = document.getElementById('active-client-info');
+const clientTypeIcon = document.getElementById('client-type-icon');
+const activeClientName = document.getElementById('active-client-name');
+const activeClientDetails = document.getElementById('active-client-details');
+
+// Controles de cola
+const generateStoreNumberBtn = document.getElementById('generate-store-number');
 const acceptNextClientBtn = document.getElementById('accept-next-client');
 const endCurrentCallBtn = document.getElementById('end-current-call');
 const toggleVendorAudioBtn = document.getElementById('toggle-vendor-audio');
+const nextTicketBtn = document.getElementById('next-ticket-btn');
+const resetCounterBtn = document.getElementById('reset-counter-btn');
+
+// Colas
+const storeQueueCount = document.getElementById('store-queue-count');
+const storeQueueList = document.getElementById('store-queue-list');
+const onlineQueueCount = document.getElementById('online-queue-count');
+const onlineQueueList = document.getElementById('online-queue-list');
+
+// Contador de turnos
+const lastTicketNumber = document.getElementById('last-ticket-number');
+const currentServingNumber = document.getElementById('current-serving-number');
+const ticketsWaiting = document.getElementById('tickets-waiting');
 
 const goLiveBtn = document.getElementById('go-live-btn');
 const stopLiveBtn = document.getElementById('stop-live-btn');
 const liveStatus = document.getElementById('live-status');
 const liveStatusText = document.getElementById('live-status-text');
 
-const queueCount = document.getElementById('queue-count');
-const queueList = document.getElementById('queue-list');
 const ordersCount = document.getElementById('orders-count');
 const ordersList = document.getElementById('orders-list');
 
-// Formulario de pedidos
-const quickOrderForm = document.getElementById('quick-order-form');
-const orderProducts = document.getElementById('order-products');
-const orderTotal = document.getElementById('order-total');
-const orderAddress = document.getElementById('order-address');
-const saveOrderBtn = document.getElementById('save-order-btn');
+// Estado de las colas
+let inStoreQueue = [];
+let onlineQueue = [];
+let currentActiveClient = null;
+let lastIssuedTicket = 0;  // Último turno emitido
+let currentServingTicket = null;  // Turno que se está atendiendo ahora
 
 // Event Listeners
 startCamerasBtn.addEventListener('click', startAllCameras);
@@ -60,19 +84,105 @@ goLiveBtn.addEventListener('click', () => {
     goLive();
 });
 stopLiveBtn.addEventListener('click', stopLive);
+generateStoreNumberBtn.addEventListener('click', generateStoreNumber);
 acceptNextClientBtn.addEventListener('click', acceptNextClient);
 endCurrentCallBtn.addEventListener('click', endCurrentCall);
 toggleVendorAudioBtn.addEventListener('click', toggleVendorAudio);
-saveOrderBtn.addEventListener('click', saveOrder);
+nextTicketBtn.addEventListener('click', advanceToNextTicket);
+resetCounterBtn.addEventListener('click', resetTicketCounter);
+logoutBtn.addEventListener('click', logout);
+
+// Cargar usuario actual
+async function loadCurrentUser() {
+    try {
+        const response = await fetch('/api/auth/me');
+        if (!response.ok) {
+            // No hay sesión, redirigir al login
+            window.location.href = '/login';
+            return;
+        }
+        const data = await response.json();
+        currentUser = data.user;
+        
+        // Actualizar UI
+        if (userNameSpan) {
+            userNameSpan.textContent = currentUser.fullName;
+        }
+        if (userIconSpan) {
+            userIconSpan.textContent = currentUser.role === 'admin' ? '👑' : '👤';
+        }
+        
+        console.log('👤 Usuario cargado:', currentUser.fullName, `(${currentUser.role})`);
+    } catch (error) {
+        console.error('Error cargando usuario:', error);
+        window.location.href = '/login';
+    }
+}
+
+// Función de logout
+async function logout() {
+    try {
+        await fetch('/api/auth/logout', { method: 'POST' });
+        window.location.href = '/login';
+    } catch (error) {
+        console.error('Error en logout:', error);
+        window.location.href = '/login';
+    }
+}
+
+// Función para actualizar el badge de estado
+function updateConnectionStatus() {
+    if (connectionStatus) {
+        if (isLive) {
+            connectionStatus.textContent = 'En Vivo';
+            connectionStatus.className = 'status-badge online';
+        } else {
+            connectionStatus.textContent = 'Desconectado';
+            connectionStatus.className = 'status-badge offline';
+        }
+    }
+}
+
+// Función para cargar el estado del live desde el servidor
+async function loadLiveStatus() {
+    try {
+        const response = await fetch('/api/live-status');
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.isLive) {
+                console.log('🔴 Estado LIVE detectado desde API, esperando confirmación de Socket.IO...');
+                // El estado se actualizará cuando vendor-connected responda
+            }
+        }
+    } catch (error) {
+        console.error('Error cargando estado del live:', error);
+    }
+}
+
+// Cargar usuario y estado del live al iniciar
+loadCurrentUser();
+loadLiveStatus();
 
 // Conectar como vendedor
 console.log('🔌 Conectando como vendedor...');
 console.log('🔌 Socket conectado inicial?:', socket.connected);
+console.log('🔌 Socket ID inicial:', socket.id);
+
+// Emitir vendor-connect inmediatamente si ya está conectado
+if (socket.connected) {
+    console.log('📤 Socket YA conectado, emitiendo vendor-connect inmediatamente...');
+    socket.emit('vendor-connect');
+}
 
 socket.on('connect', () => {
     console.log('✅ Socket conectado! ID:', socket.id);
     console.log('📤 Emitiendo vendor-connect...');
     socket.emit('vendor-connect');
+    
+    // Verificar que se emitió
+    setTimeout(() => {
+        console.log('🔍 Verificación post-emit - Socket ID:', socket.id);
+    }, 100);
 });
 
 socket.on('vendor-connected', (data) => {
@@ -80,58 +190,126 @@ socket.on('vendor-connected', (data) => {
     console.log('📊 Datos recibidos:', data);
     connectionStatus.textContent = 'Conectado';
     connectionStatus.className = 'status-badge online';
-    updateQueue(data.queue);
-    if (data.isLive) {
-        console.log('⚠️ El servidor indica que ya estás en vivo');
-        updateLiveStatus(true);
+    
+    // Habilitar el botón de iniciar cámaras una vez conectado
+    if (startCamerasBtn) {
+        startCamerasBtn.disabled = false;
     }
     
-    // TEST: Emitir un evento de prueba
-    console.log('🧪 TEST: Emitiendo evento de prueba...');
-    socket.emit('test-event', { message: 'Hola desde el vendedor' });
+    // Actualizar último turno emitido
+    if (data.lastTicketNumber !== undefined) {
+        lastIssuedTicket = data.lastTicketNumber;
+        updateTicketCounter();
+    }
+    
+    // Actualizar ambas colas
+    updateQueues(data.inStoreQueue || [], data.onlineQueue || []);
+    
+    // Restaurar estado del live
+    if (data.isLive) {
+        console.log('🔴 Restaurando estado LIVE desde el servidor');
+        isLive = true;
+        updateLiveStatus(true);
+        updateConnectionStatus();
+    } else {
+        console.log('⚪ El servidor indica que NO estás en vivo');
+        isLive = false;
+        updateLiveStatus(false);
+        updateConnectionStatus();
+    }
+    
+    console.log('🎬 vendorSocket está listo en el servidor');
 });
 
-socket.on('queue-updated', (queue) => {
-    updateQueue(queue);
+// Actualización de ambas colas
+socket.on('queues-updated', (data) => {
+    console.log('📊 Colas actualizadas:', data);
+    updateQueues(data.inStoreQueue || [], data.onlineQueue || []);
 });
 
-socket.on('new-client-joined', (data) => {
-    console.log('🔔 Nuevo cliente en espera:', data.name);
+// Notificación de nuevo cliente online
+socket.on('new-online-client', (data) => {
+    console.log('🔔 Nuevo cliente ONLINE en espera:', data.name);
+    const ticketInfo = data.ticketNumber ? ` - Turno #${data.ticketNumber}` : '';
+    showNotification(`🌐 Nuevo cliente online: ${data.name}${ticketInfo}`, 'info');
     
-    // Reproducir sonido de notificación
-    playNotificationSound();
+    // Actualizar último turno emitido
+    if (data.ticketNumber) {
+        lastIssuedTicket = data.ticketNumber;
+        updateTicketCounter();
+    }
+});
+
+// Número de tienda generado
+socket.on('store-number-generated', (client) => {
+    console.log('🏪 Número generado:', client.number);
+    showNotification(`🏪 Número #${client.number} generado`, 'success');
     
-    // Mostrar notificación visual
-    showNotification(`📞 ${data.name} está esperando en la cola`);
+    // Actualizar último turno emitido (también se usa para tienda)
+    if (client.number) {
+        lastIssuedTicket = client.number;
+        updateTicketCounter();
+    }
+    // Opcional: Imprimir ticket o mostrar en pantalla grande
+});
+
+// Confirmación de reseteo de contador
+socket.on('counter-reset', (data) => {
+    console.log('🔄 Contador reseteado:', data);
+    showNotification(data.message, 'success');
     
-    // Hacer parpadear el botón de aceptar
-    highlightAcceptButton();
-    
-    // Cambiar el título de la pestaña
-    updatePageTitle(data.queueLength);
+    // Resetear variables locales
+    lastIssuedTicket = 0;
+    currentServingTicket = null;
+    updateTicketCounter();
 });
 
 socket.on('client-accepted', async (client) => {
-    console.log('✅ Cliente aceptado:', client.name);
+    console.log('✅ Cliente aceptado:', client);
+    currentActiveClient = client;
     
-    // Resetear título si no hay más clientes esperando
-    updatePageTitle(0);
+    // Actualizar turno que se está atendiendo
+    const ticketNum = client.ticketNumber || client.number;
+    if (ticketNum) {
+        currentServingTicket = ticketNum;
+        updateTicketCounter();
+    }
     
-    activeClientId = client.id;
-    callStatusText.textContent = `En llamada con: ${client.name}`;
+    // Mostrar información del cliente activo
+    activeClientInfo.style.display = 'block';
+    
+    // Determinar qué número mostrar
+    let displayName = '';
+    let displayDetails = '';
+    
+    if (client.queueType === 'in-store') {
+        clientTypeIcon.textContent = '🏪';
+        displayName = `Cliente Presencial #${client.number}`;
+        displayDetails = `Turno #${client.number} · Tienda física`;
+        callStatusText.textContent = `Atendiendo cliente presencial #${client.number}`;
+    } else {
+        clientTypeIcon.textContent = '🌐';
+        displayName = client.name;
+        const ticketInfo = client.ticketNumber ? `Turno #${client.ticketNumber}` : '';
+        displayDetails = `${ticketInfo} · ${client.phone || 'Sin teléfono'}`;
+        callStatusText.textContent = `En videollamada con: ${client.name}`;
+        
+        // Solo para clientes online: iniciar WebRTC
+        activeClientId = client.id;
+        clientVideoSection.style.display = 'block';
+        clientNameLabel.textContent = client.name;
+        
+        console.log('🔗 Iniciando conexión WebRTC con el cliente online...');
+        await startPeerConnection(client.id);
+    }
+    
+    // Actualizar textos en la UI
+    activeClientName.textContent = displayName;
+    activeClientDetails.textContent = displayDetails;
+    
     callStatusText.style.background = '#c6f6d5';
     endCurrentCallBtn.disabled = false;
     acceptNextClientBtn.disabled = true;
-    
-    clientVideoSection.style.display = 'block';
-    clientNameLabel.textContent = client.name;
-    
-    // Mostrar formulario de pedidos
-    quickOrderForm.style.display = 'block';
-    
-    // Iniciar conexión WebRTC y crear oferta
-    console.log('🔗 Iniciando conexión WebRTC con el cliente...');
-    await startPeerConnection(client.id);
 });
 
 socket.on('no-clients', () => {
@@ -165,6 +343,81 @@ socket.on('webrtc-answer', async (data) => {
 socket.on('webrtc-ice-candidate', async (data) => {
     if (peerConnection) {
         await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+    }
+});
+
+// ========== PUBLIC STREAM HANDLERS ==========
+// Map para guardar conexiones públicas con espectadores
+const publicViewers = new Map();
+
+// Nuevo espectador quiere ver el stream público
+socket.on('new-public-viewer', async (data) => {
+    console.log('📹 Nuevo espectador público:', data.viewerId);
+    
+    if (!vendorStream || !productStreams[0] || !productStreams[1] || !productStreams[2]) {
+        console.error('❌ Cámaras no están activas');
+        return;
+    }
+    
+    // Crear nueva conexión peer para este espectador
+    const viewerPeerConnection = new RTCPeerConnection(configuration);
+    publicViewers.set(data.viewerId, viewerPeerConnection);
+    
+    // Añadir los 4 streams (vendedor + 3 productos)
+    vendorStream.getTracks().forEach(track => {
+        viewerPeerConnection.addTrack(track, vendorStream);
+    });
+    
+    productStreams[0].getTracks().forEach(track => {
+        viewerPeerConnection.addTrack(track, productStreams[0]);
+    });
+    
+    productStreams[1].getTracks().forEach(track => {
+        viewerPeerConnection.addTrack(track, productStreams[1]);
+    });
+    
+    productStreams[2].getTracks().forEach(track => {
+        viewerPeerConnection.addTrack(track, productStreams[2]);
+    });
+    
+    // Manejar ICE candidates
+    viewerPeerConnection.onicecandidate = (event) => {
+        if (event.candidate) {
+            socket.emit('public-stream-ice-candidate', {
+                to: data.viewerId,
+                candidate: event.candidate
+            });
+        }
+    };
+    
+    // Crear y enviar offer
+    const offer = await viewerPeerConnection.createOffer();
+    await viewerPeerConnection.setLocalDescription(offer);
+    
+    socket.emit('public-stream-offer', {
+        to: data.viewerId,
+        offer: offer
+    });
+    
+    console.log('✅ Offer público enviado a:', data.viewerId);
+});
+
+// Respuesta del espectador público
+socket.on('public-stream-answer', async (data) => {
+    console.log('📨 Respuesta de espectador público:', data.from);
+    
+    const viewerPeerConnection = publicViewers.get(data.from);
+    if (viewerPeerConnection) {
+        await viewerPeerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
+        console.log('✅ Stream público establecido con:', data.from);
+    }
+});
+
+// ICE candidate de espectador público
+socket.on('public-stream-ice-candidate', async (data) => {
+    const viewerPeerConnection = publicViewers.get(data.from);
+    if (viewerPeerConnection && data.candidate) {
+        await viewerPeerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
     }
 });
 
@@ -213,12 +466,14 @@ async function populateCameraSelects() {
     productCamera3Select.addEventListener('change', () => switchCamera(3, productCamera3Select.value));
 }
 
-async function startCamera(deviceId, videoElement) {
+async function startCamera(deviceId, videoElement, withAudio = false) {
     try {
-        const stream = await navigator.mediaDevices.getUserMedia({
+        const constraints = {
             video: { deviceId: deviceId ? { exact: deviceId } : undefined },
-            audio: true
-        });
+            audio: withAudio  // Solo audio para la cámara principal del vendedor
+        };
+        
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
         videoElement.srcObject = stream;
         return stream;
     } catch (error) {
@@ -229,18 +484,36 @@ async function startCamera(deviceId, videoElement) {
 }
 
 async function startAllCameras() {
+    // Expandir la sección de cámaras si está colapsada
+    const cameraSection = document.querySelector('.camera-section-collapsible');
+    if (cameraSection && !cameraSection.open) {
+        cameraSection.open = true;
+    }
+    
     await populateCameraSelects();
     
-    vendorStream = await startCamera(vendorCameraSelect.value, vendorCamera);
-    productStreams[0] = await startCamera(productCamera1Select.value, productCamera1);
-    productStreams[1] = await startCamera(productCamera2Select.value, productCamera2);
-    productStreams[2] = await startCamera(productCamera3Select.value, productCamera3);
+    // Cámara principal con audio
+    vendorStream = await startCamera(vendorCameraSelect.value, vendorCamera, true);
+    
+    // Cámaras de productos sin audio (solo video)
+    productStreams[0] = await startCamera(productCamera1Select.value, productCamera1, false);
+    productStreams[1] = await startCamera(productCamera2Select.value, productCamera2, false);
+    productStreams[2] = await startCamera(productCamera3Select.value, productCamera3, false);
     
     if (vendorStream && productStreams.every(s => s !== null)) {
         startCamerasBtn.disabled = true;
         stopCamerasBtn.disabled = false;
         goLiveBtn.disabled = false;
-        alert('Todas las cámaras iniciadas correctamente. Ahora puedes iniciar la transmisión.');
+        
+        // Agregar indicador visual de cámaras activas
+        if (cameraSection) {
+            const summary = cameraSection.querySelector('summary');
+            if (summary && !summary.textContent.includes('🟢')) {
+                summary.textContent = '🟢 📹 Cámaras Activas';
+            }
+        }
+        
+        showNotification('✅ Todas las cámaras iniciadas correctamente', 'success');
     }
 }
 
@@ -248,29 +521,45 @@ function goLive() {
     console.log('goLive: Intentando iniciar transmisión...');
     console.log('goLive: Socket conectado?:', socket.connected);
     console.log('goLive: Socket ID:', socket.id);
+    console.log('goLive: Streams disponibles:', {
+        vendor: !!vendorStream,
+        product1: !!productStreams[0],
+        product2: !!productStreams[1],
+        product3: !!productStreams[2]
+    });
     
     if (!socket.connected) {
         console.error('❌ Socket NO está conectado!');
-        alert('Error: No hay conexión con el servidor. Recarga la página.');
+        showNotification('Error: No hay conexión con el servidor. Recarga la página.', 'error');
+        return;
+    }
+    
+    if (!vendorStream || !productStreams[0] || !productStreams[1] || !productStreams[2]) {
+        console.error('❌ No todas las cámaras están activas');
+        showNotification('Error: Debes iniciar todas las cámaras primero', 'error');
         return;
     }
     
     socket.emit('vendor-go-live');
     console.log('goLive: Evento vendor-go-live emitido');
+    isLive = true;
     updateLiveStatus(true);
-    alert('¡Transmisión iniciada! Los clientes pueden unirse ahora.');
+    updateConnectionStatus();
+    showNotification('¡Transmisión iniciada! Los clientes pueden ver las cámaras.', 'success');
 }
 
 function stopLive() {
     socket.emit('vendor-stop-live');
+    isLive = false;
     updateLiveStatus(false);
+    updateConnectionStatus();
     alert('Transmisión detenida. Los clientes no podrán unirse.');
 }
 
-function updateLiveStatus(isLive) {
+function updateLiveStatus(isLiveStatus) {
     const liveDot = liveStatus.querySelector('.live-dot');
     
-    if (isLive) {
+    if (isLiveStatus) {
         liveDot.classList.remove('offline');
         liveDot.classList.add('online');
         liveStatusText.textContent = '🔴 EN VIVO';
@@ -311,46 +600,87 @@ function stopAllCameras() {
     stopCamerasBtn.disabled = true;
     goLiveBtn.disabled = true;
     
+    // Actualizar indicador visual
+    const cameraSection = document.querySelector('.camera-section-collapsible');
+    if (cameraSection) {
+        const summary = cameraSection.querySelector('summary');
+        if (summary) {
+            summary.textContent = '📹 Gestión de Cámaras';
+        }
+    }
+    
     // Detener transmisión si estaba activa
     if (liveStatusText.textContent === '🔴 EN VIVO') {
         stopLive();
     }
+    
+    showNotification('Cámaras detenidas', 'info');
 }
 
 async function switchCamera(cameraIndex, deviceId) {
+    console.log(`🔄 Cambiando cámara ${cameraIndex} a dispositivo:`, deviceId);
     let stream, videoElement;
+    const withAudio = (cameraIndex === 0);  // Solo la cámara principal tiene audio
     
     switch(cameraIndex) {
         case 0:
             if (vendorStream) vendorStream.getTracks().forEach(track => track.stop());
-            stream = await startCamera(deviceId, vendorCamera);
+            stream = await startCamera(deviceId, vendorCamera, withAudio);
             vendorStream = stream;
             break;
         case 1:
             if (productStreams[0]) productStreams[0].getTracks().forEach(track => track.stop());
-            stream = await startCamera(deviceId, productCamera1);
+            stream = await startCamera(deviceId, productCamera1, withAudio);
             productStreams[0] = stream;
             break;
         case 2:
             if (productStreams[1]) productStreams[1].getTracks().forEach(track => track.stop());
-            stream = await startCamera(deviceId, productCamera2);
+            stream = await startCamera(deviceId, productCamera2, withAudio);
             productStreams[1] = stream;
             break;
         case 3:
             if (productStreams[2]) productStreams[2].getTracks().forEach(track => track.stop());
-            stream = await startCamera(deviceId, productCamera3);
+            stream = await startCamera(deviceId, productCamera3, withAudio);
             productStreams[2] = stream;
             break;
     }
     
-    // Si hay una conexión activa, actualizar los tracks
+    if (!stream) {
+        console.error('❌ No se pudo cambiar la cámara');
+        return;
+    }
+    
+    console.log('✅ Nueva cámara iniciada, actualizando conexiones...');
+    
+    // Actualizar conexión WebRTC activa con cliente (si existe)
     if (peerConnection && stream) {
-        const senders = peerConnection.getSenders();
-        const videoTrack = stream.getVideoTracks()[0];
-        const videoSender = senders.find(sender => sender.track && sender.track.kind === 'video');
-        if (videoSender) {
-            videoSender.replaceTrack(videoTrack);
-        }
+        updatePeerConnectionTracks(peerConnection, cameraIndex, stream);
+    }
+    
+    // Actualizar todas las conexiones de espectadores públicos
+    publicViewers.forEach((viewerPeerConnection, viewerId) => {
+        console.log(`📹 Actualizando stream para espectador: ${viewerId}`);
+        updatePeerConnectionTracks(viewerPeerConnection, cameraIndex, stream);
+    });
+    
+    console.log('✅ Todas las conexiones actualizadas con la nueva cámara');
+}
+
+// Función auxiliar para actualizar tracks en una conexión peer
+function updatePeerConnectionTracks(peerConnection, cameraIndex, stream) {
+    const senders = peerConnection.getSenders();
+    const videoTrack = stream.getVideoTracks()[0];
+    
+    // Encontrar el sender de video correspondiente
+    // Para cámara 0 (vendor), buscar el primer video track
+    // Para cámaras 1-3 (productos), buscar por índice
+    const videoSenders = senders.filter(sender => sender.track && sender.track.kind === 'video');
+    
+    if (videoSenders[cameraIndex]) {
+        videoSenders[cameraIndex].replaceTrack(videoTrack);
+        console.log(`✅ Track ${cameraIndex} reemplazado exitosamente`);
+    } else {
+        console.warn(`⚠️ No se encontró sender para cámara ${cameraIndex}`);
     }
 }
 
@@ -363,17 +693,49 @@ function endCurrentCall() {
     resetCallState();
 }
 
+// Función para avanzar manualmente al siguiente turno (para clientes presenciales)
+function advanceToNextTicket() {
+    // Si estamos atendiendo un turno, avanzar al siguiente
+    if (currentServingTicket !== null) {
+        currentServingTicket = null;
+        console.log('✅ Turno completado manualmente, listo para el siguiente');
+    }
+    
+    // Si hay clientes en la cola presencial, no hacemos nada más
+    // El vendedor debe aceptar manualmente al siguiente cliente presencial
+    
+    updateTicketCounter();
+    
+    // Mostrar notificación
+    showNotification('Turno completado. Puedes atender al siguiente cliente.', 'success');
+}
+
+function resetTicketCounter() {
+    // Confirmar acción con el usuario
+    if (!confirm('¿Estás seguro de que quieres resetear el contador de turnos? Esto reiniciará la numeración a 1 y limpiará todas las colas.')) {
+        return;
+    }
+    
+    // Enviar evento al servidor para resetear el contador
+    socket.emit('reset-ticket-counter');
+    
+    console.log('🔄 Solicitud de reseteo de contador enviada');
+    showNotification('Contador de turnos reseteado', 'info');
+}
+
 function resetCallState() {
     activeClientId = null;
+    currentServingTicket = null;  // Resetear turno en atención
+    updateTicketCounter();  // Actualizar contador
+    
     callStatusText.textContent = 'Sin llamada activa';
     callStatusText.style.background = '#f7fafc';
     endCurrentCallBtn.disabled = true;
     acceptNextClientBtn.disabled = false;
     clientVideoSection.style.display = 'none';
     
-    // Ocultar y limpiar formulario de pedidos
-    quickOrderForm.style.display = 'none';
-    clearOrderForm();
+    // Ocultar información del cliente activo
+    activeClientInfo.style.display = 'none';
     
     // Detener audio del cliente
     if (clientAudioElement) {
@@ -458,31 +820,183 @@ async function startPeerConnection(clientId) {
     });
 }
 
-function updateQueue(queue) {
-    queueCount.textContent = queue.length;
+// ═══════════════════════════════════════════════
+// FUNCIONES PARA SISTEMA DE DOBLE COLA
+// ═══════════════════════════════════════════════
+
+function generateStoreNumber() {
+    console.log('🏪 Generando número de tienda...');
+    socket.emit('generate-store-number');
+}
+
+function updateQueues(storeQueue, onlineQueue) {
+    inStoreQueue = storeQueue || [];
+    onlineQueue = onlineQueue || [];
     
-    // Actualizar título de la página
-    updatePageTitle(queue.length);
+    // Actualizar último turno emitido basándose en el número más alto
+    let maxTicket = lastIssuedTicket; // Mantener el actual como mínimo
     
-    if (queue.length === 0) {
-        queueList.innerHTML = '<p class="empty-message">No hay clientes en espera</p>';
-        return;
+    // Buscar el número más alto en la cola presencial
+    inStoreQueue.forEach(client => {
+        if (client.number && client.number > maxTicket) {
+            maxTicket = client.number;
+        }
+    });
+    
+    // Buscar el número más alto en la cola online (ticketNumber)
+    onlineQueue.forEach(client => {
+        if (client.ticketNumber && client.ticketNumber > maxTicket) {
+            maxTicket = client.ticketNumber;
+        }
+    });
+    
+    // Actualizar si encontramos un número mayor
+    if (maxTicket > lastIssuedTicket) {
+        lastIssuedTicket = maxTicket;
+        console.log(`📈 Último turno emitido actualizado a: ${lastIssuedTicket}`);
     }
     
-    queueList.innerHTML = '';
-    queue.forEach((client, index) => {
-        const item = document.createElement('div');
-        item.className = 'queue-item';
-        
-        const joinTime = new Date(client.joinedAt);
-        const waitTime = Math.floor((new Date() - joinTime) / 1000 / 60);
-        
-        item.innerHTML = `
-            <h4>${index + 1}. ${client.name}</h4>
-            <p>Esperando: ${waitTime} minutos</p>
-        `;
-        queueList.appendChild(item);
-    });
+    // Actualizar contadores
+    storeQueueCount.textContent = inStoreQueue.length;
+    onlineQueueCount.textContent = onlineQueue.length;
+    
+    // Actualizar título de la página
+    const totalWaiting = inStoreQueue.length + onlineQueue.length;
+    updatePageTitle(totalWaiting);
+    
+    // Actualizar contador de turnos
+    updateTicketCounter();
+    
+    // Actualizar cola presencial
+    if (inStoreQueue.length === 0) {
+        storeQueueList.innerHTML = '<p class="empty-message">No hay clientes en tienda esperando</p>';
+    } else {
+        storeQueueList.innerHTML = '';
+        inStoreQueue.forEach((client) => {
+            const item = document.createElement('div');
+            item.className = 'queue-item';
+            
+            const joinTime = new Date(client.joinedAt);
+            const waitTime = Math.floor((new Date() - joinTime) / 1000 / 60);
+            
+            item.innerHTML = `
+                <div class="queue-item-header">
+                    <div class="queue-item-number">🏪 #${client.number}</div>
+                    <div class="queue-item-time">⏱️ ${waitTime}min</div>
+                </div>
+                <div class="queue-item-actions">
+                    <button class="btn-queue-action btn-accept" onclick="acceptStoreClient('${client.id}')">
+                        ✅ Atender
+                    </button>
+                    <button class="btn-queue-action btn-remove" onclick="removeFromQueue('store', '${client.id}')">
+                        ❌ Eliminar
+                    </button>
+                </div>
+            `;
+            storeQueueList.appendChild(item);
+        });
+    }
+    
+    // Actualizar cola online
+    if (onlineQueue.length === 0) {
+        onlineQueueList.innerHTML = '<p class="empty-message">No hay clientes online esperando</p>';
+    } else {
+        onlineQueueList.innerHTML = '';
+        onlineQueue.forEach((client, index) => {
+            const item = document.createElement('div');
+            item.className = 'queue-item';
+            
+            const joinTime = new Date(client.joinedAt);
+            const waitTime = Math.floor((new Date() - joinTime) / 1000 / 60);
+            const timeStr = joinTime.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+            
+            // Mostrar número de turno si está disponible
+            const ticketDisplay = client.ticketNumber ? `🎟️ Turno #${client.ticketNumber}` : `Posición ${index + 1}`;
+            
+            item.innerHTML = `
+                <div class="queue-item-header">
+                    <div class="queue-item-name">🌐 ${client.name}</div>
+                    <div class="queue-item-time">⏱️ ${waitTime}min</div>
+                </div>
+                <div style="font-size: 0.85em; color: var(--c-amber); font-weight: 600; margin-top: 4px;">${ticketDisplay}</div>
+                <div class="queue-item-phone">${client.phone ? '📱 ' + client.phone : '📞 Sin teléfono'}</div>
+                <div style="font-size: 0.8em; color: #a0aec0; margin-top: 4px;">Se unió a las ${timeStr}</div>
+                <div class="queue-item-actions">
+                    <button class="btn-queue-action btn-accept" onclick="acceptOnlineClient('${client.id}')">
+                        ✅ Atender
+                    </button>
+                    <button class="btn-queue-action btn-remove" onclick="removeFromQueue('online', '${client.id}')">
+                        ❌ Eliminar
+                    </button>
+                </div>
+            `;
+            onlineQueueList.appendChild(item);
+        });
+    }
+    
+    // Habilitar/deshabilitar botón de aceptar siguiente
+    if (totalWaiting > 0 && liveStatusText.textContent === '🔴 EN VIVO') {
+        acceptNextClientBtn.disabled = false;
+    } else {
+        acceptNextClientBtn.disabled = true;
+    }
+}
+
+// Actualizar contador de turnos
+function updateTicketCounter() {
+    // Último turno emitido
+    if (lastTicketNumber) {
+        lastTicketNumber.textContent = lastIssuedTicket > 0 ? lastIssuedTicket : '-';
+    }
+    
+    // Turno que se está atendiendo ahora
+    if (currentServingNumber) {
+        currentServingNumber.textContent = currentServingTicket !== null ? currentServingTicket : '-';
+    }
+    
+    // Calcular cuántos turnos están esperando
+    const waiting = inStoreQueue.length + onlineQueue.length;
+    if (ticketsWaiting) {
+        ticketsWaiting.textContent = waiting;
+    }
+    
+    // Habilitar/deshabilitar botón "Siguiente Turno"
+    if (nextTicketBtn) {
+        nextTicketBtn.disabled = currentServingTicket === null;
+        if (currentServingTicket === null) {
+            nextTicketBtn.style.opacity = '0.5';
+            nextTicketBtn.style.cursor = 'not-allowed';
+        } else {
+            nextTicketBtn.style.opacity = '1';
+            nextTicketBtn.style.cursor = 'pointer';
+        }
+    }
+    
+    console.log(`🎟️ Turnos - Último emitido: ${lastIssuedTicket}, Atendiendo: ${currentServingTicket || 'ninguno'}, En espera: ${waiting}`);
+}
+
+function acceptStoreClient(clientId) {
+    console.log('🏪 Aceptando cliente presencial:', clientId);
+    socket.emit('accept-store-client', { clientId });
+}
+
+function acceptOnlineClient(clientId) {
+    console.log('🌐 Aceptando cliente online:', clientId);
+    socket.emit('accept-online-client', { clientId });
+}
+
+function removeFromQueue(queueType, clientId) {
+    if (confirm('¿Seguro que quieres eliminar este cliente de la cola?')) {
+        console.log(`Eliminando cliente ${clientId} de cola ${queueType}`);
+        // TODO: Implementar evento en el servidor
+        socket.emit('remove-from-queue', { queueType, clientId });
+    }
+}
+
+// DEPRECATED: Mantener por compatibilidad
+function updateQueue(queue) {
+    console.warn('⚠️ updateQueue() es obsoleto. Usa updateQueues() en su lugar.');
+    updateQueues([], queue);
 }
 
 function addOrderToList(order) {
@@ -509,69 +1023,6 @@ function addOrderToList(order) {
     
     ordersList.insertBefore(item, ordersList.firstChild);
 }
-
-function saveOrder() {
-    const products = orderProducts.value.trim();
-    const total = parseFloat(orderTotal.value);
-    const address = orderAddress.value.trim();
-    
-    // Validaciones
-    if (!products) {
-        alert('Por favor, ingresa los productos del pedido');
-        return;
-    }
-    
-    if (!total || total <= 0) {
-        alert('Por favor, ingresa un total válido');
-        return;
-    }
-    
-    if (!address) {
-        alert('Por favor, ingresa la dirección de envío');
-        return;
-    }
-    
-    if (!activeClientId) {
-        alert('No hay un cliente activo en la llamada');
-        return;
-    }
-    
-    // Crear estructura del pedido
-    const orderData = {
-        clientName: clientNameLabel.textContent,
-        items: products.split(',').map(p => ({
-            name: p.trim(),
-            quantity: 1
-        })),
-        total: total,
-        shippingAddress: address
-    };
-    
-    console.log('💾 Guardando pedido:', orderData);
-    
-    // Enviar al servidor
-    socket.emit('create-order', orderData);
-    
-    // Limpiar formulario
-    clearOrderForm();
-    
-    // Mostrar confirmación
-    alert('✅ Pedido guardado correctamente');
-}
-
-function clearOrderForm() {
-    orderProducts.value = '';
-    orderTotal.value = '';
-    orderAddress.value = '';
-}
-
-// Cargar pedidos existentes al iniciar
-fetch('/api/orders')
-    .then(res => res.json())
-    .then(orders => {
-        orders.forEach(order => addOrderToList(order));
-    })
-    .catch(err => console.error('Error al cargar pedidos:', err));
 
 // Funciones de notificación para nuevos clientes
 function playNotificationSound() {
@@ -613,13 +1064,34 @@ function playNotificationSound() {
     }, 200);
 }
 
-function showNotification(message) {
+function showNotification(message, type = 'info') {
+    // Configuración según el tipo
+    const config = {
+        success: {
+            gradient: 'linear-gradient(135deg, #48bb78, #38a169)',
+            icon: '✅',
+            title: 'Éxito'
+        },
+        error: {
+            gradient: 'linear-gradient(135deg, #f56565, #e53e3e)',
+            icon: '❌',
+            title: 'Error'
+        },
+        info: {
+            gradient: 'linear-gradient(135deg, #667eea, #764ba2)',
+            icon: '🔔',
+            title: 'Nuevo Cliente en Espera'
+        }
+    };
+    
+    const notifConfig = config[type] || config.info;
+    
     // Verificar si el navegador soporta notificaciones
     if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification('LivePescado - Nuevo Cliente', {
+        new Notification(`FrescosEnVivo - ${notifConfig.title}`, {
             body: message,
             icon: '🐟',
-            badge: '🔔'
+            badge: notifConfig.icon
         });
     }
     
@@ -627,7 +1099,7 @@ function showNotification(message) {
     const notification = document.createElement('div');
     notification.className = 'vendor-notification';
     notification.innerHTML = `
-        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+        <div style="background: ${notifConfig.gradient}; 
                     color: white; 
                     padding: 20px; 
                     border-radius: 12px; 
@@ -639,7 +1111,7 @@ function showNotification(message) {
                     min-width: 300px;
                     animation: slideIn 0.3s ease-out;">
             <div style="font-size: 1.2em; font-weight: bold; margin-bottom: 10px;">
-                🔔 Nuevo Cliente en Espera
+                ${notifConfig.icon} ${notifConfig.title}
             </div>
             <div style="font-size: 1em;">
                 ${message}
@@ -680,7 +1152,7 @@ if ('Notification' in window && Notification.permission === 'default') {
 
 // Variable para controlar el parpadeo del título
 let titleInterval = null;
-const originalTitle = 'LivePescado - Panel del Vendedor';
+const originalTitle = 'FrescosEnVivo - Panel del Vendedor';
 
 function updatePageTitle(clientsWaiting) {
     // Limpiar intervalo anterior si existe

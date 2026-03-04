@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FrescoVivo · Acceso Vendedor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,700;0,800;0,900;1,700;1,800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --black:#0a0a0a;--white:#ffffff;
+  --g50:#fafafa;--g100:#f4f4f5;--g200:#e4e4e7;--g400:#a1a1aa;--g600:#52525b;--g700:#334155;
+  --green:#00c96e;--gdk:#009950;--teal:#00b4c8;--live:#ff3b3b;--navy:#0f1f3d;
+  --ff-h:'Barlow Condensed',sans-serif;
+  --ff:'Inter',system-ui,sans-serif;
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+html{height:100%}
+body{font-family:var(--ff);background:var(--white);color:var(--black);min-height:100vh;display:grid;grid-template-columns:480px 1fr;cursor:none;overflow:hidden;height:100vh}
+
+/* ══ CURSOR ══ */
+#cd,#cr{position:fixed;pointer-events:none;z-index:9999;border-radius:50%;top:0;left:0}
+#cd{width:6px;height:6px;background:var(--black);transform:translate(-50%,-50%)}
+#cr{width:28px;height:28px;border:1.5px solid rgba(0,0,0,.25);transform:translate(-50%,-50%);transition:width .2s,height .2s}
+body:has(button:hover) #cr,body:has(a:hover) #cr,body:has(input:focus) #cr{width:0;height:0}
+
+@keyframes blink{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.5)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
+@keyframes fishFloat{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-10px) rotate(1.5deg)}}
+@keyframes float1{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes float2{0%,100%{transform:translateY(0)}50%{transform:translateY(-11px)}}
+@keyframes qFill{from{width:20%}to{width:55%}}
+@keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+
+/* ══════════════════════════════
+   LEFT PANEL — white form side
+══════════════════════════════ */
+.left{
+  background:var(--white);
+  border-right:1.5px solid var(--g200);
+  display:flex;flex-direction:column;
+  padding:2.8rem 3rem;
+  overflow-y:auto;
+  position:relative;z-index:2;
+}
+
+/* logo */
+.logo{display:flex;align-items:center;gap:.55rem;text-decoration:none;margin-bottom:3.5rem}
+.logo-ico{width:34px;height:34px;border-radius:8px;background:var(--black);display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0}
+.logo-name{font-family:var(--ff-h);font-size:1.25rem;font-weight:900;color:var(--black);letter-spacing:.02em}
+.logo-name span{color:var(--green)}
+.logo-tag{font-size:.58rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--g400);padding:.15rem .45rem;background:var(--g100);border-radius:4px;border:1px solid var(--g200)}
+
+/* heading */
+.form-heading{margin-bottom:2.2rem}
+.form-heading h1{font-family:var(--ff-h);font-size:2.6rem;font-weight:900;text-transform:uppercase;letter-spacing:-.01em;line-height:.92;color:var(--black);margin-bottom:.5rem}
+.form-heading h1 .outline{-webkit-text-stroke:2px var(--black);color:transparent}
+.form-heading p{font-size:.82rem;color:var(--g600);line-height:1.6}
+.form-heading p a{color:var(--green);text-decoration:none;font-weight:500}
+.form-heading p a:hover{text-decoration:underline}
+
+/* status pill — shows live/offline */
+.store-status{
+  display:inline-flex;align-items:center;gap:.45rem;
+  padding:.35rem .85rem;border-radius:999px;
+  font-size:.68rem;font-weight:600;letter-spacing:.04em;
+  border:1.5px solid var(--green);color:var(--gdk);
+  background:rgba(0,201,110,.07);margin-bottom:2rem;
+  width:fit-content;
+}
+.store-status.offline{border-color:var(--g200);color:var(--g400);background:transparent}
+.ss-dot{width:6px;height:6px;border-radius:50%;background:currentColor;animation:blink 1.2s ease-in-out infinite;flex-shrink:0}
+.store-status.offline .ss-dot{animation:none}
+
+/* ── FORM ── */
+form{display:flex;flex-direction:column;gap:1rem}
+
+.field label{
+  display:block;font-size:.65rem;font-weight:700;
+  letter-spacing:.09em;text-transform:uppercase;
+  color:var(--g700);margin-bottom:.4rem;
+}
+.field input{
+  width:100%;padding:.78rem 1rem;
+  border:1.5px solid var(--g200);border-radius:8px;
+  font-family:var(--ff);font-size:.88rem;color:var(--black);
+  background:var(--white);outline:none;
+  transition:border-color .2s,box-shadow .2s;
+  cursor:text;
+}
+.field input:focus{border-color:var(--black);box-shadow:0 0 0 3px rgba(10,10,10,.06)}
+.field input.err{border-color:var(--live)}
+.field input::placeholder{color:var(--g400)}
+
+/* submit btn — .bp-dk pill */
+.btn-login{
+  width:100%;padding:.82rem;border-radius:999px;border:none;
+  font-family:var(--ff);font-size:.82rem;font-weight:700;
+  letter-spacing:.06em;text-transform:uppercase;
+  background:var(--black);color:var(--white);cursor:none;
+  box-shadow:0 4px 16px rgba(0,0,0,.18);
+  transition:all .2s var(--ease);
+  display:flex;align-items:center;justify-content:center;gap:.5rem;
+  position:relative;overflow:hidden;
+  margin-top:.4rem;
+}
+.btn-login:hover:not(:disabled){background:#222;transform:translateY(-1px);box-shadow:0 6px 22px rgba(0,0,0,.22)}
+.btn-login:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-login.loading .btn-text{display:none}
+.btn-login.loading .spinner{display:block}
+.spinner{
+  display:none;width:16px;height:16px;
+  border:2px solid rgba(255,255,255,.3);
+  border-top-color:var(--white);
+  border-radius:50%;animation:spin .7s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* messages */
+.msg{
+  padding:.75rem 1rem;border-radius:8px;
+  font-size:.78rem;font-weight:500;line-height:1.5;
+  display:none;animation:slideDown .25s var(--ease);
+}
+.msg.show{display:block}
+.msg-err{background:rgba(255,59,59,.07);border:1.5px solid rgba(255,59,59,.2);border-left:3px solid var(--live);color:#c0392b}
+.msg-ok{background:rgba(0,201,110,.07);border:1.5px solid rgba(0,201,110,.2);border-left:3px solid var(--green);color:var(--gdk)}
+
+/* footer steps */
+.form-steps{margin-top:auto;padding-top:2.5rem}
+.fs-label{font-size:.6rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--g400);margin-bottom:.9rem}
+.fs-list{display:flex;flex-direction:column;gap:.55rem}
+.fs-item{display:flex;align-items:center;gap:.65rem}
+.fs-num{width:20px;height:20px;border-radius:50%;background:var(--black);color:var(--white);font-size:.6rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.fs-item span{font-size:.75rem;color:var(--g600)}
+
+/* copyright */
+.form-copy{font-size:.62rem;color:var(--g400);margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid var(--g200)}
+
+/* ══════════════════════════════
+   RIGHT PANEL — navy hero
+══════════════════════════════ */
+.right{
+  position:relative;
+  overflow:hidden;
+  background:linear-gradient(145deg,#0b1e3d,#0f3056,#0a2040);
+}
+
+/* dot grid on right */
+.right::before{
+  content:'';position:absolute;inset:0;z-index:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+  background-size:40px 40px;
+}
+/* teal glow blob */
+.r-blob{position:absolute;border-radius:50%;z-index:0}
+.r-blob1{top:-10%;right:-8%;width:500px;height:500px;background:radial-gradient(circle,rgba(0,201,110,.18),transparent 65%);animation:float1 14s ease-in-out infinite alternate}
+.r-blob2{bottom:-12%;left:-8%;width:400px;height:400px;background:radial-gradient(circle,rgba(15,48,86,.7),transparent 65%)}
+
+.r-inner{position:relative;z-index:1;height:100%;display:flex;flex-direction:column;justify-content:space-between;padding:3rem 3.5rem}
+
+/* top brand */
+.r-brand{display:flex;align-items:center;gap:.45rem;font-size:.7rem;color:rgba(255,255,255,.4)}
+.r-brand-dot{width:5px;height:5px;border-radius:50%;background:var(--green)}
+.r-brand-name{font-weight:700;color:rgba(255,255,255,.65)}
+
+/* hero text */
+.r-hero{margin-top:2.5rem}
+.r-hero h2{
+  font-family:var(--ff-h);
+  font-size:clamp(2.2rem,3.5vw,3.4rem);
+  font-weight:900;text-transform:uppercase;
+  color:var(--white);line-height:.9;letter-spacing:-.01em;
+  margin-bottom:.9rem;max-width:480px;
+}
+.r-hero h2 .outline{-webkit-text-stroke:2px rgba(255,255,255,.6);color:transparent}
+.r-hero h2 .green{color:var(--green)}
+.r-hero p{font-size:.88rem;color:rgba(255,255,255,.45);max-width:400px;line-height:1.78;font-weight:300}
+
+/* ── FLOATING CARDS ── */
+.cards{position:relative;flex:1;margin-top:2.5rem}
+
+/* mockup browser card */
+.card-mockup{
+  background:rgba(255,255,255,.06);
+  backdrop-filter:blur(16px);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:14px;overflow:hidden;
+  width:400px;position:absolute;top:0;left:0;
+  box-shadow:0 30px 60px rgba(0,0,0,.35);
+  animation:float1 7s ease-in-out infinite;
+}
+.cm-topbar{
+  padding:.5rem .75rem;background:rgba(255,255,255,.05);
+  border-bottom:1px solid rgba(255,255,255,.06);
+  display:flex;align-items:center;gap:.55rem;
+}
+.cm-dots{display:flex;gap:.28rem}
+.cm-dot{width:8px;height:8px;border-radius:50%}
+.cm-dot:nth-child(1){background:#ff5f57}.cm-dot:nth-child(2){background:#febc2e}.cm-dot:nth-child(3){background:#28c840}
+.cm-url{flex:1;background:rgba(255,255,255,.06);border-radius:4px;padding:.22rem .6rem;font-size:.62rem;color:rgba(255,255,255,.3);text-align:center}
+.cm-live{display:flex;align-items:center;gap:.28rem;font-size:.6rem;font-weight:700;color:var(--live);text-transform:uppercase;letter-spacing:.07em;flex-shrink:0}
+.cm-live-dot{width:4px;height:4px;border-radius:50%;background:var(--live);animation:blink 1.2s ease-in-out infinite}
+
+.cm-cams{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;background:rgba(0,0,0,.4)}
+.cm-cam{aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;font-size:1.4rem;position:relative;overflow:hidden}
+.cm-cam:first-child{grid-column:1/-1;aspect-ratio:16/7;font-size:2.4rem}
+.cm-bg{position:absolute;inset:0;opacity:.7}
+.ccb1{background:linear-gradient(145deg,#0e2a1e,#071510)}
+.ccb2{background:linear-gradient(145deg,#0e2d1e,#060e07)}
+.ccb3{background:linear-gradient(145deg,#1e1800,#0e0c00)}
+.ccb4{background:linear-gradient(145deg,#1e0010,#0e0008)}
+.cm-em{position:relative;z-index:1;filter:drop-shadow(0 2px 8px rgba(0,0,0,.5));animation:fishFloat 5s ease-in-out infinite}
+.cm-cam:nth-child(2) .cm-em{animation-delay:.8s}
+.cm-cam:nth-child(3) .cm-em{animation-delay:1.6s}
+.cm-cam:nth-child(4) .cm-em{animation-delay:.4s}
+.cm-num{position:absolute;bottom:3px;left:5px;z-index:2;font-size:.44rem;color:rgba(255,255,255,.25);letter-spacing:.07em;text-transform:uppercase}
+
+/* stats row below cams */
+.cm-stats{
+  display:grid;grid-template-columns:1fr 1fr 1fr;
+  border-top:1px solid rgba(255,255,255,.06);
+}
+.cm-stat{padding:.55rem .65rem;text-align:center;border-right:1px solid rgba(255,255,255,.06)}
+.cm-stat:last-child{border-right:none}
+.cm-stat-val{font-family:var(--ff-h);font-size:1.3rem;font-weight:900;color:var(--white);line-height:1}
+.cm-stat-lbl{font-size:.5rem;color:rgba(255,255,255,.3);letter-spacing:.08em;text-transform:uppercase;margin-top:.15rem}
+
+/* queue card */
+.card-queue{
+  background:var(--white);border-radius:12px;padding:.9rem 1rem;
+  width:190px;position:absolute;bottom:10px;left:20px;
+  box-shadow:0 12px 30px rgba(0,0,0,.25);
+  animation:float2 8s ease-in-out infinite;
+}
+.cq-lbl{font-size:.56rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--g400);margin-bottom:.55rem}
+.cq-row{display:flex;align-items:center;gap:.7rem;margin-bottom:.5rem}
+.cq-num{font-family:var(--ff-h);font-size:2.4rem;font-weight:900;color:var(--black);line-height:1}
+.cq-info p{font-size:.72rem;font-weight:600;color:var(--g700)}
+.cq-info span{font-size:.64rem;color:var(--g400)}
+.cq-bar{height:3px;background:var(--g100);border-radius:2px;overflow:hidden}
+.cq-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--teal));border-radius:2px;width:35%;animation:qFill 4s ease-in-out infinite alternate}
+
+/* vendor card */
+.card-vendor{
+  background:var(--black);border-radius:12px;padding:.85rem .95rem;
+  width:185px;position:absolute;top:15px;right:-15px;
+  box-shadow:0 12px 30px rgba(0,0,0,.4);
+  animation:float1 9s ease-in-out infinite;
+}
+.cv-lbl{font-size:.56rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:.6rem}
+.cv-row{display:flex;align-items:center;gap:.6rem}
+.cv-av{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#1a4731,#2d7a52);display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0;border:1.5px solid rgba(255,255,255,.1)}
+.cv-name{font-size:.78rem;font-weight:700;color:var(--white)}
+.cv-role{font-size:.6rem;color:rgba(255,255,255,.38)}
+.cv-online{display:flex;align-items:center;gap:.28rem;margin-top:.45rem;font-size:.62rem;color:var(--green);font-weight:600}
+.cv-online-dot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:blink 1.2s ease-in-out infinite}
+
+/* scroll line */
+.r-scroll{position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.45rem;z-index:2}
+.rs-line{width:1px;height:36px;background:linear-gradient(to bottom,rgba(255,255,255,.25),transparent);animation:rsA 2s ease-in-out infinite}
+@keyframes rsA{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}51%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+.rs-txt{font-size:.56rem;letter-spacing:.13em;text-transform:uppercase;color:rgba(255,255,255,.2)}
+
+/* ══ RESPONSIVE ══ */
+@media(max-width:1000px){
+  body{grid-template-columns:1fr}
+  .right{display:none}
+  .left{height:100vh;justify-content:center}
+}
+@media(max-width:480px){
+  .left{padding:2rem 1.5rem}
+}
+</style>
+</head>
+<body>
+
+<div id="cd"></div><div id="cr"></div>
+
+<!-- ══ LEFT: FORM ══ -->
+<div class="left">
+
+  <a href="/" class="logo">
+    <div class="logo-ico">🐟</div>
+    <span class="logo-name">Fresco<span>Vivo</span></span>
+    <span class="logo-tag">Vendedor</span>
+  </a>
+
+  <!-- store live pill -->
+  <div class="store-status" id="storeStatus">
+    <span class="ss-dot"></span>
+    <span id="storeStatusText">La tienda está en directo</span>
+  </div>
+
+  <div class="form-heading">
+    <h1>ACCESO<br/><span class="outline">VENDEDOR</span></h1>
+    <p>Accede a tu panel para gestionar cámaras, cola y pedidos. <a href="/">¿Eres cliente? →</a></p>
+  </div>
+
+  <div id="error-message" class="msg msg-err"></div>
+  <div id="success-message" class="msg msg-ok"></div>
+
+  <form id="login-form">
+    <div class="field">
+      <label for="username">Usuario</label>
+      <input type="text" id="username" name="username" placeholder="Tu nombre de usuario" required autocomplete="username"/>
+    </div>
+    <div class="field">
+      <label for="password">Contraseña</label>
+      <input type="password" id="password" name="password" placeholder="Tu contraseña" required autocomplete="current-password"/>
+    </div>
+    <button type="submit" class="btn-login" id="login-btn">
+      <span class="btn-text">Acceder al panel →</span>
+      <div class="spinner"></div>
+    </button>
+  </form>
+
+  <div class="form-steps">
+    <div class="fs-label">Una vez dentro</div>
+    <div class="fs-list">
+      <div class="fs-item"><div class="fs-num">1</div><span>Inicia las cámaras y arranca la transmisión</span></div>
+      <div class="fs-item"><div class="fs-num">2</div><span>Gestiona la cola presencial y online</span></div>
+      <div class="fs-item"><div class="fs-num">3</div><span>Atiende videollamadas y cierra pedidos</span></div>
+    </div>
+  </div>
+
+  <div class="form-copy">© 2026 FrescoVivo · Gavà, Barcelona · Panel de gestión</div>
+
+</div>
+
+<!-- ══ RIGHT: HERO ══ -->
+<div class="right">
+  <div class="r-blob r-blob1"></div>
+  <div class="r-blob r-blob2"></div>
+
+  <div class="r-inner">
+    <div class="r-brand">
+      <span class="r-brand-dot"></span>
+      Panel de&nbsp;<span class="r-brand-name">FrescoVivo</span>
+    </div>
+
+    <div class="r-hero">
+      <h2>VENDE EN<br/><span class="green">DIRECTO</span><br/><span class="outline">ONLINE</span></h2>
+      <p>Activa las cámaras, gestiona la cola y atiende a tus clientes por videollamada. Todo desde un panel.</p>
+    </div>
+
+    <div class="cards">
+
+      <!-- mockup -->
+      <div class="card-mockup">
+        <div class="cm-topbar">
+          <div class="cm-dots"><div class="cm-dot"></div><div class="cm-dot"></div><div class="cm-dot"></div></div>
+          <div class="cm-url">freskovivo.com · Panel vendedor</div>
+          <div class="cm-live"><span class="cm-live-dot"></span>EN DIRECTO</div>
+        </div>
+        <div class="cm-cams">
+          <div class="cm-cam"><div class="cm-bg ccb1"></div><span class="cm-em">🐟</span><span class="cm-num">CAM 1 · Principal</span></div>
+          <div class="cm-cam"><div class="cm-bg ccb2"></div><span class="cm-em" style="font-size:1.2rem">🦐</span><span class="cm-num">CAM 2</span></div>
+          <div class="cm-cam"><div class="cm-bg ccb3"></div><span class="cm-em" style="font-size:1.2rem">🦞</span><span class="cm-num">CAM 3</span></div>
+          <div class="cm-cam"><div class="cm-bg ccb4"></div><span class="cm-em" style="font-size:1.2rem">🦑</span><span class="cm-num">CAM 4</span></div>
+        </div>
+        <div class="cm-stats">
+          <div class="cm-stat"><div class="cm-stat-val">4</div><div class="cm-stat-lbl">Cámaras HD</div></div>
+          <div class="cm-stat"><div class="cm-stat-val">3</div><div class="cm-stat-lbl">En cola</div></div>
+          <div class="cm-stat"><div class="cm-stat-val">~8<span style="font-size:.7rem;font-weight:400">m</span></div><div class="cm-stat-lbl">Espera</div></div>
+        </div>
+      </div>
+
+      <!-- queue card -->
+      <div class="card-queue">
+        <div class="cq-lbl">Cola ahora</div>
+        <div class="cq-row">
+          <div class="cq-num">3</div>
+          <div class="cq-info"><p>en espera</p><span>~8 min estimado</span></div>
+        </div>
+        <div class="cq-bar"><div class="cq-fill"></div></div>
+      </div>
+
+      <!-- vendor card -->
+      <div class="card-vendor">
+        <div class="cv-lbl">Vendedor activo</div>
+        <div class="cv-row">
+          <div class="cv-av">👨‍🍳</div>
+          <div><div class="cv-name">Miguel</div><div class="cv-role">Pescadero · Gavà</div></div>
+        </div>
+        <div class="cv-online"><span class="cv-online-dot"></span>En directo ahora</div>
+      </div>
+
+    </div><!-- /cards -->
+
+    <div class="r-scroll">
+      <div class="rs-line"></div>
+      <span class="rs-txt">Sistema de venta en directo</span>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* cursor */
+const cd=document.getElementById('cd'),cr=document.getElementById('cr');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cd.style.left=mx+'px';cd.style.top=my+'px'});
+(function tick(){rx+=(mx-rx)*.1;ry+=(my-ry)*.1;cr.style.left=rx+'px';cr.style.top=ry+'px';requestAnimationFrame(tick)})();
+
+/* form logic */
+const form=document.getElementById('login-form');
+const btn=document.getElementById('login-btn');
+const errEl=document.getElementById('error-message');
+const okEl=document.getElementById('success-message');
+const uIn=document.getElementById('username');
+const pIn=document.getElementById('password');
+
+/* check existing session */
+fetch('/api/auth/me').then(r=>{if(r.ok)window.location.href='/vendor'}).catch(()=>{});
+
+form.addEventListener('submit',async e=>{
+  e.preventDefault();
+  const u=uIn.value.trim(),p=pIn.value;
+  if(!u||!p){showErr('Por favor completa todos los campos');return}
+  btn.classList.add('loading');btn.disabled=true;hide();
+  try{
+    const r=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});
+    const d=await r.json();
+    if(d.success){showOk('¡Acceso correcto! Entrando al panel...');setTimeout(()=>window.location.href='/vendor',1000)}
+    else{showErr(d.message||'Usuario o contraseña incorrectos');btn.classList.remove('loading');btn.disabled=false}
+  }catch{showErr('Error de conexión. Inténtalo de nuevo.');btn.classList.remove('loading');btn.disabled=false}
+});
+
+function showErr(m){errEl.textContent=m;errEl.classList.add('show')}
+function showOk(m){okEl.textContent=m;okEl.classList.add('show')}
+function hide(){errEl.classList.remove('show');okEl.classList.remove('show')}
+uIn.addEventListener('input',hide);pIn.addEventListener('input',hide);
+</script>
+</body>
+</html>

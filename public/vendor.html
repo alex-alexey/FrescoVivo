@@ -1,132 +1,600 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LivePescado - Panel del Vendedor</title>
-    <link rel="stylesheet" href="vendor.css">
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FrescoVivo · Panel Vendedor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;0,900;1,700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --white:  #ffffff;
+  --black:  #0a0a0a;
+  --g50:    #fafafa;
+  --g100:   #f4f4f5;
+  --g200:   #e4e4e7;
+  --g300:   #d1d1d6;
+  --g400:   #a1a1aa;
+  --g500:   #71717a;
+  --g600:   #52525b;
+  --g700:   #3f3f46;
+  --green:  #00c96e;
+  --gdk:    #009950;
+  --glt:    rgba(0,201,110,.1);
+  --live:   #ff3b3b;
+  --livelt: rgba(255,59,59,.08);
+  --amber:  #f59e0b;
+  --amblt:  rgba(245,158,11,.1);
+  --blue:   #2563eb;
+  --bluelt: rgba(37,99,235,.1);
+
+  --ff-h:'Barlow Condensed',sans-serif;
+  --ff:  'Inter',system-ui,sans-serif;
+  --ff-m:'JetBrains Mono',monospace;
+  --ease:cubic-bezier(.16,1,.3,1);
+  --r:8px;
+}
+
+html{font-size:15px;height:100%}
+body{
+  font-family:var(--ff);
+  background:var(--g50);
+  color:var(--black);
+  min-height:100vh;
+  display:grid;
+  grid-template-rows:56px 1fr;
+  height:100vh;
+  overflow:hidden;
+}
+
+/* ══ NAV ══ */
+nav{
+  background:var(--white);
+  border-bottom:1.5px solid var(--g200);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 1.5rem;
+  position:sticky;top:0;z-index:200;
+}
+.nav-logo{display:flex;align-items:center;gap:.5rem;text-decoration:none}
+.nav-logo-ico{width:30px;height:30px;border-radius:7px;background:var(--black);display:flex;align-items:center;justify-content:center;font-size:.8rem}
+.nav-logo-name{font-family:var(--ff-h);font-size:1.2rem;font-weight:900;color:var(--black);letter-spacing:.02em}
+.nav-logo-name span{color:var(--green)}
+.nav-logo-tag{font-family:var(--ff-m);font-size:.56rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--g400);margin-left:.15rem;padding:.15rem .45rem;background:var(--g100);border-radius:3px;border:1px solid var(--g200)}
+
+.nav-mid{display:flex;align-items:center;gap:.6rem}
+
+/* LIVE PILL */
+.live-pill{
+  display:flex;align-items:center;gap:.5rem;
+  padding:.35rem .9rem .35rem .5rem;
+  border-radius:999px;border:1.5px solid;
+  font-family:var(--ff-m);font-size:.65rem;font-weight:700;
+  letter-spacing:.06em;text-transform:uppercase;
+  transition:all .3s;
+}
+.live-pill.offline{border-color:var(--g200);color:var(--g400);background:transparent}
+.live-pill.live{border-color:var(--live);color:var(--live);background:var(--livelt)}
+.lp-dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0}
+.live-pill.live .lp-dot{animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.7);opacity:.4}}
+
+#connection-status{
+  font-family:var(--ff-m);font-size:.6rem;font-weight:500;
+  padding:.25rem .65rem;border-radius:999px;
+  border:1px solid var(--g200);color:var(--g400);background:var(--g100);
+}
+#connection-status.online{border-color:var(--green);color:var(--gdk);background:var(--glt)}
+
+.nav-right{display:flex;align-items:center;gap:.7rem}
+.user-chip{display:flex;align-items:center;gap:.45rem;padding:.28rem .65rem .28rem .38rem;border-radius:999px;background:var(--g100);border:1px solid var(--g200);font-size:.73rem;color:var(--g600)}
+.uc-av{width:20px;height:20px;border-radius:50%;background:var(--black);display:flex;align-items:center;justify-content:center;font-size:.6rem}
+#user-name{font-weight:500;color:var(--black)}
+
+.btn-logout{
+  padding:.35rem .85rem;border-radius:var(--r);border:1.5px solid var(--g200);
+  background:transparent;color:var(--g500);font-family:var(--ff);font-size:.7rem;font-weight:500;
+  cursor:pointer;transition:all .18s;
+}
+.btn-logout:hover{border-color:var(--live);color:var(--live);background:var(--livelt)}
+
+/* ══ APP BODY ══ */
+.app{
+  display:grid;
+  grid-template-columns:320px 1fr;
+  overflow:hidden;
+  height:100%;
+}
+
+/* ══ LEFT PANEL ══ */
+.left{
+  background:var(--white);
+  border-right:1.5px solid var(--g200);
+  display:flex;flex-direction:column;
+  overflow-y:auto;
+  scrollbar-width:thin;scrollbar-color:var(--g200) transparent;
+}
+.left::-webkit-scrollbar{width:3px}
+.left::-webkit-scrollbar-thumb{background:var(--g200);border-radius:2px}
+
+/* section blocks */
+.l-block{padding:.9rem 1.1rem;border-bottom:1.5px solid var(--g200)}
+.l-block:last-child{border-bottom:none;flex:1}
+
+/* section label */
+.slabel{
+  font-family:var(--ff-m);font-size:.55rem;font-weight:700;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--g400);
+  margin-bottom:.7rem;display:block;
+}
+
+/* ── LIVE CONTROLS ── */
+.lc-btns{display:flex;gap:.5rem}
+
+/* ── TICKET COUNTER ── */
+.tc-grid{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.65rem}
+.tc-box{
+  background:var(--g50);border:1.5px solid var(--g200);
+  border-radius:var(--r);padding:.75rem .65rem;text-align:center;
+}
+.tc-box-lbl{font-family:var(--ff-m);font-size:.52rem;color:var(--g400);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.25rem}
+.tc-box-num{font-family:var(--ff-h);font-size:3rem;font-weight:900;line-height:1}
+.num-amber{color:var(--amber)}
+.num-blue{color:var(--blue)}
+.tc-waiting{font-family:var(--ff-m);font-size:.62rem;color:var(--g400);text-align:center;margin-bottom:.6rem}
+.tc-waiting b{color:var(--black)}
+.tc-actions{display:flex;flex-direction:column;gap:.4rem}
+
+/* ── CALL STATUS ── */
+.cs-text{font-size:.78rem;color:var(--g500)}
+.cs-active{
+  margin-top:.6rem;padding:.7rem;
+  background:var(--bluelt);border:1.5px solid rgba(37,99,235,.2);
+  border-radius:var(--r);display:none;
+}
+.cs-active.show{display:block}
+.cs-row{display:flex;align-items:center;gap:.6rem}
+.cs-ico{font-size:1.3rem;flex-shrink:0}
+.cs-name{font-size:.8rem;font-weight:600;color:var(--blue)}
+.cs-details{font-size:.68rem;color:var(--g500);margin-top:.15rem}
+
+/* ── QUEUES ── */
+.qs-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem}
+.qs-title{font-family:var(--ff-h);font-size:.95rem;font-weight:800;color:var(--black);letter-spacing:.02em;text-transform:uppercase;display:flex;align-items:center;gap:.35rem}
+.badge{
+  min-width:18px;height:18px;padding:0 .35rem;border-radius:999px;
+  font-family:var(--ff-m);font-size:.58rem;font-weight:700;
+  display:inline-flex;align-items:center;justify-content:center;
+  background:var(--g100);border:1px solid var(--g200);color:var(--g400);
+}
+.badge.active{background:var(--amblt);border-color:rgba(245,158,11,.3);color:var(--amber)}
+
+.queue-list{display:flex;flex-direction:column;gap:.35rem;min-height:32px}
+.empty-message{font-size:.72rem;color:var(--g300);text-align:center;padding:.6rem 0;font-style:italic}
+
+/* queue items (vendor.js renders these) */
+.queue-item{
+  background:var(--g50);border:1.5px solid var(--g200);
+  border-radius:var(--r);padding:.55rem .7rem;
+  display:flex;align-items:center;gap:.55rem;
+  transition:border-color .15s;
+  animation:fadeIn .18s var(--ease);
+}
+.queue-item:hover{border-color:var(--g300);background:var(--white)}
+.qi-num{font-family:var(--ff-h);font-size:1.5rem;font-weight:900;color:var(--amber);min-width:1.8rem;line-height:1}
+.qi-name{font-size:.78rem;font-weight:600;color:var(--black);flex:1}
+.qi-sub{font-size:.63rem;color:var(--g400)}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+/* ACCEPT NEXT */
+.btn-accept{
+  width:100%;padding:.8rem;border:none;cursor:pointer;
+  background:var(--black);color:var(--white);
+  font-family:var(--ff-h);font-size:1.05rem;font-weight:900;
+  letter-spacing:.04em;text-transform:uppercase;
+  border-radius:var(--r);
+  transition:all .2s var(--ease);
+  box-shadow:0 4px 14px rgba(0,0,0,.18);
+}
+.btn-accept:hover{background:var(--g700);transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,0,0,.22)}
+.btn-accept:disabled{opacity:.3;transform:none;box-shadow:none;cursor:not-allowed}
+.btn-accept-sub{display:block;font-family:var(--ff);font-size:.6rem;font-weight:400;opacity:.6;margin-top:.15rem;text-transform:none;letter-spacing:0}
+
+/* ORDERS */
+.orders-list{display:flex;flex-direction:column;gap:.35rem}
+
+/* ══ RIGHT PANEL ══ */
+.right{
+  display:grid;
+  grid-template-rows:auto 1fr auto;
+  overflow:hidden;
+  background:var(--g50);
+}
+
+/* Camera controls bar */
+.cam-bar{
+  padding:.7rem 1.1rem;
+  background:var(--white);
+  border-bottom:1.5px solid var(--g200);
+  display:flex;align-items:center;gap:.7rem;
+}
+.cam-bar-title{font-family:var(--ff-h);font-size:1.1rem;font-weight:900;text-transform:uppercase;color:var(--black);letter-spacing:.02em}
+.cb-spacer{flex:1}
+
+/* Camera grid */
+.cam-area{padding:.9rem;display:flex;flex-direction:column;gap:.7rem;overflow:hidden;min-height:0}
+.cam-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  grid-template-rows:1fr 1fr;
+  gap:.6px;
+  flex:1;min-height:0;
+  background:var(--g200);
+  border-radius:var(--r);
+  overflow:hidden;
+  border:1.5px solid var(--g200);
+}
+.cam-cell{
+  background:var(--black);
+  position:relative;
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+.cam-cell.main{grid-column:1/3;grid-row:1/3}
+
+.cam-cell video{width:100%;height:100%;object-fit:cover;display:block;flex:1;min-height:0}
+.cam-inner{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:.4rem;
+  background:linear-gradient(145deg,#0d1a0f,#060d08);
+  min-height:0;
+}
+.cam-empty-ico{font-size:2rem;opacity:.2}
+.cam-empty-txt{font-family:var(--ff-m);font-size:.52rem;color:rgba(255,255,255,.2);letter-spacing:.08em;text-transform:uppercase}
+
+.cam-footer{
+  padding:.38rem .6rem;
+  background:rgba(0,0,0,.85);
+  border-top:1px solid rgba(255,255,255,.06);
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;
+}
+.cam-label-txt{font-family:var(--ff-m);font-size:.52rem;color:rgba(255,255,255,.4);letter-spacing:.08em;text-transform:uppercase}
+.cam-select{
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);
+  color:rgba(255,255,255,.6);font-family:var(--ff);font-size:.58rem;
+  border-radius:4px;padding:.18rem .38rem;max-width:120px;outline:none;cursor:pointer;
+}
+.cam-select:focus{border-color:var(--green)}
+.cam-select option{background:#111;color:#fff}
+
+.cam-live-badge{
+  position:absolute;top:.45rem;left:.45rem;z-index:2;
+  display:none;align-items:center;gap:.28rem;
+  background:rgba(0,0,0,.75);backdrop-filter:blur(6px);
+  border:1px solid rgba(255,59,59,.3);
+  border-radius:4px;padding:.2rem .45rem;
+  font-family:var(--ff-m);font-size:.52rem;font-weight:700;
+  color:var(--live);text-transform:uppercase;letter-spacing:.08em;
+}
+.clb-dot{width:4px;height:4px;border-radius:50%;background:var(--live);animation:pulse 1.2s ease-in-out infinite}
+.is-live .cam-live-badge{display:flex}
+
+/* CLIENT VIDEO */
+#client-video-section{
+  background:var(--white);border:1.5px solid var(--g200);border-radius:var(--r);
+  padding:.8rem;display:none;flex-shrink:0;
+}
+#client-video-section.show{display:block}
+.cvs-title{font-family:var(--ff-h);font-size:.82rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--g500);margin-bottom:.55rem}
+.cvs-body{
+  background:var(--bluelt);border:1.5px solid rgba(37,99,235,.15);
+  border-radius:6px;padding:1rem;
+  display:flex;align-items:center;justify-content:center;gap:.8rem;
+}
+.cvs-icon{font-size:1.6rem}
+#client-name-label{font-size:.85rem;font-weight:700;color:var(--blue)}
+.cvs-sub{font-size:.65rem;color:var(--g400);margin-top:.1rem}
+
+/* ── CONTROLS BAR ── */
+.controls-bar{
+  padding:.8rem 1.1rem;
+  background:var(--white);
+  border-top:1.5px solid var(--g200);
+  display:flex;align-items:center;gap:.7rem;
+  flex-shrink:0;
+}
+.cb-left{display:flex;align-items:center;gap:.5rem}
+.cb-center{flex:1;display:flex;justify-content:center}
+.cb-right{display:flex;align-items:center;gap:.5rem}
+.cb-divider{width:1px;height:22px;background:var(--g200)}
+
+/* ══ BUTTONS ══ */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:.4rem;
+  padding:.52rem 1.05rem;border-radius:var(--r);border:none;
+  font-family:var(--ff);font-size:.74rem;font-weight:600;
+  letter-spacing:.02em;cursor:pointer;transition:all .18s var(--ease);
+  white-space:nowrap;line-height:1;
+}
+.btn:disabled{opacity:.3;cursor:not-allowed;pointer-events:none}
+
+.btn-default{background:var(--g100);color:var(--g600);border:1.5px solid var(--g200)}
+.btn-default:hover:not(:disabled){background:var(--g200);color:var(--black);border-color:var(--g300)}
+
+.btn-dark{background:var(--black);color:var(--white)}
+.btn-dark:hover:not(:disabled){background:var(--g700)}
+
+.btn-green{background:var(--green);color:var(--white);font-weight:700;box-shadow:0 3px 10px rgba(0,201,110,.25)}
+.btn-green:hover:not(:disabled){background:var(--gdk);box-shadow:0 4px 14px rgba(0,201,110,.35)}
+
+.btn-live-go{background:var(--live);color:var(--white);font-weight:700;box-shadow:0 3px 12px rgba(255,59,59,.25)}
+.btn-live-go:hover:not(:disabled){background:#d42d2d;box-shadow:0 4px 16px rgba(255,59,59,.35)}
+
+.btn-stop{background:var(--g100);color:var(--live);border:1.5px solid rgba(255,59,59,.25);display:none}
+.btn-stop:hover:not(:disabled){background:var(--livelt);border-color:var(--live)}
+
+.btn-danger{background:var(--livelt);color:var(--live);border:1.5px solid rgba(255,59,59,.2);font-weight:600}
+.btn-danger:hover:not(:disabled){background:rgba(255,59,59,.15);border-color:rgba(255,59,59,.4)}
+
+.btn-sm{padding:.36rem .75rem;font-size:.67rem}
+
+/* special buttons */
+#next-ticket-btn{background:var(--bluelt);color:var(--blue);border:1.5px solid rgba(37,99,235,.2)}
+#next-ticket-btn:hover:not(:disabled){background:rgba(37,99,235,.14);border-color:rgba(37,99,235,.4)}
+
+#reset-counter-btn{background:transparent;color:var(--g400);border:1px solid var(--g200);font-size:.65rem}
+#reset-counter-btn:hover:not(:disabled){color:var(--live);border-color:rgba(255,59,59,.3);background:var(--livelt)}
+
+.btn-generate{
+  width:100%;padding:.55rem;margin-bottom:.55rem;
+  background:var(--amblt);color:var(--amber);
+  border:1.5px solid rgba(245,158,11,.2);border-radius:var(--r);
+  font-family:var(--ff);font-size:.75rem;font-weight:600;cursor:pointer;
+  transition:all .18s;display:flex;align-items:center;justify-content:center;gap:.35rem;
+}
+.btn-generate:hover{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.35)}
+
+#end-current-call{min-width:180px;font-size:.78rem;font-weight:700;padding:.65rem 1.4rem}
+
+/* ══ SCROLLBAR ══ */
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--g200);border-radius:2px}
+</style>
 </head>
 <body>
-    <div class="vendor-container">
-        <header>
-            <h1>🐟 LivePescado - Panel de Vendedor</h1>
-            <div class="status">
-                <span id="connection-status" class="status-badge offline">Desconectado</span>
-            </div>
-        </header>
 
-        <div class="main-content">
-            <!-- Columna izquierda: Videos -->
-            <div class="video-section">
-                <h2>Mis Cámaras</h2>
-                
-                <div class="camera-controls">
-                    <button id="start-cameras" class="btn-primary">Iniciar Cámaras</button>
-                    <button id="stop-cameras" class="btn-danger" disabled>Detener Cámaras</button>
-                </div>
+<!-- ══ NAV ══ -->
+<nav>
+  <a href="/" class="nav-logo">
+    <div class="nav-logo-ico">🐟</div>
+    <span class="nav-logo-name">Fresco<span>Vivo</span></span>
+    <span class="nav-logo-tag">Vendedor</span>
+  </a>
 
-                <div class="live-controls">
-                    <div class="live-status" id="live-status">
-                        <span class="live-dot offline"></span>
-                        <span id="live-status-text">FUERA DE LÍNEA</span>
-                    </div>
-                    <button id="go-live-btn" class="btn-success" disabled>🔴 INICIAR TRANSMISIÓN</button>
-                    <button id="stop-live-btn" class="btn-danger" style="display: none;">⏹️ DETENER TRANSMISIÓN</button>
-                </div>
+  <div class="nav-mid">
+    <div class="live-pill offline" id="live-status">
+      <span class="lp-dot"></span>
+      <span id="live-status-text">FUERA DE LÍNEA</span>
+    </div>
+    <span id="connection-status">Desconectado</span>
+  </div>
 
-                <div class="vendor-cameras">
-                    <div class="camera-item main-camera">
-                        <video id="vendor-camera" autoplay muted playsinline></video>
-                        <label>Cámara Principal (Vendedor)</label>
-                        <select id="vendor-camera-select" class="camera-select"></select>
-                    </div>
+  <div class="nav-right">
+    <div class="user-chip">
+      <div class="uc-av"><span id="user-icon">👤</span></div>
+      <span id="user-name">Cargando...</span>
+    </div>
+    <button id="logout-btn" class="btn-logout">Cerrar sesión</button>
+  </div>
+</nav>
 
-                    <div class="product-cameras-grid">
-                        <div class="camera-item">
-                            <video id="product-camera-1" autoplay muted playsinline></video>
-                            <label>Cámara Producto 1</label>
-                            <select id="product-camera-1-select" class="camera-select"></select>
-                        </div>
-                        <div class="camera-item">
-                            <video id="product-camera-2" autoplay muted playsinline></video>
-                            <label>Cámara Producto 2</label>
-                            <select id="product-camera-2-select" class="camera-select"></select>
-                        </div>
-                        <div class="camera-item">
-                            <video id="product-camera-3" autoplay muted playsinline></video>
-                            <label>Cámara Producto 3</label>
-                            <select id="product-camera-3-select" class="camera-select"></select>
-                        </div>
-                    </div>
-                </div>
+<!-- ══ APP BODY ══ -->
+<div class="app">
 
-                <!-- Audio del cliente durante la llamada -->
-                <div id="client-video-section" style="display: none;">
-                    <h3>Cliente Actual</h3>
-                    <div class="camera-item" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; min-height: 150px; border-radius: 8px;">
-                        <div style="text-align: center; color: white;">
-                            <div style="font-size: 3em; margin-bottom: 10px;">🎤</div>
-                            <label id="client-name-label" style="font-size: 1.2em; font-weight: bold; color: white;">Cliente</label>
-                            <div style="margin-top: 10px; font-size: 0.9em; opacity: 0.9;">Solo audio</div>
-                        </div>
-                    </div>
-                </div>
+  <!-- ══════ LEFT ══════ -->
+  <div class="left">
 
-                <div class="call-controls">
-                    <button id="toggle-vendor-audio" class="btn-control">🎤 Silenciar</button>
-                    <button id="end-current-call" class="btn-danger" disabled>Terminar Llamada</button>
-                </div>
-            </div>
-
-            <!-- Columna derecha: Cola y pedidos -->
-            <div class="queue-section">
-                <!-- Estado de la llamada -->
-                <div class="call-status">
-                    <h3>Estado</h3>
-                    <p id="call-status-text">Sin llamada activa</p>
-                    <button id="accept-next-client" class="btn-success">Aceptar Siguiente Cliente</button>
-                </div>
-
-                <!-- Crear pedido rápido -->
-                <div id="quick-order-form" class="quick-order-form" style="display: none;">
-                    <h3>📝 Registrar Pedido</h3>
-                    <div class="order-form-content">
-                        <div class="form-group">
-                            <label>Productos</label>
-                            <textarea id="order-products" placeholder="Ej: 2kg lubina, 1kg mejillones" rows="3"></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label>Total (€)</label>
-                            <input type="number" id="order-total" placeholder="0.00" step="0.01" min="0">
-                        </div>
-                        <div class="form-group">
-                            <label>Dirección de envío</label>
-                            <input type="text" id="order-address" placeholder="Calle, número, código postal">
-                        </div>
-                        <button id="save-order-btn" class="btn-success">💾 Guardar Pedido</button>
-                    </div>
-                </div>
-
-                <!-- Cola de clientes -->
-                <div class="client-queue">
-                    <h3>Cola de Clientes <span id="queue-count" class="badge">0</span></h3>
-                    <div id="queue-list" class="queue-list">
-                        <p class="empty-message">No hay clientes en espera</p>
-                    </div>
-                </div>
-
-                <!-- Pedidos recientes -->
-                <div class="recent-orders">
-                    <h3>Pedidos Recientes <span id="orders-count" class="badge">0</span></h3>
-                    <div id="orders-list" class="orders-list">
-                        <p class="empty-message">No hay pedidos todavía</p>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <!-- LIVE CONTROLS -->
+    <div class="l-block">
+      <span class="slabel">Control de transmisión</span>
+      <div class="lc-btns">
+        <button id="go-live-btn" class="btn btn-live-go" style="flex:1" disabled>🔴 Iniciar transmisión</button>
+        <button id="stop-live-btn" class="btn btn-stop" style="flex:1">⏹ Detener</button>
+      </div>
     </div>
 
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="vendor.js"></script>
+    <!-- TICKET COUNTER -->
+    <div class="l-block">
+      <span class="slabel">Sistema de turnos</span>
+      <div class="tc-grid">
+        <div class="tc-box">
+          <div class="tc-box-lbl">Último emitido</div>
+          <div id="last-ticket-number" class="tc-box-num num-amber">—</div>
+        </div>
+        <div class="tc-box">
+          <div class="tc-box-lbl">Atendiendo</div>
+          <div id="current-serving-number" class="tc-box-num num-blue">—</div>
+        </div>
+      </div>
+      <div class="tc-waiting"><b id="tickets-waiting">0</b> turnos en espera</div>
+      <div class="tc-actions">
+        <button id="next-ticket-btn" class="btn" style="width:100%">➡ Siguiente turno</button>
+        <button id="reset-counter-btn" class="btn btn-sm" style="width:100%">🔄 Resetear contador</button>
+      </div>
+    </div>
+
+    <!-- CALL STATUS -->
+    <div class="l-block">
+      <span class="slabel">Estado actual</span>
+      <p id="call-status-text" class="cs-text">Sin llamada activa</p>
+      <div id="active-client-info" class="cs-active">
+        <div class="cs-row">
+          <span id="client-type-icon" class="cs-ico">🌐</span>
+          <div>
+            <div id="active-client-name" class="cs-name"></div>
+            <div id="active-client-details" class="cs-details"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COLA PRESENCIAL -->
+    <div class="l-block">
+      <div class="qs-header">
+        <span class="qs-title">🏪 Cola presencial</span>
+        <span id="store-queue-count" class="badge">0</span>
+      </div>
+      <button id="generate-store-number" class="btn-generate">
+        <span>➕</span> Generar número
+      </button>
+      <div id="store-queue-list" class="queue-list store-queue">
+        <p class="empty-message">No hay clientes en tienda</p>
+      </div>
+    </div>
+
+    <!-- COLA ONLINE -->
+    <div class="l-block">
+      <div class="qs-header">
+        <span class="qs-title">🌐 Cola online</span>
+        <span id="online-queue-count" class="badge">0</span>
+      </div>
+      <div id="online-queue-list" class="queue-list online-queue" style="margin-bottom:.6rem">
+        <p class="empty-message">No hay clientes online</p>
+      </div>
+    </div>
+
+    <!-- ACCEPT NEXT -->
+    <div class="l-block">
+      <button id="accept-next-client" class="btn-accept">
+        👉 Aceptar siguiente
+        <span class="btn-accept-sub">Prioridad: Tienda → Online</span>
+      </button>
+    </div>
+
+    <!-- PEDIDOS -->
+    <div class="l-block">
+      <div class="qs-header">
+        <span class="qs-title" style="font-size:.88rem">📋 Pedidos recientes</span>
+        <span id="orders-count" class="badge">0</span>
+      </div>
+      <div id="orders-list" class="orders-list">
+        <p class="empty-message">No hay pedidos todavía</p>
+      </div>
+    </div>
+
+  </div><!-- /left -->
+
+  <!-- ══════ RIGHT ══════ -->
+  <div class="right">
+
+    <!-- Camera bar -->
+    <div class="cam-bar">
+      <span class="cam-bar-title">Cámaras</span>
+      <div class="cb-spacer"></div>
+      <button id="start-cameras" class="btn btn-green btn-sm">▶ Iniciar cámaras</button>
+      <button id="stop-cameras" class="btn btn-danger btn-sm" disabled>■ Detener</button>
+    </div>
+
+    <!-- Cameras + client video -->
+    <div class="cam-area">
+
+      <div class="cam-grid">
+
+        <!-- CAM 1 MAIN -->
+        <div class="cam-cell main" id="cam-cell-main">
+          <div class="cam-live-badge"><span class="clb-dot"></span>En directo</div>
+          <div class="cam-inner">
+            <span class="cam-empty-ico">📹</span>
+            <span class="cam-empty-txt">Cámara principal</span>
+          </div>
+          <video id="vendor-camera" autoplay muted playsinline style="display:none;position:absolute;inset:0;width:100%;height:calc(100% - 32px);object-fit:cover"></video>
+          <div class="cam-footer">
+            <span class="cam-label-txt">CAM 1 · Vendedor</span>
+            <select id="vendor-camera-select" class="cam-select"></select>
+          </div>
+        </div>
+
+        <!-- CAM 2 -->
+        <div class="cam-cell" id="cam-cell-1">
+          <div class="cam-live-badge"><span class="clb-dot"></span>En directo</div>
+          <div class="cam-inner">
+            <span class="cam-empty-ico">📷</span>
+            <span class="cam-empty-txt">Producto 1</span>
+          </div>
+          <video id="product-camera-1" autoplay muted playsinline style="display:none;position:absolute;inset:0;width:100%;height:calc(100% - 28px);object-fit:cover"></video>
+          <div class="cam-footer">
+            <span class="cam-label-txt">CAM 2</span>
+            <select id="product-camera-1-select" class="cam-select"></select>
+          </div>
+        </div>
+
+        <!-- CAM 3 -->
+        <div class="cam-cell" id="cam-cell-2">
+          <div class="cam-live-badge"><span class="clb-dot"></span>En directo</div>
+          <div class="cam-inner">
+            <span class="cam-empty-ico">📷</span>
+            <span class="cam-empty-txt">Producto 2</span>
+          </div>
+          <video id="product-camera-2" autoplay muted playsinline style="display:none;position:absolute;inset:0;width:100%;height:calc(100% - 28px);object-fit:cover"></video>
+          <div class="cam-footer">
+            <span class="cam-label-txt">CAM 3</span>
+            <select id="product-camera-2-select" class="cam-select"></select>
+          </div>
+        </div>
+
+        <!-- CAM 4 -->
+        <div class="cam-cell" id="cam-cell-3">
+          <div class="cam-live-badge"><span class="clb-dot"></span>En directo</div>
+          <div class="cam-inner">
+            <span class="cam-empty-ico">📷</span>
+            <span class="cam-empty-txt">Producto 3</span>
+          </div>
+          <video id="product-camera-3" autoplay muted playsinline style="display:none;position:absolute;inset:0;width:100%;height:calc(100% - 28px);object-fit:cover"></video>
+          <div class="cam-footer">
+            <span class="cam-label-txt">CAM 4</span>
+            <select id="product-camera-3-select" class="cam-select"></select>
+          </div>
+        </div>
+
+      </div><!-- /cam-grid -->
+
+      <!-- CLIENT AUDIO -->
+      <div id="client-video-section">
+        <div class="cvs-title">Cliente actual</div>
+        <div class="cvs-body">
+          <span class="cvs-icon">🎤</span>
+          <div>
+            <label id="client-name-label">Cliente</label>
+            <div class="cvs-sub">Solo audio · en llamada</div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /cam-area -->
+
+    <!-- CONTROLS BAR -->
+    <div class="controls-bar">
+      <div class="cb-left">
+        <button id="toggle-vendor-audio" class="btn btn-default btn-sm">🎤 Silenciar</button>
+      </div>
+      <div class="cb-divider"></div>
+      <div class="cb-center">
+        <button id="end-current-call" class="btn btn-danger" disabled>📴 Terminar llamada</button>
+      </div>
+      <div class="cb-divider"></div>
+      <div class="cb-right">
+        <span style="font-family:var(--ff-m);font-size:.58rem;color:var(--g300)">FrescoVivo · Panel vendedor v1.0</span>
+      </div>
+    </div>
+
+  </div><!-- /right -->
+
+</div><!-- /app -->
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="vendor.js"></script>
 </body>
 </html>

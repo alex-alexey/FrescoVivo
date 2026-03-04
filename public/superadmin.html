@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Admin - FrescosEnVivo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="superadmin.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <span class="logo-icon">🐟</span>
+                <span class="logo-text">FrescosEnVivo</span>
+            </div>
+            <div class="admin-badge">SUPER ADMIN</div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#dashboard" class="nav-item active" data-view="dashboard">
+                <span class="icon">📊</span>
+                <span class="text">Dashboard</span>
+            </a>
+            <a href="#clients" class="nav-item" data-view="clients">
+                <span class="icon">🏢</span>
+                <span class="text">Clientes</span>
+            </a>
+            <a href="#create" class="nav-item" data-view="create">
+                <span class="icon">➕</span>
+                <span class="text">Nuevo Cliente</span>
+            </a>
+            <a href="#settings" class="nav-item" data-view="settings">
+                <span class="icon">⚙️</span>
+                <span class="text">Configuración</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-avatar">👤</div>
+                <div class="user-details">
+                    <div class="user-name" id="admin-name">Super Admin</div>
+                    <div class="user-role">Administrador</div>
+                </div>
+            </div>
+            <button class="btn-logout" onclick="logout()">
+                <span>🚪</span> Salir
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Dashboard View -->
+        <section id="dashboard-view" class="view active">
+            <header class="page-header">
+                <h1>Dashboard</h1>
+                <p>Resumen general del sistema</p>
+            </header>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">🏢</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Total Clientes</div>
+                        <div class="stat-value" id="stat-total">0</div>
+                    </div>
+                </div>
+
+                <div class="stat-card active">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Activos</div>
+                        <div class="stat-value" id="stat-active">0</div>
+                    </div>
+                </div>
+
+                <div class="stat-card trial">
+                    <div class="stat-icon">🔬</div>
+                    <div class="stat-content">
+                        <div class="stat-label">En Prueba</div>
+                        <div class="stat-value" id="stat-trial">0</div>
+                    </div>
+                </div>
+
+                <div class="stat-card suspended">
+                    <div class="stat-icon">⏸️</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Suspendidos</div>
+                        <div class="stat-value" id="stat-suspended">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Clientes Recientes</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="recent-clients" id="recent-clients">
+                            <div class="loading">Cargando...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Distribución por Plan</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="plans-chart" id="plans-chart">
+                            <div class="loading">Cargando...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Clients View -->
+        <section id="clients-view" class="view">
+            <header class="page-header">
+                <div>
+                    <h1>Gestión de Clientes</h1>
+                    <p>Administra todas las cuentas de clientes</p>
+                </div>
+                <button class="btn-primary" onclick="showView('create')">
+                    ➕ Nuevo Cliente
+                </button>
+            </header>
+
+            <div class="filters-bar">
+                <input type="text" id="search-input" placeholder="🔍 Buscar por nombre, dominio o email..." class="search-input">
+                
+                <select id="filter-status" class="filter-select">
+                    <option value="">Todos los estados</option>
+                    <option value="activo">Activo</option>
+                    <option value="prueba">En Prueba</option>
+                    <option value="suspendido">Suspendido</option>
+                    <option value="expirado">Expirado</option>
+                </select>
+
+                <select id="filter-plan" class="filter-select">
+                    <option value="">Todos los planes</option>
+                    <option value="basico">Básico</option>
+                    <option value="profesional">Profesional</option>
+                    <option value="empresarial">Empresarial</option>
+                    <option value="personalizado">Personalizado</option>
+                </select>
+
+                <button class="btn-secondary" onclick="applyFilters()">Filtrar</button>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <div class="clients-table" id="clients-table">
+                        <div class="loading">Cargando clientes...</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Create Client View -->
+        <section id="create-view" class="view">
+            <header class="page-header">
+                <h1>Crear Nuevo Cliente</h1>
+                <p>Registra una nueva cuenta de cliente en el sistema</p>
+            </header>
+
+            <div class="card">
+                <div class="card-body">
+                    <form id="create-client-form" class="client-form">
+                        <div class="form-section">
+                            <h3 class="section-title">📋 Información del Negocio</h3>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="businessName">Nombre del Negocio *</label>
+                                    <input type="text" id="businessName" name="businessName" required placeholder="Ej: Pescadería El Marisco">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="domain">Dominio *</label>
+                                    <input type="text" id="domain" name="domain" required placeholder="Ej: pescaderiajuan.com">
+                                    <small>El dominio que usará el cliente para acceder</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3 class="section-title">👤 Información del Propietario</h3>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="ownerFullName">Nombre Completo *</label>
+                                    <input type="text" id="ownerFullName" name="ownerFullName" required placeholder="Ej: Juan Pérez">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="ownerEmail">Email *</label>
+                                    <input type="email" id="ownerEmail" name="ownerEmail" required placeholder="Ej: juan@pescaderia.com">
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="ownerUsername">Usuario *</label>
+                                    <input type="text" id="ownerUsername" name="ownerUsername" required placeholder="Ej: admin_juan">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="ownerPassword">Contraseña *</label>
+                                    <input type="password" id="ownerPassword" name="ownerPassword" required placeholder="Mínimo 8 caracteres">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="ownerPhone">Teléfono</label>
+                                    <input type="tel" id="ownerPhone" name="ownerPhone" placeholder="Ej: +34 600 123 456">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3 class="section-title">💎 Plan y Límites</h3>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="plan">Plan</label>
+                                    <select id="plan" name="plan">
+                                        <option value="basico">Básico</option>
+                                        <option value="profesional">Profesional</option>
+                                        <option value="empresarial">Empresarial</option>
+                                        <option value="personalizado">Personalizado</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="maxDailyTickets">Tickets Diarios Máx.</label>
+                                    <input type="number" id="maxDailyTickets" name="maxDailyTickets" value="200" min="1">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="maxCameras">Cámaras Máx.</label>
+                                    <input type="number" id="maxCameras" name="maxCameras" value="4" min="1" max="10">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn-secondary" onclick="showView('clients')">Cancelar</button>
+                            <button type="submit" class="btn-primary">✅ Crear Cliente</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- Settings View -->
+        <section id="settings-view" class="view">
+            <header class="page-header">
+                <h1>Configuración del Sistema</h1>
+                <p>Ajustes generales del panel de administración</p>
+            </header>
+
+            <div class="card">
+                <div class="card-body">
+                    <p style="text-align: center; padding: 40px; color: #666;">
+                        Configuración próximamente...
+                    </p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal para editar cliente -->
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Editar Cliente</h2>
+                <button class="modal-close" onclick="closeEditModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-client-form">
+                    <!-- Formulario dinámico se cargará aquí -->
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="superadmin.js"></script>
+</body>
+</html>
