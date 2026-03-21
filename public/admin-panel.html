@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #059669;
+            --danger: #dc2626;
+            --warning: #f59e0b;
+            --bg: #f9fafb;
+            --bg-card: #ffffff;
+            --text: #111827;
+            --text-light: #6b7280;
+            --border: #e5e7eb;
+            --sidebar-width: 260px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        /* Layout */
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--bg-card);
+            border-right: 1px solid var(--border);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .business-name {
+            font-size: 0.875rem;
+            color: var(--text-light);
+            margin-top: 0.25rem;
+        }
+
+        .sidebar-nav {
+            padding: 1rem;
+        }
+
+        .nav-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .nav-section-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-light);
+            padding: 0 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            border-radius: 8px;
+            color: var(--text);
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+            margin-bottom: 0.25rem;
+        }
+
+        .nav-item:hover {
+            background: var(--bg);
+        }
+
+        .nav-item.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .nav-icon {
+            font-size: 1.25rem;
+        }
+
+        .nav-text {
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 2rem;
+        }
+
+        .header {
+            background: var(--bg-card);
+            padding: 1.5rem 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.625rem 1.25rem;
+            border-radius: 8px;
+            font-weight: 500;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+
+        .btn-outline:hover {
+            background: var(--bg);
+        }
+
+        /* Content Section */
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .card-description {
+            font-size: 0.875rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-light);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .stat-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+
+        .form-input,
+        .form-textarea,
+        .form-select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.875rem;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        /* Color Picker */
+        .color-picker {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .color-preview {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            border: 2px solid var(--border);
+        }
+
+        /* Toggle Switch */
+        .toggle {
+            position: relative;
+            display: inline-block;
+            width: 48px;
+            height: 24px;
+        }
+
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            inset: 0;
+            background-color: #ccc;
+            transition: 0.3s;
+            border-radius: 24px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+
+        .toggle input:checked + .toggle-slider {
+            background-color: var(--primary);
+        }
+
+        .toggle input:checked + .toggle-slider:before {
+            transform: translateX(24px);
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Camera Card */
+        .camera-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: box-shadow 0.2s;
+        }
+
+        .camera-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .camera-info {
+            flex: 1;
+        }
+
+        .camera-name {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .camera-description {
+            font-size: 0.875rem;
+            color: var(--text-light);
+            margin-bottom: 0.5rem;
+        }
+
+        .camera-meta {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.75rem;
+            color: var(--text-light);
+        }
+
+        .camera-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .badge-live {
+            background: rgba(34, 197, 94, 0.1);
+            color: #059669;
+        }
+
+        .badge-inactive {
+            background: rgba(107, 114, 128, 0.1);
+            color: var(--text-light);
+        }
+
+        .badge-position {
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .camera-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+
+        /* Loading and Error States */
+        .loading, .empty-state, .error-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-light);
+        }
+
+        .empty-state p:first-child {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .error-state {
+            color: var(--danger);
+        }
+
+        .error-state button {
+            margin-top: 1rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .camera-card {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .camera-actions {
+                margin-top: 1rem;
+                width: 100%;
+            }
+
+            .camera-actions button {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading State -->
+    <div id="loading" class="loading">
+        <div class="spinner"></div>
+        <p>Cargando panel...</p>
+    </div>
+
+    <!-- Main Layout -->
+    <div id="app" class="layout" style="display: none;">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">🏪 FrescosEnVivo</div>
+                <div class="business-name" id="business-name">Mi Negocio</div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">General</div>
+                    <a class="nav-item active" data-section="dashboard">
+                        <span class="nav-icon">📊</span>
+                        <span class="nav-text">Dashboard</span>
+                    </a>
+                    <a class="nav-item" data-section="store-config">
+                        <span class="nav-icon">🏪</span>
+                        <span class="nav-text">Mi Tienda</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Contenido</div>
+                    <a class="nav-item" data-section="products">
+                        <span class="nav-icon">📦</span>
+                        <span class="nav-text">Productos</span>
+                    </a>
+                    <a class="nav-item" data-section="schedule">
+                        <span class="nav-icon">🕐</span>
+                        <span class="nav-text">Horarios</span>
+                    </a>
+                    <a class="nav-item" data-section="contact">
+                        <span class="nav-icon">📞</span>
+                        <span class="nav-text">Contacto</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Avanzado</div>
+                    <a class="nav-item" data-section="cameras">
+                        <span class="nav-icon">📹</span>
+                        <span class="nav-text">Cámaras</span>
+                    </a>
+                    <a class="nav-item" data-section="users">
+                        <span class="nav-icon">👥</span>
+                        <span class="nav-text">Usuarios</span>
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <div class="header">
+                <h1 class="header-title" id="page-title">Dashboard</h1>
+                <div class="user-menu">
+                    <a href="/tienda.html" target="_blank" class="btn btn-outline">
+                        👁️ Ver mi tienda
+                    </a>
+                    <button class="btn btn-primary" onclick="logout()">
+                        Cerrar sesión
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dashboard Section -->
+            <div id="dashboard" class="content-section active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">👥</div>
+                        <div class="stat-label">Visitantes hoy</div>
+                        <div class="stat-value" id="stat-visitors">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📦</div>
+                        <div class="stat-label">Productos activos</div>
+                        <div class="stat-value" id="stat-products">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📹</div>
+                        <div class="stat-label">Cámaras activas</div>
+                        <div class="stat-value" id="stat-cameras">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⭐</div>
+                        <div class="stat-label">Tickets hoy</div>
+                        <div class="stat-value" id="stat-tickets">0</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2 class="card-title">Bienvenido a tu panel</h2>
+                    <p class="card-description">
+                        Desde aquí puedes configurar tu tienda online, gestionar productos, 
+                        configurar horarios, activar cámaras y mucho más.
+                    </p>
+                    <button class="btn btn-primary" onclick="navigateTo('store-config')">
+                        🏪 Configurar mi tienda
+                    </button>
+                </div>
+            </div>
+
+            <!-- Store Config Section -->
+            <div id="store-config" class="content-section">
+                <div class="card">
+                    <h2 class="card-title">Configuración de la Tienda</h2>
+                    <p class="card-description">Personaliza la apariencia y contenido de tu tienda online</p>
+                    
+                    <form id="store-form">
+                        <div class="form-group">
+                            <label class="form-label">Nombre de tu tienda</label>
+                            <input type="text" class="form-input" id="store-name" placeholder="Mi Negocio">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Eslogan</label>
+                            <input type="text" class="form-input" id="store-tagline" placeholder="Productos frescos de calidad">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Descripción</label>
+                            <textarea class="form-textarea" id="store-description" placeholder="Describe tu negocio..."></textarea>
+                        </div>
+
+                        <h3 style="margin-top: 2rem; margin-bottom: 1rem;">Colores de marca</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Color primario</label>
+                                <div class="color-picker">
+                                    <input type="color" id="color-primary" value="#2563eb">
+                                    <div class="color-preview" id="preview-primary" style="background: #2563eb;"></div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Color secundario</label>
+                                <div class="color-picker">
+                                    <input type="color" id="color-secondary" value="#059669">
+                                    <div class="color-preview" id="preview-secondary" style="background: #059669;"></div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Color de acento</label>
+                                <div class="color-picker">
+                                    <input type="color" id="color-accent" value="#f59e0b">
+                                    <div class="color-preview" id="preview-accent" style="background: #f59e0b;"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            💾 Guardar cambios
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Products Section -->
+            <div id="products" class="content-section">
+                <div class="card">
+                    <h2 class="card-title">Productos</h2>
+                    <p class="card-description">Gestiona los productos que se muestran en tu tienda</p>
+                    <button class="btn btn-primary" onclick="openProductModal()">
+                        ➕ Añadir producto
+                    </button>
+                    <div id="products-list" style="margin-top: 2rem;">
+                        <!-- Se llenará dinámicamente -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Schedule Section -->
+            <div id="schedule" class="content-section">
+                <div class="card">
+                    <h2 class="card-title">Horarios</h2>
+                    <p class="card-description">Configura los horarios de apertura de tu negocio</p>
+                    <div id="schedule-form">
+                        <!-- Se llenará dinámicamente -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Section -->
+            <div id="contact" class="content-section">
+                <div class="card">
+                    <h2 class="card-title">Información de Contacto</h2>
+                    <form id="contact-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Teléfono</label>
+                                <input type="tel" class="form-input" id="contact-phone">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-input" id="contact-email">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Dirección</label>
+                            <input type="text" class="form-input" id="contact-address">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Ciudad</label>
+                                <input type="text" class="form-input" id="contact-city">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Código Postal</label>
+                                <input type="text" class="form-input" id="contact-postal">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">💾 Guardar contacto</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Cameras Section -->
+            <div id="cameras" class="content-section">
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <div>
+                            <h2 class="card-title" style="margin-bottom: 0.5rem;">Gestión de Cámaras</h2>
+                            <p class="card-description" style="margin-bottom: 0;">Configura las cámaras para streaming en vivo</p>
+                        </div>
+                        <button class="btn btn-primary" onclick="openAddCameraModal()">
+                            ➕ Añadir cámara
+                        </button>
+                    </div>
+                    
+                    <div id="cameras-list" style="display: grid; gap: 1rem;">
+                        <!-- Se llenará dinámicamente -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Section -->
+            <div id="users" class="content-section">
+                <div class="card">
+                    <h2 class="card-title">Usuarios y Vendedores</h2>
+                    <p class="card-description">Gestiona los usuarios que tienen acceso al sistema</p>
+                    <div id="users-list">
+                        <!-- Se implementará en el siguiente paso -->
+                        <p style="color: var(--text-light);">Esta sección estará disponible próximamente</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Añadir/Editar Cámara -->
+    <div id="camera-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="camera-modal-title">Añadir Cámara</h3>
+                <button class="modal-close" onclick="closeCameraModal()">✕</button>
+            </div>
+            
+            <form id="camera-form">
+                <input type="hidden" id="camera-id">
+                
+                <div class="form-group">
+                    <label class="form-label">Nombre de la cámara *</label>
+                    <input type="text" class="form-input" id="camera-name" placeholder="Ej: Cámara Principal" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Descripción</label>
+                    <textarea class="form-textarea" id="camera-description" placeholder="Describe qué se ve en esta cámara"></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Posición *</label>
+                        <select class="form-select" id="camera-position" required>
+                            <option value="1">1 - Principal</option>
+                            <option value="2">2 - Secundaria</option>
+                            <option value="3">3 - Secundaria</option>
+                            <option value="4">4 - Secundaria</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Tipo</label>
+                        <select class="form-select" id="camera-type">
+                            <option value="webcam">Webcam</option>
+                            <option value="ip">Cámara IP</option>
+                            <option value="usb">USB</option>
+                            <option value="rtsp">RTSP</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        <input type="checkbox" id="camera-active" checked> Cámara activa
+                    </label>
+                </div>
+
+                <div style="display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1.5rem;">
+                    <button type="button" class="btn btn-outline" onclick="closeCameraModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="admin-panel.js"></script>
+</body>
+</html>

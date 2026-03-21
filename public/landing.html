@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FrescoVivo · Vende en Directo desde tu Tienda</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet"/>
+
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #F9F8F6;
+  --bg-card: #FFFFFF;
+  --ink: #111110;
+  --ink-2: #3D3C3A;
+  --ink-3: #78776E;
+  --ink-4: #A9A89E;
+  --border: #E4E2DC;
+  --border-strong: #C8C6BE;
+  --green: #16A34A;
+  --green-light: #DCFCE7;
+  --green-mid: #86EFAC;
+  --green-dk: #15803D;
+  --amber: #D97706;
+  --amber-light: #FEF3C7;
+  --navy: #0C1B33;
+  --white: #FFFFFF;
+  --ff-h: 'Bricolage Grotesque', system-ui, sans-serif;
+  --ff: 'DM Sans', system-ui, sans-serif;
+  --radius: 12px;
+  --radius-lg: 20px;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  --shadow-md: 0 4px 16px rgba(0,0,0,.07), 0 1px 4px rgba(0,0,0,.04);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,.09), 0 2px 8px rgba(0,0,0,.05);
+}
+
+html { scroll-behavior: smooth; }
+body { font-family: var(--ff); background: var(--bg); color: var(--ink); overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+
+/* ─── UTILS ─── */
+.container { max-width: 1140px; margin: 0 auto; padding: 0 5vw; }
+.eyebrow { font-size: .72rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--green); margin-bottom: .65rem; display: block; }
+.eyebrow-gray { color: var(--ink-4); }
+
+/* ─── REVEAL ─── */
+.reveal { opacity: 0; transform: translateY(22px); transition: opacity .65s var(--ease), transform .65s var(--ease); }
+.reveal.visible { opacity: 1; transform: none; }
+
+/* ─── NAV ─── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 900;
+  background: rgba(249,248,246,.92); backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--border);
+  padding: .9rem 5vw;
+  display: flex; align-items: center; justify-content: space-between;
+  transition: box-shadow .2s;
+}
+nav.scrolled { box-shadow: var(--shadow-md); }
+.nav-logo { display: flex; align-items: center; gap: .55rem; text-decoration: none; }
+.nav-logo-icon {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: var(--ink); display: flex; align-items: center;
+  justify-content: center; font-size: .8rem;
+}
+.nav-logo-name { font-family: var(--ff-h); font-size: 1.1rem; font-weight: 800; color: var(--ink); letter-spacing: -.02em; }
+.nav-logo-name span { color: var(--green); }
+.nav-links { display: flex; align-items: center; gap: 2rem; list-style: none; }
+.nav-links a { font-size: .8rem; font-weight: 500; color: var(--ink-3); text-decoration: none; transition: color .15s; letter-spacing: -.01em; }
+.nav-links a:hover { color: var(--ink); }
+.nav-right { display: flex; align-items: center; gap: .6rem; }
+.btn { display: inline-flex; align-items: center; gap: .45rem; padding: .58rem 1.3rem; border-radius: 999px; font-family: var(--ff); font-size: .8rem; font-weight: 600; border: none; cursor: pointer; transition: all .2s var(--ease); text-decoration: none; letter-spacing: -.01em; }
+.btn-ghost { background: transparent; color: var(--ink-2); border: 1.5px solid var(--border-strong); }
+.btn-ghost:hover { background: var(--ink); color: var(--white); border-color: var(--ink); }
+.btn-primary { background: var(--ink); color: var(--white); }
+.btn-primary:hover { background: #2A2A28; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,.18); }
+.btn-green { background: var(--green); color: var(--white); }
+.btn-green:hover { background: var(--green-dk); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(22,163,74,.3); }
+.btn-lg { padding: .8rem 1.8rem; font-size: .88rem; border-radius: var(--radius); }
+
+/* ─── HERO ─── */
+.hero {
+  padding: 130px 5vw 90px;
+  background: var(--white);
+  position: relative; overflow: hidden;
+}
+.hero-grid-bg {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 60px 60px;
+  opacity: .35;
+}
+.hero-fade {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 70% 60% at 50% 0%, rgba(255,255,255,0) 0%, var(--white) 80%);
+}
+.hero-in {
+  position: relative; z-index: 1;
+  max-width: 1140px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center;
+}
+.hero-badge {
+  display: inline-flex; align-items: center; gap: .45rem;
+  padding: .32rem .75rem; border-radius: 999px;
+  background: var(--green-light); color: var(--green-dk);
+  font-size: .7rem; font-weight: 600; letter-spacing: .04em;
+  margin-bottom: 1.5rem; border: 1px solid var(--green-mid);
+}
+.hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+.hero h1 {
+  font-family: var(--ff-h); font-size: clamp(2.6rem, 4.5vw, 4.2rem);
+  font-weight: 800; color: var(--ink); line-height: .95; letter-spacing: -.03em;
+  margin-bottom: 1.4rem;
+}
+.hero h1 em { font-style: italic; font-weight: 300; color: var(--ink-3); }
+.hero-sub {
+  font-size: 1rem; color: var(--ink-3); line-height: 1.8;
+  max-width: 460px; margin-bottom: 2.2rem; font-weight: 400;
+}
+.hero-ctas { display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; margin-bottom: 2.2rem; }
+.hero-trust { display: flex; align-items: center; gap: .55rem; font-size: .72rem; color: var(--ink-4); }
+.hero-trust-avs { display: flex; }
+.hero-trust-av {
+  width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--white);
+  background: var(--green-light); display: flex; align-items: center; justify-content: center;
+  font-size: .6rem; margin-left: -6px;
+}
+.hero-trust-av:first-child { margin-left: 0; }
+/* HERO MOCKUP */
+.hero-mockup { position: relative; animation: floatMock 6s ease-in-out infinite; }
+@keyframes floatMock { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+.hm-frame {
+  background: var(--bg-card); border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+.hm-bar {
+  padding: .6rem .85rem; background: var(--bg); border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: .55rem;
+}
+.hm-dots { display: flex; gap: .28rem; }
+.hm-dot { width: 8px; height: 8px; border-radius: 50%; }
+.hm-dot:nth-child(1){background:#FF5F57} .hm-dot:nth-child(2){background:#FEBC2E} .hm-dot:nth-child(3){background:#28C840}
+.hm-url {
+  flex: 1; background: var(--white); border: 1px solid var(--border);
+  border-radius: 5px; padding: .22rem .65rem; font-size: .62rem; color: var(--ink-4); text-align: center;
+}
+.hm-live {
+  display: flex; align-items: center; gap: .3rem;
+  font-size: .6rem; font-weight: 700; color: #EF4444; text-transform: uppercase; letter-spacing: .06em;
+}
+.hm-ldot { width: 5px; height: 5px; border-radius: 50%; background: #EF4444; animation: blink 1.2s ease-in-out infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+.hm-body { display: grid; grid-template-columns: 150px 1fr; height: 300px; }
+.hm-sidebar {
+  border-right: 1px solid var(--border); padding: .75rem;
+  display: flex; flex-direction: column; gap: .55rem; background: var(--bg);
+}
+.hm-sb-brand { display: flex; align-items: center; gap: .35rem; }
+.hm-sb-bico { width: 20px; height: 20px; border-radius: 4px; background: var(--ink); display: flex; align-items: center; justify-content: center; font-size: .5rem; }
+.hm-sb-bname { font-family: var(--ff-h); font-size: .75rem; font-weight: 800; color: var(--ink); }
+.hm-sb-bname span { color: var(--green); }
+.hm-sb-live {
+  background: #F0FDF4; border: 1px solid #BBF7D0;
+  border-radius: 5px; padding: .28rem .45rem;
+  font-size: .56rem; font-weight: 600; color: var(--green-dk);
+  display: flex; align-items: center; gap: .28rem;
+}
+.hm-sb-ldot { width: 4px; height: 4px; border-radius: 50%; background: var(--green); animation: blink 1.2s ease-in-out infinite; }
+.hm-sb-lbl { font-size: .52rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-4); margin-top: .1rem; }
+.hm-sb-inp { background: var(--white); border: 1px solid var(--border); border-radius: 4px; padding: .3rem .4rem; font-size: .58rem; color: var(--ink-3); }
+.hm-sb-inp.hi { border-color: var(--ink); color: var(--ink); font-weight: 500; }
+.hm-sb-row { display: flex; gap: .28rem; }
+.hm-sb-half { flex: 1; background: var(--white); border: 1px solid var(--border); border-radius: 4px; padding: .25rem; font-size: .54rem; color: var(--ink-4); text-align: center; }
+.hm-sb-half.hi { background: var(--ink); color: var(--white); font-weight: 700; }
+.hm-sb-steps { display: flex; flex-direction: column; gap: .32rem; }
+.hm-sb-step { display: flex; align-items: center; gap: .35rem; }
+.hm-sb-sn { width: 14px; height: 14px; border-radius: 50%; background: var(--green); color: var(--white); font-size: .45rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.hm-sb-sn.pend { background: var(--border); color: var(--ink-4); }
+.hm-sb-step span { font-size: .56rem; color: var(--ink-3); }
+.hm-sb-btn { margin-top: auto; background: var(--ink); color: var(--white); border: none; border-radius: 5px; padding: .4rem; font-size: .6rem; font-weight: 700; letter-spacing: .03em; width: 100%; cursor: pointer; }
+.hm-cam {
+  background: #0C1B0D; position: relative; display: flex;
+  flex-direction: column; overflow: hidden;
+}
+.hm-cam-hd {
+  padding: .45rem .65rem; background: rgba(255,255,255,.04);
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+}
+.hm-cam-ttl { font-size: .55rem; font-weight: 600; color: rgba(255,255,255,.4); letter-spacing: .08em; text-transform: uppercase; }
+.hm-cam-lv { display: flex; align-items: center; gap: .28rem; font-size: .55rem; font-weight: 700; color: #EF4444; letter-spacing: .08em; text-transform: uppercase; }
+.hm-cam-ld { width: 4px; height: 4px; border-radius: 50%; background: #EF4444; animation: blink 1.2s ease-in-out infinite; }
+.hm-cam-main { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; background: linear-gradient(145deg, #0d2a1a, #051008); }
+.hm-cam-fish { font-size: 3rem; filter: drop-shadow(0 0 20px rgba(0,200,100,.25)); animation: fishSway 5s ease-in-out infinite; }
+@keyframes fishSway { 0%,100%{transform:translateY(0) rotate(-1.5deg)} 50%{transform:translateY(-8px) rotate(1.5deg)} }
+.hm-cam-ov { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,.6) 0%, transparent 50%); }
+.hm-cam-info { position: absolute; bottom: .55rem; left: .65rem; right: .65rem; display: flex; justify-content: space-between; align-items: flex-end; }
+.hm-cam-fn { font-size: .62rem; font-weight: 700; color: var(--white); }
+.hm-cam-fs { font-size: .5rem; color: rgba(255,255,255,.4); margin-top: .05rem; }
+.hm-cam-cn { font-size: .48rem; color: rgba(255,255,255,.3); letter-spacing: .08em; }
+.hm-thumbs { display: grid; grid-template-columns: 1fr 1fr 1fr; height: 68px; border-top: 1px solid rgba(255,255,255,.06); }
+.hm-thumb { display: flex; align-items: center; justify-content: center; font-size: 1.1rem; position: relative; overflow: hidden; }
+.hm-thumb + .hm-thumb { border-left: 1px solid rgba(255,255,255,.06); }
+.hm-tb1 { background: linear-gradient(145deg,#0e2d1e,#060f07); }
+.hm-tb2 { background: linear-gradient(145deg,#1e1800,#0e0c00); }
+.hm-tb3 { background: linear-gradient(145deg,#1e0d10,#0e0608); }
+.hm-thumb-lbl { position: absolute; bottom: 3px; left: 5px; font-size: .42rem; color: rgba(255,255,255,.3); letter-spacing: .06em; }
+/* floating badges on mockup */
+.hm-badge {
+  position: absolute; background: var(--white); border: 1px solid var(--border);
+  border-radius: 10px; padding: .55rem .75rem; box-shadow: var(--shadow-md);
+  z-index: 10;
+}
+.hm-badge-tl { top: -16px; left: -20px; animation: float2 7s ease-in-out infinite; }
+.hm-badge-br { bottom: -16px; right: -20px; animation: float1 6s ease-in-out infinite; }
+@keyframes float1 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+@keyframes float2 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+.hm-badge-val { font-family: var(--ff-h); font-size: 1.3rem; font-weight: 800; color: var(--ink); line-height: 1; }
+.hm-badge-lbl { font-size: .52rem; color: var(--ink-4); letter-spacing: .06em; text-transform: uppercase; margin-top: .1rem; }
+
+/* ─── STATS STRIP ─── */
+.strip {
+  border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  background: var(--bg); padding: 1.6rem 5vw;
+}
+.strip-in { max-width: 1140px; margin: 0 auto; display: flex; align-items: center; justify-content: center; gap: 3rem; flex-wrap: wrap; }
+.strip-item { text-align: center; }
+.strip-val { font-family: var(--ff-h); font-size: 1.6rem; font-weight: 800; color: var(--ink); letter-spacing: -.02em; line-height: 1; }
+.strip-lbl { font-size: .68rem; color: var(--ink-4); margin-top: .25rem; letter-spacing: .04em; }
+.strip-divider { width: 1px; height: 32px; background: var(--border); }
+
+/* ─── SECTIONS ─── */
+.section { padding: 7rem 5vw; }
+.section-white { background: var(--white); }
+.section-bg { background: var(--bg); }
+.section-ink { background: var(--navy); }
+.sec-header { margin-bottom: 3.5rem; }
+.sec-header.center { text-align: center; }
+.sec-header.center .sec-sub { margin: 0 auto; }
+.sec-h2 {
+  font-family: var(--ff-h); font-size: clamp(2rem, 3.8vw, 3.4rem);
+  font-weight: 800; color: var(--ink); line-height: .95; letter-spacing: -.03em;
+}
+.sec-h2-white { color: var(--white); }
+.sec-h2 em { font-style: italic; font-weight: 300; color: var(--ink-3); }
+.sec-h2-white em { color: rgba(255,255,255,.4); }
+.sec-sub { font-size: .9rem; color: var(--ink-3); line-height: 1.8; max-width: 480px; margin-top: .9rem; }
+.sec-sub-white { color: rgba(255,255,255,.45); }
+
+/* ─── PROBLEM/PAIN ─── */
+.pain-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+.pain-card {
+  background: var(--bg-card); border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg); padding: 2rem 1.8rem;
+  transition: all .3s var(--ease);
+}
+.pain-card:hover { border-color: var(--border-strong); box-shadow: var(--shadow-md); transform: translateY(-3px); }
+.pain-card.solution { border-color: var(--green); background: linear-gradient(135deg, #F0FDF4, var(--white)); }
+.pain-card.solution:hover { box-shadow: 0 8px 30px rgba(22,163,74,.12); }
+.pain-ico { font-size: 1.6rem; margin-bottom: .9rem; }
+.pain-tag { display: inline-block; font-size: .6rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; padding: .18rem .55rem; border-radius: 4px; margin-bottom: .7rem; }
+.pain-tag.problem { background: #FEE2E2; color: #991B1B; }
+.pain-tag.solution-tag { background: var(--green-light); color: var(--green-dk); }
+.pain-card h3 { font-family: var(--ff-h); font-size: 1.15rem; font-weight: 700; color: var(--ink); margin-bottom: .5rem; letter-spacing: -.02em; }
+.pain-card p { font-size: .82rem; color: var(--ink-3); line-height: 1.75; }
+
+/* ─── FEATURES ─── */
+.features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; }
+.feat-card {
+  background: var(--bg-card); border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg); padding: 2rem 1.8rem;
+  transition: all .3s var(--ease); cursor: default;
+}
+.feat-card:hover { border-color: var(--ink); transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+.feat-icon {
+  width: 44px; height: 44px; border-radius: 10px;
+  background: var(--bg); border: 1.5px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; margin-bottom: 1.1rem;
+  transition: all .3s var(--ease);
+}
+.feat-card:hover .feat-icon { background: var(--ink); border-color: var(--ink); transform: rotate(-6deg); }
+.feat-card h3 { font-family: var(--ff-h); font-size: 1.05rem; font-weight: 700; color: var(--ink); margin-bottom: .45rem; letter-spacing: -.02em; }
+.feat-card p { font-size: .8rem; color: var(--ink-3); line-height: 1.75; }
+
+/* ─── HOW IT WORKS ─── */
+.steps-list { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.2rem; counter-reset: steps; }
+.step-item { position: relative; }
+.step-item::after {
+  content: '';
+  position: absolute; top: 24px; left: calc(100% + 8px);
+  width: calc(100% - 16px); height: 1px;
+  background: var(--border); border-top: 1.5px dashed var(--border-strong);
+}
+.step-item:last-child::after { display: none; }
+.step-num {
+  width: 48px; height: 48px; border-radius: 12px;
+  background: var(--bg-card); border: 1.5px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--ff-h); font-size: 1.1rem; font-weight: 800;
+  color: var(--ink); margin-bottom: 1.1rem;
+  transition: all .3s var(--ease);
+}
+.step-item.active .step-num { background: var(--ink); color: var(--white); border-color: var(--ink); }
+.step-item h3 { font-family: var(--ff-h); font-size: .98rem; font-weight: 700; color: var(--ink); margin-bottom: .4rem; letter-spacing: -.01em; }
+.step-item p { font-size: .78rem; color: var(--ink-3); line-height: 1.75; }
+
+/* ─── PLATFORM SHOWCASE ─── */
+.showcase-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3.5rem; align-items: center; }
+.showcase-grid.rev { direction: rtl; }
+.showcase-grid.rev > * { direction: ltr; }
+.showcase-list { display: flex; flex-direction: column; gap: 1.1rem; margin-top: 2rem; }
+.showcase-item { display: flex; gap: 1rem; padding: 1.2rem; border-radius: var(--radius); border: 1.5px solid transparent; transition: all .3s; }
+.showcase-item:hover { background: var(--bg-card); border-color: var(--border); box-shadow: var(--shadow-sm); }
+.showcase-item-ico { font-size: 1.2rem; flex-shrink: 0; margin-top: .15rem; }
+.showcase-item h4 { font-family: var(--ff-h); font-size: .95rem; font-weight: 700; color: var(--ink); margin-bottom: .25rem; letter-spacing: -.01em; }
+.showcase-item p { font-size: .78rem; color: var(--ink-3); line-height: 1.7; }
+/* mini dashboard widget */
+.mini-dash {
+  background: var(--navy); border-radius: var(--radius-lg);
+  overflow: hidden; box-shadow: var(--shadow-lg);
+}
+.md-header {
+  padding: .65rem .9rem; border-bottom: 1px solid rgba(255,255,255,.06);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.md-title { font-size: .62rem; font-weight: 600; color: rgba(255,255,255,.4); text-transform: uppercase; letter-spacing: .08em; }
+.md-live { display: flex; align-items: center; gap: .3rem; font-size: .6rem; font-weight: 700; color: #EF4444; text-transform: uppercase; letter-spacing: .08em; }
+.md-ldot { width: 5px; height: 5px; border-radius: 50%; background: #EF4444; animation: blink 1.2s ease-in-out infinite; }
+.md-body { padding: .85rem; display: grid; grid-template-columns: 1fr 1fr; gap: .65rem; }
+.md-stat { background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.07); border-radius: 8px; padding: .65rem; }
+.md-stat-val { font-family: var(--ff-h); font-size: 1.8rem; font-weight: 800; color: var(--white); line-height: 1; }
+.md-stat-lbl { font-size: .55rem; color: rgba(255,255,255,.3); text-transform: uppercase; letter-spacing: .08em; margin-top: .22rem; }
+.md-stat.green { border-color: rgba(22,163,74,.3); }
+.md-stat.green .md-stat-val { color: #4ADE80; }
+.md-chart { grid-column: span 2; background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.06); border-radius: 8px; padding: .65rem; }
+.md-chart-lbl { font-size: .52rem; color: rgba(255,255,255,.25); text-transform: uppercase; letter-spacing: .08em; margin-bottom: .55rem; }
+.md-bars { display: flex; align-items: flex-end; gap: 5px; height: 52px; }
+.md-bar { flex: 1; border-radius: 3px 3px 0 0; background: rgba(255,255,255,.12); transition: height .3s; }
+.md-bar.hi { background: linear-gradient(to top, #16A34A, #4ADE80); }
+.md-queue { grid-column: span 2; }
+.md-queue-list { display: flex; flex-direction: column; gap: .4rem; }
+.md-queue-item { display: flex; align-items: center; justify-content: space-between; padding: .42rem .55rem; background: rgba(255,255,255,.04); border-radius: 6px; }
+.md-qi-left { display: flex; align-items: center; gap: .5rem; }
+.md-qi-n { font-size: .58rem; font-weight: 700; color: rgba(255,255,255,.6); }
+.md-qi-name { font-size: .62rem; color: rgba(255,255,255,.7); }
+.md-qi-time { font-size: .56rem; color: rgba(255,255,255,.3); }
+.md-qi-badge { font-size: .5rem; font-weight: 700; padding: .12rem .38rem; border-radius: 3px; background: rgba(22,163,74,.2); color: #4ADE80; letter-spacing: .04em; text-transform: uppercase; }
+.md-qi-badge.wait { background: rgba(245,158,11,.15); color: #FCD34D; }
+
+/* ─── PRICING ─── */
+.pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; align-items: start; }
+.plan-card {
+  background: var(--bg-card); border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg); padding: 2rem 1.8rem;
+  transition: all .3s var(--ease); position: relative;
+}
+.plan-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-4px); }
+.plan-card.popular {
+  border-color: var(--ink); background: var(--ink);
+  transform: translateY(-8px);
+}
+.plan-card.popular:hover { transform: translateY(-12px); }
+.plan-popular-badge {
+  position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+  background: var(--green); color: var(--white); font-size: .62rem; font-weight: 700;
+  padding: .28rem .85rem; border-radius: 999px; letter-spacing: .06em; text-transform: uppercase;
+  white-space: nowrap;
+}
+.plan-name { font-family: var(--ff-h); font-size: .85rem; font-weight: 800; color: var(--ink-3); text-transform: uppercase; letter-spacing: .1em; margin-bottom: .65rem; }
+.plan-card.popular .plan-name { color: rgba(255,255,255,.45); }
+.plan-price { font-family: var(--ff-h); font-size: 3rem; font-weight: 800; color: var(--ink); letter-spacing: -.04em; line-height: 1; }
+.plan-card.popular .plan-price { color: var(--white); }
+.plan-price sup { font-size: 1.2rem; font-weight: 600; vertical-align: super; margin-right: .1rem; }
+.plan-period { font-size: .75rem; color: var(--ink-4); margin-left: .2rem; font-weight: 400; }
+.plan-card.popular .plan-period { color: rgba(255,255,255,.3); }
+.plan-desc { font-size: .78rem; color: var(--ink-3); margin: .8rem 0 1.5rem; line-height: 1.65; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+.plan-card.popular .plan-desc { color: rgba(255,255,255,.45); border-bottom-color: rgba(255,255,255,.1); }
+.plan-features { list-style: none; display: flex; flex-direction: column; gap: .6rem; margin-bottom: 1.8rem; }
+.plan-feature { display: flex; align-items: flex-start; gap: .6rem; font-size: .78rem; color: var(--ink-2); line-height: 1.5; }
+.plan-card.popular .plan-feature { color: rgba(255,255,255,.7); }
+.plan-feature::before { content: '✓'; font-size: .7rem; font-weight: 700; color: var(--green); flex-shrink: 0; margin-top: .1rem; }
+.plan-card.popular .plan-feature::before { color: #4ADE80; }
+.plan-feature.cross::before { content: '×'; color: var(--ink-4); }
+.plan-card.popular .plan-feature.cross::before { color: rgba(255,255,255,.2); }
+.plan-card.popular .plan-feature.cross { color: rgba(255,255,255,.25); }
+.plan-btn { display: block; text-align: center; padding: .78rem; border-radius: var(--radius); font-size: .82rem; font-weight: 600; transition: all .2s; text-decoration: none; cursor: pointer; border: none; font-family: var(--ff); width: 100%; }
+.plan-btn-outline { background: transparent; color: var(--ink); border: 1.5px solid var(--border-strong); }
+.plan-btn-outline:hover { background: var(--ink); color: var(--white); border-color: var(--ink); }
+.plan-btn-white { background: var(--white); color: var(--ink); }
+.plan-btn-white:hover { background: var(--green); color: var(--white); }
+.pricing-note { text-align: center; margin-top: 1.5rem; font-size: .75rem; color: var(--ink-4); }
+
+/* ─── TESTIMONIALS ─── */
+.test-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; }
+.test-card {
+  background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.08);
+  border-radius: var(--radius-lg); padding: 1.8rem;
+  transition: all .3s var(--ease);
+}
+.test-card:hover { background: rgba(255,255,255,.09); transform: translateY(-3px); }
+.test-stars { color: #F59E0B; font-size: .8rem; margin-bottom: 1rem; letter-spacing: .05em; }
+.test-quote { font-size: .83rem; color: rgba(255,255,255,.55); line-height: 1.82; font-style: italic; font-weight: 300; margin-bottom: 1.4rem; }
+.test-author { display: flex; align-items: center; gap: .7rem; }
+.test-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: linear-gradient(135deg, #1a4731, #2d7a52);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .9rem; flex-shrink: 0; border: 2px solid rgba(255,255,255,.08);
+}
+.test-name { font-size: .78rem; font-weight: 700; color: var(--white); }
+.test-biz { font-size: .64rem; color: rgba(255,255,255,.3); margin-top: .08rem; }
+.test-tag {
+  display: inline-block; font-size: .52rem; font-weight: 700; padding: .15rem .45rem;
+  border-radius: 4px; background: rgba(22,163,74,.2); color: #4ADE80;
+  letter-spacing: .06em; text-transform: uppercase; margin-top: .32rem;
+}
+
+/* ─── CONTACT / DEMO FORM ─── */
+.form-section { background: var(--white); }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: start; }
+.form-checklist { list-style: none; display: flex; flex-direction: column; gap: .75rem; margin-top: 2rem; }
+.form-check { display: flex; align-items: flex-start; gap: .75rem; }
+.form-check-icon { width: 28px; height: 28px; border-radius: 8px; background: var(--green-light); border: 1px solid var(--green-mid); display: flex; align-items: center; justify-content: center; font-size: .75rem; flex-shrink: 0; margin-top: .05rem; }
+.form-check h4 { font-size: .85rem; font-weight: 600; color: var(--ink); margin-bottom: .18rem; letter-spacing: -.01em; }
+.form-check p { font-size: .75rem; color: var(--ink-3); line-height: 1.65; }
+.form-box {
+  background: var(--bg); border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg); padding: 2.4rem 2rem;
+}
+.form-box h3 { font-family: var(--ff-h); font-size: 1.4rem; font-weight: 800; color: var(--ink); margin-bottom: .35rem; letter-spacing: -.02em; }
+.form-box p { font-size: .8rem; color: var(--ink-3); margin-bottom: 1.8rem; line-height: 1.6; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+.field { margin-bottom: .9rem; }
+.field label { display: block; font-size: .68rem; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--ink-3); margin-bottom: .38rem; }
+.field input,
+.field select,
+.field textarea {
+  width: 100%; padding: .72rem .95rem; border: 1.5px solid var(--border);
+  border-radius: 8px; font-family: var(--ff); font-size: .86rem; color: var(--ink);
+  background: var(--white); outline: none; transition: border-color .2s;
+}
+.field input:focus,
+.field select:focus,
+.field textarea:focus { border-color: var(--ink); }
+.field textarea { resize: vertical; min-height: 90px; }
+.field select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%23A9A89E' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .9rem center; padding-right: 2.2rem; }
+.form-submit { width: 100%; padding: .88rem; background: var(--ink); color: var(--white); border: none; border-radius: 8px; font-family: var(--ff); font-size: .9rem; font-weight: 600; cursor: pointer; transition: all .2s; letter-spacing: -.01em; }
+.form-submit:hover { background: #2A2A28; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,.18); }
+.form-fine { font-size: .65rem; color: var(--ink-4); text-align: center; margin-top: .65rem; letter-spacing: .02em; }
+.form-success { display: none; text-align: center; padding: 2rem 0; }
+.form-success.show { display: block; }
+.form-success-ico { font-size: 2.5rem; margin-bottom: .75rem; }
+.form-success h3 { font-family: var(--ff-h); font-size: 1.35rem; font-weight: 800; color: var(--ink); margin-bottom: .4rem; }
+.form-success p { font-size: .82rem; color: var(--ink-3); line-height: 1.7; }
+
+/* ─── FAQ ─── */
+.faq-list { max-width: 720px; margin: 0 auto; }
+.faq-item { border-bottom: 1px solid var(--border); }
+.faq-q {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.3rem 0; cursor: pointer; gap: 1rem;
+  font-size: .9rem; font-weight: 600; color: var(--ink); transition: color .2s; letter-spacing: -.01em;
+}
+.faq-q:hover { color: var(--green); }
+.faq-icon { font-size: 1.1rem; color: var(--ink-4); transition: transform .3s; flex-shrink: 0; }
+.faq-item.open .faq-icon { transform: rotate(45deg); color: var(--green); }
+.faq-a { font-size: .82rem; color: var(--ink-3); line-height: 1.8; max-height: 0; overflow: hidden; transition: max-height .4s var(--ease), padding .3s; }
+.faq-item.open .faq-a { max-height: 200px; padding-bottom: 1.2rem; }
+
+/* ─── FOOTER ─── */
+footer { background: var(--navy); padding: 4rem 5vw 1.8rem; }
+.footer-grid {
+  max-width: 1140px; margin: 0 auto;
+  display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 3rem;
+  padding-bottom: 2.8rem; border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.footer-brand-logo { display: flex; align-items: center; gap: .5rem; text-decoration: none; margin-bottom: .9rem; }
+.footer-brand-ico { width: 28px; height: 28px; border-radius: 7px; background: var(--white); display: flex; align-items: center; justify-content: center; font-size: .7rem; }
+.footer-brand-name { font-family: var(--ff-h); font-size: 1rem; font-weight: 800; color: var(--white); }
+.footer-brand-name span { color: var(--green); }
+.footer-desc { font-size: .72rem; color: rgba(255,255,255,.3); line-height: 1.85; max-width: 220px; }
+.footer-col-title { font-size: .6rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: rgba(255,255,255,.25); margin-bottom: .9rem; }
+.footer-links { list-style: none; display: flex; flex-direction: column; gap: .5rem; }
+.footer-links li { font-size: .75rem; color: rgba(255,255,255,.25); cursor: default; transition: color .15s; }
+.footer-links li:hover { color: rgba(255,255,255,.6); }
+.footer-btm {
+  max-width: 1140px; margin: 1.5rem auto 0;
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: .65rem; color: rgba(255,255,255,.18); flex-wrap: wrap; gap: .5rem;
+}
+.footer-btm-links { display: flex; gap: 1.5rem; }
+.footer-btm-links a { color: rgba(255,255,255,.18); text-decoration: none; transition: color .15s; }
+.footer-btm-links a:hover { color: rgba(255,255,255,.4); }
+
+/* ─── RESPONSIVE ─── */
+@media(max-width: 1024px) {
+  .hero-in { grid-template-columns: 1fr; gap: 3rem; }
+  .hero-mockup { max-width: 580px; margin: 0 auto; }
+  .pain-grid,
+  .features-grid,
+  .pricing-grid,
+  .test-grid { grid-template-columns: 1fr 1fr; }
+  .steps-list { grid-template-columns: 1fr 1fr; }
+  .step-item::after { display: none; }
+  .showcase-grid,
+  .form-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+  .showcase-grid.rev { direction: ltr; }
+  .footer-grid { grid-template-columns: 1fr 1fr; }
+  .plan-card.popular { transform: none; }
+  .plan-card.popular:hover { transform: translateY(-4px); }
+}
+@media(max-width: 640px) {
+  .nav-links { display: none; }
+  .pain-grid,
+  .features-grid,
+  .pricing-grid,
+  .test-grid,
+  .steps-list,
+  .form-row { grid-template-columns: 1fr; }
+  .footer-grid { grid-template-columns: 1fr; gap: 2rem; }
+  .strip-divider { display: none; }
+  .hm-body { grid-template-columns: 1fr; }
+  .hm-sidebar { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#" class="nav-logo">
+    <div class="nav-logo-icon">🐟</div>
+    <span class="nav-logo-name">Fresco<span>Vivo</span></span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#como-funciona">Cómo funciona</a></li>
+    <li><a href="#plataforma">Plataforma</a></li>
+
+    <li><a href="#casos-exito">Casos de éxito</a></li>
+    <li><a href="#faq">FAQ</a></li>
+  </ul>
+  <div class="nav-right">
+    <a href="#demo" class="btn btn-ghost">Contacto</a>
+    <a href="#demo" class="btn btn-primary">Solicitar demo</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid-bg"></div>
+  <div class="hero-fade"></div>
+  <div class="hero-in">
+    <div class="hero-content">
+      <span class="reveal" style="display:inline-block">
+        <span class="hero-badge">
+          <span class="hero-badge-dot"></span>
+          Para comercios de alimentación
+        </span>
+      </span>
+      <h1 class="reveal" style="transition-delay:.05s">
+        Tu tienda,<br/><em>en directo</em><br/>online.
+      </h1>
+      <p class="hero-sub reveal" style="transition-delay:.1s">
+        FrescoVivo transforma tu comercio en una experiencia de compra en tiempo real. Tus clientes ven lo que hay hoy, cogen turno desde casa y recogen su pedido preparado. Sin catálogos. Sin sorpresas. Sin fricciones.
+      </p>
+      <div class="hero-ctas reveal" style="transition-delay:.15s">
+        <a href="#demo" class="btn btn-green btn-lg">Solicitar demo gratuita →</a>
+      </div>
+      <div class="hero-trust reveal" style="transition-delay:.2s">
+        <div class="hero-trust-avs">
+          <div class="hero-trust-av">🏪</div>
+          <div class="hero-trust-av">🐟</div>
+          <div class="hero-trust-av">🥩</div>
+          <div class="hero-trust-av">🧀</div>
+        </div>
+        <span>Usado por más de 40 comercios en España</span>
+      </div>
+    </div>
+
+    <div class="hero-mockup reveal" style="transition-delay:.1s">
+      <div class="hm-badge hm-badge-tl">
+        <div class="hm-badge-val">4.9 ★</div>
+        <div class="hm-badge-lbl">Valoración media</div>
+      </div>
+      <div class="hm-badge hm-badge-br">
+        <div class="hm-badge-val">+38%</div>
+        <div class="hm-badge-lbl">Ventas online</div>
+      </div>
+      <div class="hm-frame">
+        <div class="hm-bar">
+          <div class="hm-dots"><div class="hm-dot"></div><div class="hm-dot"></div><div class="hm-dot"></div></div>
+          <div class="hm-url">freskovivo.com/tutienda · En directo</div>
+          <div class="hm-live"><span class="hm-ldot"></span>EN DIRECTO</div>
+        </div>
+        <div class="hm-body">
+          <div class="hm-sidebar">
+            <div class="hm-sb-brand">
+              <div class="hm-sb-bico">🐟</div>
+              <span class="hm-sb-bname">Fresco<span>Vivo</span></span>
+            </div>
+            <div class="hm-sb-live"><span class="hm-sb-ldot"></span>Tienda activa</div>
+            <div class="hm-sb-lbl">Tu nombre</div>
+            <div class="hm-sb-inp hi">Ana García</div>
+            <div class="hm-sb-lbl">Tu turno</div>
+            <div class="hm-sb-row">
+              <div class="hm-sb-half hi">#3</div>
+              <div class="hm-sb-half">~8 min</div>
+            </div>
+            <div class="hm-sb-steps">
+              <div class="hm-sb-step"><div class="hm-sb-sn">✓</div><span>Tienda activa</span></div>
+              <div class="hm-sb-step"><div class="hm-sb-sn">✓</div><span>Turno asignado</span></div>
+              <div class="hm-sb-step"><div class="hm-sb-sn pend">3</div><span>Videollamada</span></div>
+              <div class="hm-sb-step"><div class="hm-sb-sn pend">4</div><span>Recoger</span></div>
+            </div>
+            <button class="hm-sb-btn">Entrar →</button>
+          </div>
+          <div class="hm-cam">
+            <div class="hm-cam-hd">
+              <span class="hm-cam-ttl">FrescoVivo · 4 Cámaras HD</span>
+              <span class="hm-cam-lv"><span class="hm-cam-ld"></span>En directo</span>
+            </div>
+            <div class="hm-cam-main">
+              <div class="hm-cam-fish">🐟</div>
+              <div class="hm-cam-ov"></div>
+              <div class="hm-cam-info">
+                <div>
+                  <div class="hm-cam-fn">Lubina salvaje · 1.2kg</div>
+                  <div class="hm-cam-fs">Captura hoy · Puerto de Gavà</div>
+                </div>
+                <div class="hm-cam-cn">CAM 1</div>
+              </div>
+            </div>
+            <div class="hm-thumbs">
+              <div class="hm-thumb hm-tb1"><span>🦐</span><span class="hm-thumb-lbl">CAM 2</span></div>
+              <div class="hm-thumb hm-tb2"><span>🦞</span><span class="hm-thumb-lbl">CAM 3</span></div>
+              <div class="hm-thumb hm-tb3"><span>🦑</span><span class="hm-thumb-lbl">CAM 4</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS STRIP -->
+<div class="strip">
+  <div class="strip-in">
+    <div class="strip-item reveal">
+      <div class="strip-val">40+</div>
+      <div class="strip-lbl">Comercios activos</div>
+    </div>
+    <div class="strip-divider"></div>
+    <div class="strip-item reveal" style="transition-delay:.05s">
+      <div class="strip-val">+38%</div>
+      <div class="strip-lbl">Ventas online de media</div>
+    </div>
+    <div class="strip-divider"></div>
+    <div class="strip-item reveal" style="transition-delay:.1s">
+      <div class="strip-val">4.9★</div>
+      <div class="strip-lbl">Satisfacción clientes</div>
+    </div>
+    <div class="strip-divider"></div>
+    <div class="strip-item reveal" style="transition-delay:.15s">
+      <div class="strip-val">72h</div>
+      <div class="strip-lbl">Setup completo</div>
+    </div>
+    <div class="strip-divider"></div>
+    <div class="strip-item reveal" style="transition-delay:.2s">
+      <div class="strip-val">0€</div>
+      <div class="strip-lbl">Comisión por venta</div>
+    </div>
+  </div>
+</div>
+
+<!-- PROBLEM / SOLUTION -->
+<section class="section section-white" id="como-funciona">
+  <div class="container">
+    <div class="sec-header reveal">
+      <span class="eyebrow">El problema que resolvemos</span>
+      <h2 class="sec-h2">El comercio local<br/><em>merece más</em></h2>
+      <p class="sec-sub">Vender por catálogos de fotos, atender por teléfono o asumir que el cliente viene a tienda — todo eso ya no es suficiente.</p>
+    </div>
+    <div class="pain-grid">
+      <div class="pain-card reveal">
+        <div class="pain-ico">😤</div>
+        <span class="pain-tag problem">Problema</span>
+        <h3>Las fotos de catálogo mienten</h3>
+        <p>El cliente pide lo que ve en una foto de hace tres meses. Llega a tienda y no está. Frustración, devolutas, pérdida de confianza.</p>
+      </div>
+      <div class="pain-card reveal" style="transition-delay:.06s">
+        <div class="pain-ico">📞</div>
+        <span class="pain-tag problem">Problema</span>
+        <h3>El teléfono es ineficiente</h3>
+        <p>Llamadas en horas pico, malentendidos en el pedido, clientes que no pueden llamar desde el trabajo. Tiempo perdido para todos.</p>
+      </div>
+      <div class="pain-card solution reveal" style="transition-delay:.12s">
+        <div class="pain-ico">📹</div>
+        <span class="pain-tag solution-tag">Solución</span>
+        <h3>Venta en directo, total transparencia</h3>
+        <p>Tus clientes ven la tienda en tiempo real, ven lo que hay hoy, hablan contigo por videollamada y recogen su pedido preparado. Sin sorpresas.</p>
+      </div>
+      <div class="pain-card solution reveal" style="transition-delay:.18s">
+        <div class="pain-ico">🎫</div>
+        <span class="pain-tag solution-tag">Solución</span>
+        <h3>Cola digital, sin fricciones</h3>
+        <p>El cliente coge turno desde casa, cierra la ventana y sigue con su vida. Le avisas cuando toca. Tú controlas el flujo, sin colapsos ni esperas.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="section section-bg">
+  <div class="container">
+    <div class="sec-header center reveal">
+      <span class="eyebrow">Qué incluye</span>
+      <h2 class="sec-h2">Todo lo que necesitas<br/><em>para vender en directo</em></h2>
+    </div>
+    <div class="features-grid">
+      <div class="feat-card reveal">
+        <div class="feat-icon">📹</div>
+        <h3>Streaming HD en tiempo real</h3>
+        <p>Hasta 4 cámaras HD simultáneas. Tus clientes ven la tienda tal como está ahora mismo. Sin edición, sin filtros, sin demora.</p>
+      </div>
+      <div class="feat-card reveal" style="transition-delay:.06s">
+        <div class="feat-icon">🎫</div>
+        <h3>Gestión de cola inteligente</h3>
+        <p>Sistema de turnos digital con tiempos estimados en tiempo real. Notificaciones automáticas por WhatsApp cuando llega el turno del cliente.</p>
+      </div>
+      <div class="feat-card reveal" style="transition-delay:.12s">
+        <div class="feat-icon">🤝</div>
+        <h3>Videollamada integrada</h3>
+        <p>El cliente ve el producto, habla contigo, acuerda la preparación. Sin apps externas, directamente desde el navegador.</p>
+      </div>
+      <div class="feat-card reveal" style="transition-delay:.18s">
+        <div class="feat-icon">📊</div>
+        <h3>Panel de control en tiempo real</h3>
+        <p>Ve la cola, los clientes activos, el tiempo medio de atención y las ventas del día desde un único panel. Mobile-friendly.</p>
+      </div>
+      <div class="feat-card reveal" style="transition-delay:.24s">
+        <div class="feat-icon">💬</div>
+        <h3>Notificaciones WhatsApp</h3>
+        <p>Avisa automáticamente cuando el pedido está listo. El cliente sabe exactamente cuándo recoger. Sin llamadas, sin esperas innecesarias.</p>
+      </div>
+      <div class="feat-card reveal" style="transition-delay:.3s">
+        <div class="feat-icon">🔗</div>
+        <h3>Tu URL propia, tu marca</h3>
+        <p>Tu tienda tiene su propia URL. Compártela en Instagram, WhatsApp o tu web. Sin menciones a FrescoVivo. 100% tu marca.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section section-white">
+  <div class="container">
+    <div class="sec-header center reveal">
+      <span class="eyebrow">El proceso</span>
+      <h2 class="sec-h2">4 pasos,<br/><em>todo en directo</em></h2>
+    </div>
+    <div class="steps-list">
+      <div class="step-item active reveal">
+        <div class="step-num">01</div>
+        <h3>¿Está en directo?</h3>
+        <p>El cliente entra a tu URL y comprueba si la tienda está activa. La barra de estado lo indica siempre en tiempo real.</p>
+      </div>
+      <div class="step-item reveal" style="transition-delay:.08s">
+        <div class="step-num">02</div>
+        <h3>Coge turno online</h3>
+        <p>Deja su nombre. El sistema le asigna número de cola. Puede cerrar la ventana — le avisamos cuando llegue su momento.</p>
+      </div>
+      <div class="step-item reveal" style="transition-delay:.16s">
+        <div class="step-num">03</div>
+        <h3>Videollamada contigo</h3>
+        <p>Ve las cámaras, habla contigo, ve el producto, elige, acuerda la preparación. Transparencia y atención personal total.</p>
+      </div>
+      <div class="step-item reveal" style="transition-delay:.24s">
+        <div class="step-num">04</div>
+        <h3>Recoge preparado</h3>
+        <p>Tú preparas al momento: limpio, troceado, envasado. El cliente recibe aviso y recoge cuando quiere. Refrigerado esperándole.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PLATFORM SHOWCASE -->
+<section class="section section-bg" id="plataforma">
+  <div class="container">
+    <div class="sec-header center reveal">
+      <span class="eyebrow">La plataforma</span>
+      <h2 class="sec-h2">Diseñada para<br/><em>el comercio de barrio</em></h2>
+    </div>
+
+    <div class="showcase-grid">
+      <div class="reveal">
+        <span class="eyebrow">Panel de gestión</span>
+        <h2 class="sec-h2" style="font-size:clamp(1.7rem,2.8vw,2.4rem)">Control total<br/><em>en tiempo real</em></h2>
+        <p class="sec-sub">Ves la cola, los tiempos, los pedidos del día. Todo en un panel limpio y rápido. Diseñado para usarse desde el mostrador, no desde un escritorio.</p>
+        <ul class="showcase-list">
+          <li class="showcase-item">
+            <span class="showcase-item-ico">🔔</span>
+            <div>
+              <h4>Alertas de cola</h4>
+              <p>Cuando el cliente llega a su turno, recibes un aviso sonoro y visual. Nunca te pierdas un turno.</p>
+            </div>
+          </li>
+          <li class="showcase-item">
+            <span class="showcase-item-ico">📱</span>
+            <div>
+              <h4>Funciona en móvil</h4>
+              <p>El panel de gestión está optimizado para tablet y móvil. No necesitas estar delante de un ordenador.</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <div class="reveal" style="transition-delay:.1s">
+        <div class="mini-dash">
+          <div class="md-header">
+            <span class="md-title">Panel · Tienda en directo</span>
+            <span class="md-live"><span class="md-ldot"></span>Activo</span>
+          </div>
+          <div class="md-body">
+            <div class="md-stat">
+              <div class="md-stat-val">7</div>
+              <div class="md-stat-lbl">En cola ahora</div>
+            </div>
+            <div class="md-stat green">
+              <div class="md-stat-val">23</div>
+              <div class="md-stat-lbl">Atendidos hoy</div>
+            </div>
+            <div class="md-chart">
+              <div class="md-chart-lbl">Clientes atendidos · esta semana</div>
+              <div class="md-bars">
+                <div class="md-bar" style="height:40%"></div>
+                <div class="md-bar" style="height:60%"></div>
+                <div class="md-bar" style="height:45%"></div>
+                <div class="md-bar hi" style="height:80%"></div>
+                <div class="md-bar hi" style="height:95%"></div>
+                <div class="md-bar" style="height:55%"></div>
+                <div class="md-bar" style="height:30%"></div>
+              </div>
+            </div>
+            <div class="md-queue">
+              <div class="md-chart-lbl" style="margin-bottom:.42rem">Cola actual</div>
+              <div class="md-queue-list">
+                <div class="md-queue-item">
+                  <div class="md-qi-left"><span class="md-qi-n">#1</span><span class="md-qi-name">Ana García</span></div>
+                  <span class="md-qi-badge">En llamada</span>
+                </div>
+                <div class="md-queue-item">
+                  <div class="md-qi-left"><span class="md-qi-n">#2</span><span class="md-qi-name">Jordi Puig</span></div>
+                  <span class="md-qi-time">~3 min</span>
+                </div>
+                <div class="md-queue-item">
+                  <div class="md-qi-left"><span class="md-qi-n">#3</span><span class="md-qi-name">Marta Soler</span></div>
+                  <span class="md-qi-badge wait">~8 min</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+<!-- TESTIMONIALS -->
+<section class="section section-ink" id="casos-exito">
+  <div class="container">
+    <div class="sec-header reveal">
+      <span class="eyebrow eyebrow-gray" style="color:rgba(255,255,255,.3)">Casos de éxito</span>
+      <h2 class="sec-h2 sec-h2-white">Lo que dicen<br/><em>los comercios</em></h2>
+      <p class="sec-sub sec-sub-white">Pescaderías, carnicerías, fruterías y más. Comercios reales que ya venden en directo.</p>
+    </div>
+    <div class="test-grid">
+      <div class="test-card reveal">
+        <div class="test-stars">★★★★★</div>
+        <p class="test-quote">"Desde que pusimos FrescoVivo, los clientes llegan sabiendo exactamente lo que hay. Ya no hay 'creía que teníais…'. Cero fricciones, más confianza y más ventas."</p>
+        <div class="test-author">
+          <div class="test-avatar">👨‍🍳</div>
+          <div>
+            <div class="test-name">Miguel Fernández</div>
+            <div class="test-biz">Pescadería el Puerto · Gavà</div>
+            <span class="test-tag">+42% ventas online</span>
+          </div>
+        </div>
+      </div>
+      <div class="test-card reveal" style="transition-delay:.08s">
+        <div class="test-stars">★★★★★</div>
+        <p class="test-quote">"Llevábamos años con listas de WhatsApp y era un caos. Ahora el cliente coge turno, yo me centro en cortar y preparar, y cuando llega está todo listo. Cambio de vida."</p>
+        <div class="test-author">
+          <div class="test-avatar">👩‍🍳</div>
+          <div>
+            <div class="test-name">Rosa Camps</div>
+            <div class="test-biz">Carnisseria Can Rosa · Vilafranca</div>
+            <span class="test-tag">+31% pedidos online</span>
+          </div>
+        </div>
+      </div>
+      <div class="test-card reveal" style="transition-delay:.16s">
+        <div class="test-stars">★★★★★</div>
+        <p class="test-quote">"El setup fue en dos días. Nos conectaron las cámaras, configuraron la URL y ya estábamos en directo. El soporte es rápido y el panel, muy fácil de usar desde el móvil."</p>
+        <div class="test-author">
+          <div class="test-avatar">🧑</div>
+          <div>
+            <div class="test-name">Pau Solà</div>
+            <div class="test-biz">Formatgeria Solà · Sant Cugat</div>
+            <span class="test-tag">72h de setup</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section section-white" id="faq">
+  <div class="container">
+    <div class="sec-header center reveal">
+      <span class="eyebrow">Preguntas frecuentes</span>
+      <h2 class="sec-h2">Todo lo que<br/><em>necesitas saber</em></h2>
+    </div>
+    <div class="faq-list reveal">
+      <div class="faq-item open">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          ¿Qué tipo de comercios pueden usar FrescoVivo?
+          <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-a">FrescoVivo está diseñado para cualquier comercio de alimentación que venda productos frescos o de mercado: pescaderías, carnicerías, fruterías, charcuterías, queserías, panaderías artesanas y similares. Si vendes algo que el cliente quiere ver antes de comprar, FrescoVivo es para ti.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          ¿Necesito instalar algo o contratar técnicos?
+          <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-a">No. Nuestro equipo se encarga de todo el setup: instalación de cámaras, configuración de la plataforma y formación inicial. En 72 horas estás en directo. Solo necesitas conexión a internet y un dispositivo para gestionar la cola.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          ¿FrescoVivo cobra comisión por cada venta?
+          <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-a">No. FrescoVivo es un servicio de suscripción mensual fija. No cobramos comisión por venta, ni tarifa de transacción. Lo que vendes es 100% tuyo. La cuota mensual cubre el acceso completo a la plataforma y el soporte.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          ¿El cliente necesita descargar alguna app?
+          <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-a">No. Todo funciona desde el navegador del móvil o del ordenador. El cliente entra a tu URL, ve la tienda, coge turno y hace la videollamada sin instalar nada. Cuanta menos fricción, más clientes.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          ¿Hay permanencia o contrato mínimo?
+          <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-a">No hay permanencia. Puedes cancelar cuando quieras sin penalización. Además, todos los planes incluyen 14 días de prueba gratuita para que puedas comprobar los resultados antes de comprometerte.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DEMO FORM -->
+<section class="section form-section" id="demo">
+  <div class="container">
+    <div class="form-grid">
+      <div class="form-side">
+        <span class="eyebrow reveal">Solicitar demo</span>
+        <h2 class="sec-h2 reveal" style="transition-delay:.05s">Ve cómo funciona<br/><em>en tu tienda</em></h2>
+        <p class="sec-sub reveal" style="transition-delay:.1s">Sin presión. En 30 minutos te mostramos la plataforma en directo, adaptada a tu tipo de comercio, y resolvemos todas tus dudas.</p>
+        <ul class="form-checklist">
+          <li class="form-check reveal" style="transition-delay:.12s">
+            <div class="form-check-icon">📹</div>
+            <div>
+              <h4>Demo en vivo</h4>
+              <p>Te mostramos la plataforma funcionando en tiempo real, con cámaras y cola activa.</p>
+            </div>
+          </li>
+          <li class="form-check reveal" style="transition-delay:.16s">
+            <div class="form-check-icon">🎯</div>
+            <div>
+              <h4>Adaptada a tu negocio</h4>
+              <p>La demo se personaliza para tu tipo de comercio: pescadería, carnicería, frutería…</p>
+            </div>
+          </li>
+          <li class="form-check reveal" style="transition-delay:.2s">
+            <div class="form-check-icon">⚡</div>
+            <div>
+              <h4>Setup en 72 horas</h4>
+              <p>Si decides seguir, en tres días estás en directo. Nuestro equipo se encarga de todo.</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <div class="reveal" style="transition-delay:.1s">
+        <div class="form-box">
+          <div id="formContent">
+            <h3>Pide tu demo</h3>
+            <p>Te contactamos en menos de 24 horas para agendar una sesión.</p>
+            <div class="form-row">
+              <div class="field">
+                <label>Nombre *</label>
+                <input type="text" id="f-name" placeholder="Tu nombre" autocomplete="given-name"/>
+              </div>
+              <div class="field">
+                <label>Apellidos *</label>
+                <input type="text" id="f-surname" placeholder="Tus apellidos" autocomplete="family-name"/>
+              </div>
+            </div>
+            <div class="field">
+              <label>Email de contacto *</label>
+              <input type="email" id="f-email" placeholder="hola@tutienda.com" autocomplete="email"/>
+            </div>
+            <div class="field">
+              <label>Teléfono / WhatsApp</label>
+              <input type="tel" placeholder="+34 600 000 000" autocomplete="tel"/>
+            </div>
+            <div class="field">
+              <label>Tipo de comercio *</label>
+              <select id="f-type">
+                <option value="">Selecciona…</option>
+                <option>Pescadería</option>
+                <option>Carnicería</option>
+                <option>Frutería / verdulería</option>
+                <option>Charcutería</option>
+                <option>Quesería</option>
+                <option>Panadería artesana</option>
+                <option>Otro comercio de alimentación</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>¿Algo que quieras contarnos?</label>
+              <textarea placeholder="Cuéntanos brevemente tu situación actual, dudas, o qué te interesa más explorar…"></textarea>
+            </div>
+            <button class="form-submit" onclick="submitForm()">Solicitar demo gratuita →</button>
+            <p class="form-fine">Sin compromiso · Respuesta en menos de 24h · 14 días de prueba gratuita</p>
+          </div>
+          <div class="form-success" id="formSuccess">
+            <div class="form-success-ico">🎉</div>
+            <h3>¡Solicitud recibida!</h3>
+            <p>Te contactamos en menos de 24 horas para agendar tu demo personalizada. Revisa también tu carpeta de spam.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <a href="#" class="footer-brand-logo">
+        <div class="footer-brand-ico">🐟</div>
+        <span class="footer-brand-name">Fresco<span>Vivo</span></span>
+      </a>
+      <p class="footer-desc">La plataforma de venta en directo para comercios de alimentación. Tus clientes ven lo que hay, cogen turno y recogen preparado.</p>
+    </div>
+    <div>
+      <div class="footer-col-title">Producto</div>
+      <ul class="footer-links">
+        <li>Cómo funciona</li>
+        <li>La plataforma</li>
+        <li>Precios</li>
+        <li>Casos de éxito</li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Comercios</div>
+      <ul class="footer-links">
+        <li>Pescaderías</li>
+        <li>Carnicerías</li>
+        <li>Fruterías</li>
+        <li>Queserías y más</li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Empresa</div>
+      <ul class="footer-links">
+        <li>Sobre nosotros</li>
+        <li>Blog</li>
+        <li>Contacto</li>
+        <li>Política de privacidad</li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-btm">
+    <span>© 2026 FrescoVivo · Todos los derechos reservados</span>
+    <div class="footer-btm-links">
+      <a href="#">Privacidad</a>
+      <a href="#">Términos</a>
+      <a href="#">Cookies</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Scroll reveal
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: .07 });
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+// Nav scroll shadow
+window.addEventListener('scroll', () => {
+  document.getElementById('nav').classList.toggle('scrolled', window.scrollY > 10);
+});
+
+// FAQ toggle
+function toggleFaq(el) {
+  const item = el.parentElement;
+  const isOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+  if (!isOpen) item.classList.add('open');
+}
+
+// Form submit
+function submitForm() {
+  const name = document.getElementById('f-name').value.trim();
+  const email = document.getElementById('f-email').value.trim();
+  const type = document.getElementById('f-type').value;
+  if (!name || !email || !type) {
+    if (!name) document.getElementById('f-name').style.borderColor = '#EF4444';
+    if (!email) document.getElementById('f-email').style.borderColor = '#EF4444';
+    if (!type) document.getElementById('f-type').style.borderColor = '#EF4444';
+    return;
+  }
+  document.getElementById('formContent').style.display = 'none';
+  document.getElementById('formSuccess').classList.add('show');
+}
+
+// Reset error borders on input
+['f-name','f-email','f-type'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', () => el.style.borderColor = '');
+});
+</script>
+</body>
+</html>

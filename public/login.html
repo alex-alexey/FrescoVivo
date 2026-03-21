@@ -417,7 +417,7 @@ const uIn=document.getElementById('username');
 const pIn=document.getElementById('password');
 
 /* check existing session */
-fetch('/api/auth/me').then(r=>{if(r.ok)window.location.href='/vendor'}).catch(()=>{});
+fetch('/api/auth/me').then(r=>{if(r.ok)window.location.href='/admin-panel.html'}).catch(()=>{});
 
 form.addEventListener('submit',async e=>{
   e.preventDefault();
@@ -427,7 +427,7 @@ form.addEventListener('submit',async e=>{
   try{
     const r=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});
     const d=await r.json();
-    if(d.success){showOk('¡Acceso correcto! Entrando al panel...');setTimeout(()=>window.location.href='/vendor',1000)}
+    if(d.success){showOk('¡Acceso correcto! Entrando al panel...');setTimeout(()=>window.location.href='/admin-panel.html',1000)}
     else{showErr(d.message||'Usuario o contraseña incorrectos');btn.classList.remove('loading');btn.disabled=false}
   }catch{showErr('Error de conexión. Inténtalo de nuevo.');btn.classList.remove('loading');btn.disabled=false}
 });

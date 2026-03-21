@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">Mi Tienda</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style id="base-styles">
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --secondary: #059669;
+            --accent: #f59e0b;
+            --bg: #ffffff;
+            --text: #111827;
+            --text-light: #6b7280;
+            --border: #e5e7eb;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        /* Header / Navigation */
+        .header {
+            background: white;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .logo-img {
+            height: 40px;
+            width: auto;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        /* Hero Section */
+        .hero {
+            position: relative;
+            height: 500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            overflow: hidden;
+        }
+
+        .hero-bg {
+            position: absolute;
+            inset: 0;
+            object-fit: cover;
+            opacity: 0.3;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            padding: 2rem;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            line-height: 1.1;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            opacity: 0.95;
+            margin-bottom: 2rem;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 14px 32px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: none;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: white;
+            color: var(--primary);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .section-subtitle {
+            font-size: 1.125rem;
+            color: var(--text-light);
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        /* Products Grid */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background: var(--border);
+        }
+
+        .product-info {
+            padding: 1.5rem;
+        }
+
+        .product-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .product-description {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
+        .product-price {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .product-category {
+            display: inline-block;
+            padding: 4px 12px;
+            background: var(--border);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Schedule */
+        .schedule-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .schedule-day {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .schedule-day.closed {
+            opacity: 0.5;
+        }
+
+        .day-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+
+        .day-hours {
+            color: var(--text-light);
+        }
+
+        /* Contact */
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .contact-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 1.5rem;
+        }
+
+        .contact-info h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .contact-info p {
+            color: var(--text-light);
+        }
+
+        /* Gallery */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .gallery-item {
+            position: relative;
+            height: 250px;
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+
+        .gallery-item:hover img {
+            transform: scale(1.05);
+        }
+
+        /* Footer */
+        .footer {
+            background: #111827;
+            color: white;
+            padding: 3rem 2rem;
+            margin-top: 4rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+        }
+
+        .footer-section h3 {
+            margin-bottom: 1rem;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .social-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            color: white;
+            text-decoration: none;
+            transition: background 0.3s;
+        }
+
+        .social-link:hover {
+            background: var(--primary);
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 4rem;
+        }
+
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-light);
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+    
+    <style id="custom-styles">
+        /* Estilos personalizados del cliente se cargarán aquí */
+    </style>
+</head>
+<body>
+    <!-- Loading State -->
+    <div id="loading" class="loading">
+        <div class="spinner"></div>
+        <p>Cargando tienda...</p>
+    </div>
+
+    <!-- Main Content (se cargará dinámicamente) -->
+    <div id="store-content" style="display: none;">
+        <!-- Header -->
+        <header class="header">
+            <nav class="nav-container">
+                <div class="logo">
+                    <img id="store-logo" class="logo-img" style="display: none;" alt="Logo">
+                    <span id="store-name">Mi Tienda</span>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="#products">Productos</a></li>
+                    <li><a href="#schedule">Horario</a></li>
+                    <li><a href="#contact">Contacto</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <!-- Hero -->
+        <section class="hero" id="hero-section">
+            <img id="hero-image" class="hero-bg" style="display: none;" alt="Hero">
+            <div class="hero-content">
+                <h1 id="hero-title">Bienvenido a nuestra tienda</h1>
+                <p id="hero-tagline">Productos frescos de calidad</p>
+                <a href="#products" class="btn btn-primary">Ver productos</a>
+            </div>
+        </section>
+
+        <!-- Products Section -->
+        <div id="products-section" class="container">
+            <h2 class="section-title">Nuestros Productos</h2>
+            <p class="section-subtitle">Descubre nuestra selección de productos frescos</p>
+            <div id="products-grid" class="products-grid"></div>
+        </div>
+
+        <!-- Schedule Section -->
+        <div id="schedule-section" class="container">
+            <h2 class="section-title">Horarios</h2>
+            <p class="section-subtitle">Estamos abiertos en estos horarios</p>
+            <div id="schedule-grid" class="schedule-grid"></div>
+        </div>
+
+        <!-- Contact Section -->
+        <div id="contact-section" class="container">
+            <h2 class="section-title">Contacto</h2>
+            <p class="section-subtitle">¿Tienes alguna pregunta? Contáctanos</p>
+            <div id="contact-grid" class="contact-grid"></div>
+        </div>
+
+        <!-- Gallery Section -->
+        <div id="gallery-section" class="container" style="display: none;">
+            <h2 class="section-title">Galería</h2>
+            <div id="gallery-grid" class="gallery-grid"></div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3 id="footer-name">Mi Tienda</h3>
+                    <p id="footer-description">Productos frescos de calidad</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Síguenos</h3>
+                    <div id="social-links" class="social-links"></div>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                <p>&copy; 2026 <span id="footer-store-name"></span> - Powered by FrescosEnVivo</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Socket.IO -->
+    <script src="/socket.io/socket.io.js"></script>
+    
+    <!-- Store Script -->
+    <script>
+        let storeConfig = null;
+
+        // Cargar configuración de la tienda
+        async function loadStoreConfig() {
+            try {
+                const response = await fetch('/api/store/config');
+                if (!response.ok) throw new Error('Error cargando configuración');
+                
+                storeConfig = await response.json();
+                renderStore(storeConfig);
+                
+                // Ocultar loading
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('store-content').style.display = 'block';
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('loading').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⚠️</div>
+                        <h2>Error al cargar la tienda</h2>
+                        <p>Por favor, intenta de nuevo más tarde</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Renderizar tienda
+        function renderStore(config) {
+            // Aplicar colores personalizados
+            document.documentElement.style.setProperty('--primary', config.colors.primary);
+            document.documentElement.style.setProperty('--secondary', config.colors.secondary);
+            document.documentElement.style.setProperty('--accent', config.colors.accent);
+
+            // Título de la página
+            document.getElementById('page-title').textContent = config.storeName;
+
+            // Logo y nombre
+            const logo = document.getElementById('store-logo');
+            const storeName = document.getElementById('store-name');
+            if (config.logo) {
+                logo.src = config.logo;
+                logo.style.display = 'block';
+            }
+            storeName.textContent = config.storeName;
+
+            // Hero
+            document.getElementById('hero-title').textContent = config.storeName;
+            document.getElementById('hero-tagline').textContent = config.tagline;
+            if (config.heroImage) {
+                const heroImg = document.getElementById('hero-image');
+                heroImg.src = config.heroImage;
+                heroImg.style.display = 'block';
+            }
+
+            // Productos
+            if (config.features.showProducts && config.products.length > 0) {
+                renderProducts(config.products);
+            } else {
+                document.getElementById('products-section').style.display = 'none';
+            }
+
+            // Horarios
+            if (config.features.showSchedule && config.schedule) {
+                renderSchedule(config.schedule);
+            } else {
+                document.getElementById('schedule-section').style.display = 'none';
+            }
+
+            // Contacto
+            if (config.features.showContact && config.contact) {
+                renderContact(config.contact);
+            } else {
+                document.getElementById('contact-section').style.display = 'none';
+            }
+
+            // Galería
+            if (config.features.showGallery && config.gallery && config.gallery.length > 0) {
+                renderGallery(config.gallery);
+                document.getElementById('gallery-section').style.display = 'block';
+            }
+
+            // Redes sociales
+            renderSocial(config.social);
+
+            // Footer
+            document.getElementById('footer-name').textContent = config.storeName;
+            document.getElementById('footer-description').textContent = config.tagline;
+            document.getElementById('footer-store-name').textContent = config.storeName;
+
+            // CSS personalizado
+            if (config.customCSS) {
+                document.getElementById('custom-styles').textContent = config.customCSS;
+            }
+        }
+
+        // Renderizar productos
+        function renderProducts(products) {
+            const grid = document.getElementById('products-grid');
+            grid.innerHTML = products
+                .sort((a, b) => (a.order || 0) - (b.order || 0))
+                .map(product => `
+                    <div class="product-card">
+                        ${product.image ? `<img src="${product.image}" alt="${product.name}" class="product-image">` : '<div class="product-image"></div>'}
+                        <div class="product-info">
+                            ${product.category ? `<span class="product-category">${product.category}</span>` : ''}
+                            <h3 class="product-name">${product.name}</h3>
+                            ${product.description ? `<p class="product-description">${product.description}</p>` : ''}
+                            ${product.price ? `<div class="product-price">${product.price.toFixed(2)}€</div>` : ''}
+                        </div>
+                    </div>
+                `).join('');
+        }
+
+        // Renderizar horarios
+        function renderSchedule(schedule) {
+            const grid = document.getElementById('schedule-grid');
+            const days = {
+                monday: 'Lunes',
+                tuesday: 'Martes',
+                wednesday: 'Miércoles',
+                thursday: 'Jueves',
+                friday: 'Viernes',
+                saturday: 'Sábado',
+                sunday: 'Domingo'
+            };
+
+            grid.innerHTML = Object.entries(days).map(([key, name]) => {
+                const day = schedule[key] || {};
+                const closed = day.closed || !day.open || !day.close;
+                return `
+                    <div class="schedule-day ${closed ? 'closed' : ''}">
+                        <div class="day-name">${name}</div>
+                        <div class="day-hours">
+                            ${closed ? 'Cerrado' : `${day.open} - ${day.close}`}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Renderizar contacto
+        function renderContact(contact) {
+            const grid = document.getElementById('contact-grid');
+            const items = [];
+
+            if (contact.phone) {
+                items.push(`
+                    <div class="contact-item">
+                        <div class="contact-icon">📞</div>
+                        <div class="contact-info">
+                            <h3>Teléfono</h3>
+                            <p><a href="tel:${contact.phone}">${contact.phone}</a></p>
+                        </div>
+                    </div>
+                `);
+            }
+
+            if (contact.email) {
+                items.push(`
+                    <div class="contact-item">
+                        <div class="contact-icon">✉️</div>
+                        <div class="contact-info">
+                            <h3>Email</h3>
+                            <p><a href="mailto:${contact.email}">${contact.email}</a></p>
+                        </div>
+                    </div>
+                `);
+            }
+
+            if (contact.address) {
+                items.push(`
+                    <div class="contact-item">
+                        <div class="contact-icon">📍</div>
+                        <div class="contact-info">
+                            <h3>Dirección</h3>
+                            <p>${contact.address}<br>${contact.postalCode} ${contact.city}</p>
+                        </div>
+                    </div>
+                `);
+            }
+
+            grid.innerHTML = items.join('');
+        }
+
+        // Renderizar galería
+        function renderGallery(gallery) {
+            const grid = document.getElementById('gallery-grid');
+            grid.innerHTML = gallery
+                .sort((a, b) => (a.order || 0) - (b.order || 0))
+                .map(item => `
+                    <div class="gallery-item">
+                        <img src="${item.url}" alt="${item.caption || ''}">
+                    </div>
+                `).join('');
+        }
+
+        // Renderizar redes sociales
+        function renderSocial(social) {
+            const container = document.getElementById('social-links');
+            const links = [];
+
+            if (social.facebook) links.push(`<a href="${social.facebook}" class="social-link" target="_blank">f</a>`);
+            if (social.instagram) links.push(`<a href="${social.instagram}" class="social-link" target="_blank">📷</a>`);
+            if (social.twitter) links.push(`<a href="${social.twitter}" class="social-link" target="_blank">🐦</a>`);
+            if (social.whatsapp) links.push(`<a href="https://wa.me/${social.whatsapp}" class="social-link" target="_blank">💬</a>`);
+
+            container.innerHTML = links.join('');
+        }
+
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', loadStoreConfig);
+    </script>
+</body>
+</html>

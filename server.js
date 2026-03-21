@@ -15,6 +15,8 @@ const emailService = require('./services/emailService');
 // Importar rutas
 const authRoutes = require('./routes/auth');
 const superadminRoutes = require('./routes/superadmin');
+const storeRoutes = require('./routes/store');
+const cameraRoutes = require('./routes/cameras');
 const { auth, canAccessVendor, isAdmin } = require('./middleware/auth');
 const { tenantMiddleware } = require('./middleware/tenantMiddleware');
 
@@ -95,9 +97,22 @@ app.use('/api/auth', authRoutes);
 // Rutas de Super Admin
 app.use('/api/superadmin', superadminRoutes);
 
+// Rutas de configuración de tienda (requiere tenant middleware)
+app.use('/api/store', storeRoutes);
+
+// Rutas de cámaras (requiere tenant middleware)
+app.use('/api', cameraRoutes);
+
 // Rutas HTTP
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'negocio.html'));
+  // Si es localhost, mostrar landing de la solución
+  const host = req.get('host');
+  if (host.includes('localhost') || host.includes('127.0.0.1')) {
+    res.sendFile(path.join(__dirname, 'public', 'landing.html'));
+  } else {
+    // Si es un dominio de cliente, mostrar su tienda
+    res.sendFile(path.join(__dirname, 'public', 'tienda.html'));
+  }
 });
 
 // Ruta de login
