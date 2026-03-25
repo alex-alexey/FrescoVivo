@@ -511,9 +511,24 @@
         async function loadStoreConfig() {
             try {
                 const response = await fetch('/api/store/config' + apiBase);
+                const data = await response.json();
+
+                // Sin tenant especificado
+                if (data.error === 'tenant_required') {
+                    document.getElementById('loading').innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">🏪</div>
+                            <h2>Tienda no especificada</h2>
+                            <p>Añade <strong>?tenant=nombre</strong> en la URL para ver una tienda.</p>
+                            <p style="margin-top:10px;font-size:0.9em;opacity:0.7">Ejemplo: /tienda.html?tenant=demo2</p>
+                        </div>
+                    `;
+                    return;
+                }
+
                 if (!response.ok) throw new Error('Error cargando configuración');
                 
-                storeConfig = await response.json();
+                storeConfig = data;
                 renderStore(storeConfig);
                 
                 // Ocultar loading

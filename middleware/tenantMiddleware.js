@@ -51,6 +51,7 @@ async function tenantMiddleware(req, res, next) {
                     });
                 }
                 req.client = {
+                    _id: client._id,
                     id: client._id,
                     businessName: client.businessName,
                     slug: client.slug,
@@ -205,6 +206,7 @@ async function tenantMiddleware(req, res, next) {
         
         // Agregar información del cliente y la DB al request
         req.client = {
+            _id: client._id,
             id: client._id,
             businessName: client.businessName,
             slug: client.slug,

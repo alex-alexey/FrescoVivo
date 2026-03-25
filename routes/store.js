@@ -8,7 +8,10 @@ router.get('/config', async (req, res) => {
     try {
         // Obtener el cliente desde el middleware de tenant
         if (!req.client) {
-            return res.status(404).json({ error: 'Cliente no encontrado' });
+            return res.status(400).json({ 
+                error: 'tenant_required',
+                message: 'Debes especificar un tenant. Usa ?tenant=slug' 
+            });
         }
 
         let config = await StoreConfig.findOne({ clientId: req.client._id });
