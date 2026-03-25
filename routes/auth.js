@@ -368,10 +368,10 @@ router.get('/me', auth, async (req, res) => {
                 id: req.user._id,
                 username: req.user.username,
                 email: req.user.email,
-                fullName: req.user.fullName,
+                fullName: req.user.fullName || req.user.businessName,
                 role: req.user.role,
-                lastLogin: req.user.lastLogin,
-                createdAt: req.user.createdAt
+                businessName: req.user.businessName || null,
+                isOwner: req.user.isOwner || false
             }
         });
     } catch (error) {

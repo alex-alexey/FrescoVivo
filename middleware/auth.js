@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const Client = require('../models/Client');
 
 // Middleware para verificar si el usuario está autenticado
 const auth = async (req, res, next) => {
@@ -7,43 +8,73 @@ const auth = async (req, res, next) => {
         console.log('🔐 Auth middleware:', {
             sessionID: req.sessionID,
             userId: req.session?.userId,
+            clientId: req.session?.clientId,
             hasSession: !!req.session,
             cookies: req.headers.cookie ? 'present' : 'missing'
         });
         
-        // Verificar si hay sesión activa
-        if (req.session && req.session.userId) {
-            // Buscar usuario en la base de datos
-            const user = await User.findById(req.session.userId);
-            
-            if (!user) {
-                console.log('❌ Usuario no encontrado en DB:', req.session.userId);
-                return res.status(401).json({ 
-                    success: false, 
-                    message: 'Usuario no encontrado' 
-                });
-            }
-            
-            if (!user.isActive) {
-                console.log('⚠️ Usuario inactivo:', user.username);
-                return res.status(403).json({ 
-                    success: false, 
-                    message: 'Usuario inactivo' 
-                });
-            }
-            
-            console.log('✅ Usuario autenticado:', user.username);
-            
-            // Agregar usuario a la request
-            req.user = user;
-            next();
-        } else {
+        if (!req.session || !req.session.userId) {
             console.log('❌ No hay sesión activa');
             return res.status(401).json({ 
                 success: false, 
                 message: 'No autenticado. Por favor inicia sesión.' 
             });
         }
+
+        // CASO 1: Es propietario de un tenant (clientId en sesión)
+        if (req.session.clientId) {
+            const client = await Client.findById(req.session.clientId);
+            if (!client) {
+                return res.status(401).json({ success: false, message: 'Cliente no encontrado' });
+            }
+            if (!client.isActive()) {
+                return res.status(403).json({ success: false, message: 'Cuenta inactiva' });
+            }
+            // Construir objeto user compatible con el resto del código
+            req.user = {
+                _id: client._id,
+                username: client.owner.username,
+                email: client.owner.email,
+                fullName: client.owner.fullName,
+                role: 'admin',
+                isActive: true,
+                businessName: client.businessName,
+                isOwner: true
+            };
+            // Asegurar que req.client también está seteado
+            if (!req.client) {
+                req.client = {
+                    _id: client._id,
+                    id: client._id,
+                    businessName: client.businessName,
+                    slug: client.slug,
+                    domain: client.domain,
+                    branding: client.branding,
+                    limits: client.limits,
+                    plan: client.plan,
+                    config: client.config
+                };
+            }
+            console.log('✅ Propietario autenticado:', client.owner.username, 'de', client.businessName);
+            return next();
+        }
+
+        // CASO 2: Es usuario master (superadmin o usuario en DB maestra)
+        const user = await User.findById(req.session.userId);
+        if (!user) {
+            console.log('❌ Usuario no encontrado en DB:', req.session.userId);
+            return res.status(401).json({ 
+                success: false, 
+                message: 'Usuario no encontrado' 
+            });
+        }
+        if (!user.isActive) {
+            return res.status(403).json({ success: false, message: 'Usuario inactivo' });
+        }
+        console.log('✅ Usuario master autenticado:', user.username);
+        req.user = user;
+        next();
+
     } catch (error) {
         console.error('Error en middleware de autenticación:', error);
         return res.status(500).json({ 
