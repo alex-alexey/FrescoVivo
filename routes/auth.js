@@ -273,18 +273,34 @@ router.post('/superadmin-login', async (req, res) => {
         req.session.role = user.role;
         req.session.isSuperAdmin = true;
         
-        console.log(`✅ Login Super Admin exitoso: ${user.username} (${user.role})`);
-        
-        res.json({ 
-            success: true, 
-            message: 'Login exitoso',
-            user: {
-                id: user._id,
-                username: user.username,
-                email: user.email,
-                fullName: user.fullName,
-                role: user.role
+        // Guardar la sesión explícitamente antes de responder
+        req.session.save((err) => {
+            if (err) {
+                console.error('Error guardando sesión:', err);
+                return res.status(500).json({ 
+                    success: false, 
+                    message: 'Error guardando sesión' 
+                });
             }
+            
+            console.log(`✅ Login Super Admin exitoso: ${user.username} (${user.role})`);
+            console.log('🔑 Sesión creada:', { 
+                sessionID: req.sessionID,
+                userId: req.session.userId,
+                role: req.session.role 
+            });
+            
+            res.json({ 
+                success: true, 
+                message: 'Login exitoso',
+                user: {
+                    id: user._id,
+                    username: user.username,
+                    email: user.email,
+                    fullName: user.fullName,
+                    role: user.role
+                }
+            });
         });
         
     } catch (error) {

@@ -3,6 +3,7 @@ const express = require('express');
 const http = require('http');
 const socketIO = require('socket.io');
 const session = require('express-session');
+const MongoStore = require('connect-mongo');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 
@@ -36,16 +37,28 @@ connectDB();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Configurar sesiones (sin MongoDB store por ahora - usar memoria)
+// Configurar sesiones con MongoDB store
 app.use(session({
   secret: process.env.SESSION_SECRET || 'secret_key_default',
   resave: false,
   saveUninitialized: false,
+  store: MongoStore.create({
+    mongoUrl: process.env.MONGO_URI,
+    dbName: 'pescadolive', // Base de datos master
+    collectionName: 'sessions',
+    touchAfter: 24 * 3600, // Actualizar sesión cada 24h si no hay cambios
+    ttl: 7 * 24 * 60 * 60, // 7 días de vida de la sesión
+    autoRemove: 'native' // MongoDB se encarga de limpiar sesiones expiradas
+  }),
+  name: 'frescosenvivo.sid', // Nombre personalizado del cookie
   cookie: {
     maxAge: 1000 * 60 * 60 * 24 * 7, // 7 días
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production'
-  }
+    secure: process.env.NODE_ENV === 'production', // Solo HTTPS en producción
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // Permitir cross-site en producción
+    path: '/' // Cookie disponible en todas las rutas
+  },
+  proxy: process.env.NODE_ENV === 'production' // Confiar en el proxy (Render)
 }));
 
 app.use(express.static('public'));
