@@ -122,8 +122,15 @@ app.use('/api', cameraRoutes);
 
 // Rutas HTTP
 app.get('/', (req, res) => {
-  // Si es localhost o dominio de hosting, mostrar landing de la solución
   const host = req.get('host');
+  const tenantSlug = req.query.tenant;
+
+  // Si viene ?tenant=slug desde un dominio de hosting, mostrar la tienda del cliente
+  if (tenantSlug) {
+    return res.sendFile(path.join(__dirname, 'public', 'tienda.html'));
+  }
+
+  // Si es localhost o dominio de hosting, mostrar landing de la solución
   if (host.includes('localhost') || 
       host.includes('127.0.0.1') ||
       host.includes('.onrender.com') ||
@@ -135,6 +142,11 @@ app.get('/', (req, res) => {
     // Si es un dominio de cliente personalizado, mostrar su tienda
     res.sendFile(path.join(__dirname, 'public', 'tienda.html'));
   }
+});
+
+// Ruta directa a la tienda de un cliente por slug
+app.get('/tienda', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'tienda.html'));
 });
 
 // Ruta de login

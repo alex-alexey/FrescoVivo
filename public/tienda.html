@@ -502,10 +502,15 @@
     <script>
         let storeConfig = null;
 
+        // Propagar ?tenant= a todas las llamadas API
+        const urlParams = new URLSearchParams(window.location.search);
+        const tenantParam = urlParams.get('tenant');
+        const apiBase = tenantParam ? `?tenant=${tenantParam}` : '';
+
         // Cargar configuración de la tienda
         async function loadStoreConfig() {
             try {
-                const response = await fetch('/api/store/config');
+                const response = await fetch('/api/store/config' + apiBase);
                 if (!response.ok) throw new Error('Error cargando configuración');
                 
                 storeConfig = await response.json();
