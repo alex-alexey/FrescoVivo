@@ -137,23 +137,31 @@ router.post('/login', async (req, res) => {
                 // Login exitoso del propietario
                 req.session.userId = client._id;
                 req.session.username = client.owner.username;
-                req.session.role = 'admin'; // El propietario es admin de su negocio
+                req.session.role = 'admin';
                 req.session.clientId = client._id;
                 req.session.businessName = client.businessName;
                 
                 console.log(`✅ Login exitoso (Propietario): ${client.owner.username} de ${client.businessName}`);
-                
-                return res.json({ 
-                    success: true, 
-                    message: 'Login exitoso',
-                    user: {
-                        id: client._id,
-                        username: client.owner.username,
-                        email: client.owner.email,
-                        fullName: client.owner.fullName,
-                        role: 'admin',
-                        businessName: client.businessName
+
+                // Guardar sesión explícitamente antes de responder (crítico en producción)
+                return req.session.save((err) => {
+                    if (err) {
+                        console.error('❌ Error guardando sesión del propietario:', err);
+                        return res.status(500).json({ success: false, message: 'Error guardando sesión' });
                     }
+                    console.log('✅ Sesión del propietario guardada:', req.sessionID);
+                    return res.json({ 
+                        success: true, 
+                        message: 'Login exitoso',
+                        user: {
+                            id: client._id,
+                            username: client.owner.username,
+                            email: client.owner.email,
+                            fullName: client.owner.fullName,
+                            role: 'admin',
+                            businessName: client.businessName
+                        }
+                    });
                 });
             }
             
