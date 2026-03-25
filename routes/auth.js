@@ -25,8 +25,22 @@ router.post('/login', async (req, res) => {
         
         console.log('🔐 Intento de login:', { username, domain });
         
-        // Si es localhost o admin.*, buscar en la DB Master (Super Admin)
-        if (domain === 'localhost' || domain === '127.0.0.1' || domain.startsWith('admin.')) {
+        // Detectar si es dominio de hosting/superadmin
+        const isHostingDomain = (
+            domain === 'localhost' ||
+            domain === '127.0.0.1' ||
+            domain.startsWith('admin.') ||
+            domain.includes('.onrender.com') ||
+            domain.includes('.herokuapp.com') ||
+            domain.includes('.vercel.app') ||
+            domain.includes('.netlify.app')
+        );
+
+        // También soporte para ?tenant= (login de cliente desde hosting)
+        const tenantSlug = req.query.tenant;
+
+        // Si es localhost o dominio de hosting SIN ?tenant=, buscar en DB Master (Super Admin)
+        if (isHostingDomain && !tenantSlug) {
             console.log('🔧 Login de Super Admin en DB Master');
             
             // Buscar usuario en la base de datos MASTER
@@ -82,13 +96,15 @@ router.post('/login', async (req, res) => {
             
         } else {
             // Es un cliente específico, buscar en su base de datos dedicada
-            console.log('🏢 Login de cliente en dominio:', domain);
+            console.log('🏢 Login de cliente en dominio:', domain, '| tenant:', tenantSlug || 'por dominio');
             
-            // 1. Buscar el cliente por dominio en la DB Master
-            const client = await Client.findOne({ domain: domain });
+            // 1. Buscar el cliente por slug (?tenant=) o por dominio
+            const client = tenantSlug
+                ? await Client.findOne({ slug: tenantSlug })
+                : await Client.findOne({ domain: domain });
             
             if (!client) {
-                console.log('❌ Cliente no encontrado para dominio:', domain);
+                console.log('❌ Cliente no encontrado:', tenantSlug || domain);
                 return res.status(404).json({ 
                     success: false, 
                     message: 'Dominio no registrado en el sistema' 

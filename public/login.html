@@ -416,8 +416,13 @@ const okEl=document.getElementById('success-message');
 const uIn=document.getElementById('username');
 const pIn=document.getElementById('password');
 
+/* Propagar parámetro ?tenant= si existe */
+const urlParams = new URLSearchParams(window.location.search);
+const tenantParam = urlParams.get('tenant');
+const adminPanelUrl = tenantParam ? `/admin-panel.html?tenant=${tenantParam}` : '/admin-panel.html';
+
 /* check existing session */
-fetch('/api/auth/me').then(r=>{if(r.ok)window.location.href='/admin-panel.html'}).catch(()=>{});
+fetch('/api/auth/me' + (tenantParam ? `?tenant=${tenantParam}` : '')).then(r=>{if(r.ok)window.location.href=adminPanelUrl}).catch(()=>{});
 
 form.addEventListener('submit',async e=>{
   e.preventDefault();
@@ -425,9 +430,9 @@ form.addEventListener('submit',async e=>{
   if(!u||!p){showErr('Por favor completa todos los campos');return}
   btn.classList.add('loading');btn.disabled=true;hide();
   try{
-    const r=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});
+    const r=await fetch('/api/auth/login' + (tenantParam ? `?tenant=${tenantParam}` : ''),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});
     const d=await r.json();
-    if(d.success){showOk('¡Acceso correcto! Entrando al panel...');setTimeout(()=>window.location.href='/admin-panel.html',1000)}
+    if(d.success){showOk('¡Acceso correcto! Entrando al panel...');setTimeout(()=>window.location.href=adminPanelUrl,1000)}
     else{showErr(d.message||'Usuario o contraseña incorrectos');btn.classList.remove('loading');btn.disabled=false}
   }catch{showErr('Error de conexión. Inténtalo de nuevo.');btn.classList.remove('loading');btn.disabled=false}
 });

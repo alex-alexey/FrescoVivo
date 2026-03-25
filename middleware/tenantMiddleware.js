@@ -6,7 +6,7 @@ const dbConnections = new Map();
 
 /**
  * Middleware que identifica al cliente (tenant) basándose en el dominio
- * y establece la conexión a su base de datos dedicada
+ * o en el parámetro ?tenant=slug para acceso desde dominios de hosting
  */
 async function tenantMiddleware(req, res, next) {
     try {
@@ -18,14 +18,61 @@ async function tenantMiddleware(req, res, next) {
         
         console.log('🌐 Dominio detectado:', domain);
         
-        // Si es el dominio de super admin o servicios de hosting, saltarse este middleware
-        if (domain.startsWith('admin.') || 
+        // Detectar si es dominio de hosting (superadmin) o tiene parámetro ?tenant=
+        const isHostingDomain = (
+            domain.startsWith('admin.') || 
             domain === 'localhost' || 
             domain === '127.0.0.1' ||
             domain.includes('.onrender.com') ||
             domain.includes('.herokuapp.com') ||
             domain.includes('.vercel.app') ||
-            domain.includes('.netlify.app')) {
+            domain.includes('.netlify.app')
+        );
+
+        // Si viene ?tenant=slug desde un dominio de hosting, cargar ese tenant
+        const tenantSlug = req.query.tenant || req.headers['x-tenant-slug'];
+        if (isHostingDomain && tenantSlug) {
+            console.log('🔑 Acceso por parámetro tenant:', tenantSlug);
+            const client = await Client.findOne({ slug: tenantSlug });
+            if (client && client.isActive()) {
+                // Configurar tenant igual que con dominio propio
+                let tenantDb;
+                if (dbConnections.has(client.database.name)) {
+                    tenantDb = dbConnections.get(client.database.name);
+                } else {
+                    tenantDb = mongoose.createConnection(client.database.connectionString);
+                    dbConnections.set(client.database.name, tenantDb);
+                    tenantDb.on('error', (err) => {
+                        console.error('❌ Error en DB del cliente:', client.database.name, err);
+                        dbConnections.delete(client.database.name);
+                    });
+                    tenantDb.on('disconnected', () => {
+                        dbConnections.delete(client.database.name);
+                    });
+                }
+                req.client = {
+                    id: client._id,
+                    businessName: client.businessName,
+                    slug: client.slug,
+                    domain: client.domain,
+                    branding: client.branding,
+                    limits: client.limits,
+                    plan: client.plan,
+                    config: client.config
+                };
+                req.tenantDb = tenantDb;
+                req.isSuperAdmin = false;
+                client.stats.lastActivityAt = new Date();
+                await client.save();
+                console.log('🎯 Tenant cargado por slug:', client.businessName);
+                return next();
+            }
+            // Si el slug no existe, continuar como superadmin
+            console.log('⚠️ Tenant slug no encontrado, continuando como superadmin');
+        }
+
+        // Si es dominio de hosting sin ?tenant=, modo superadmin
+        if (isHostingDomain) {
             console.log('🔧 Acceso de Super Admin o servicio de hosting detectado');
             req.isSuperAdmin = true;
             return next();
