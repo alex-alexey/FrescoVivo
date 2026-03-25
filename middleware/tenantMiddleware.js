@@ -18,9 +18,15 @@ async function tenantMiddleware(req, res, next) {
         
         console.log('🌐 Dominio detectado:', domain);
         
-        // Si es el dominio de super admin, saltarse este middleware
-        if (domain.startsWith('admin.') || domain === 'localhost' || domain === '127.0.0.1') {
-            console.log('🔧 Acceso de Super Admin detectado');
+        // Si es el dominio de super admin o servicios de hosting, saltarse este middleware
+        if (domain.startsWith('admin.') || 
+            domain === 'localhost' || 
+            domain === '127.0.0.1' ||
+            domain.includes('.onrender.com') ||
+            domain.includes('.herokuapp.com') ||
+            domain.includes('.vercel.app') ||
+            domain.includes('.netlify.app')) {
+            console.log('🔧 Acceso de Super Admin o servicio de hosting detectado');
             req.isSuperAdmin = true;
             return next();
         }

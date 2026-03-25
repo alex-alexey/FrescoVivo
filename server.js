@@ -105,12 +105,17 @@ app.use('/api', cameraRoutes);
 
 // Rutas HTTP
 app.get('/', (req, res) => {
-  // Si es localhost, mostrar landing de la solución
+  // Si es localhost o dominio de hosting, mostrar landing de la solución
   const host = req.get('host');
-  if (host.includes('localhost') || host.includes('127.0.0.1')) {
+  if (host.includes('localhost') || 
+      host.includes('127.0.0.1') ||
+      host.includes('.onrender.com') ||
+      host.includes('.herokuapp.com') ||
+      host.includes('.vercel.app') ||
+      host.includes('.netlify.app')) {
     res.sendFile(path.join(__dirname, 'public', 'landing.html'));
   } else {
-    // Si es un dominio de cliente, mostrar su tienda
+    // Si es un dominio de cliente personalizado, mostrar su tienda
     res.sendFile(path.join(__dirname, 'public', 'tienda.html'));
   }
 });
