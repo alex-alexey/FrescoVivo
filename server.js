@@ -44,19 +44,23 @@ app.use(session({
   saveUninitialized: false,
   store: MongoStore.create({
     mongoUrl: process.env.MONGO_URI,
-    dbName: 'pescadolive', // Base de datos master
+    dbName: 'pescadolive',
     collectionName: 'sessions',
-    touchAfter: 24 * 3600, // Actualizar sesión cada 24h si no hay cambios
-    ttl: 7 * 24 * 60 * 60, // 7 días de vida de la sesión
-    autoRemove: 'native' // MongoDB se encarga de limpiar sesiones expiradas
+    touchAfter: 24 * 3600,
+    ttl: 7 * 24 * 60 * 60,
+    autoRemove: 'native',
+    mongoOptions: {
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    }
   }),
-  name: 'frescosenvivo.sid', // Nombre personalizado del cookie
+  name: 'frescosenvivo.sid',
   cookie: {
-    maxAge: 1000 * 60 * 60 * 24 * 7, // 7 días
+    maxAge: 1000 * 60 * 60 * 24 * 7,
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production', // Solo HTTPS en producción
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // Permitir cross-site en producción
-    path: '/' // Cookie disponible en todas las rutas
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    path: '/'
   },
   proxy: process.env.NODE_ENV === 'production' // Confiar en el proxy (Render)
 }));
