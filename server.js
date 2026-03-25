@@ -37,59 +37,31 @@ connectDB();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Opciones comunes de cookie
-const cookieOptions = {
-  maxAge: 1000 * 60 * 60 * 24 * 7,
-  httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-  path: '/'
-};
-
-const sessionStoreOptions = {
-  mongoUrl: process.env.MONGO_URI,
-  dbName: 'pescadolive',
-  touchAfter: 24 * 3600,
-  ttl: 7 * 24 * 60 * 60,
-  autoRemove: 'native'
-};
-
-// Sesión SUPERADMIN — cookie separada, colección separada
-const superadminSession = session({
+// Sesión única con MongoDB store
+const sessionMiddleware = session({
   secret: process.env.SESSION_SECRET || 'secret_key_default',
   resave: false,
   saveUninitialized: false,
-  store: MongoStore.create({ ...sessionStoreOptions, collectionName: 'sessions_superadmin' }),
-  name: 'frescos.admin.sid',
-  cookie: cookieOptions,
+  store: MongoStore.create({
+    mongoUrl: process.env.MONGO_URI,
+    dbName: 'pescadolive',
+    collectionName: 'sessions',
+    touchAfter: 24 * 3600,
+    ttl: 7 * 24 * 60 * 60,
+    autoRemove: 'native'
+  }),
+  name: 'frescos.sid',
+  cookie: {
+    maxAge: 1000 * 60 * 60 * 24 * 7,
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    path: '/'
+  },
   proxy: process.env.NODE_ENV === 'production'
 });
 
-// Sesión CLIENTE — cookie separada, colección separada
-const clientSession = session({
-  secret: process.env.SESSION_SECRET || 'secret_key_default',
-  resave: false,
-  saveUninitialized: false,
-  store: MongoStore.create({ ...sessionStoreOptions, collectionName: 'sessions_client' }),
-  name: 'frescos.client.sid',
-  cookie: cookieOptions,
-  proxy: process.env.NODE_ENV === 'production'
-});
-
-// Middleware que aplica la sesión correcta según la ruta
-app.use((req, res, next) => {
-  const path = req.path;
-  // Rutas exclusivas del superadmin usan la sesión de superadmin
-  const isSuperadminRoute = path.startsWith('/api/superadmin') ||
-                            path === '/api/auth/superadmin-login' ||
-                            path === '/superadmin' ||
-                            path.startsWith('/superadmin/');
-  if (isSuperadminRoute) {
-    return superadminSession(req, res, next);
-  }
-  // Todo lo demás (clientes, tienda, login de clientes) usa sesión de cliente
-  return clientSession(req, res, next);
-});
+app.use(sessionMiddleware);
 
 app.use(express.static('public'));
 
@@ -181,7 +153,7 @@ app.get('/login', (req, res) => {
 });
 
 // Ruta del panel de Super Admin (solo accesible desde admin.* o localhost)
-app.get('/superadmin', superadminSession, (req, res) => {
+app.get('/superadmin', (req, res) => {
   if (!req.session || !req.session.userId || !req.session.isSuperAdmin) {
     return res.redirect('/superadmin-login.html');
   }
