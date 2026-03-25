@@ -421,8 +421,19 @@ const urlParams = new URLSearchParams(window.location.search);
 const tenantParam = urlParams.get('tenant');
 const adminPanelUrl = tenantParam ? `/admin-panel.html?tenant=${tenantParam}` : '/admin-panel.html';
 
-/* check existing session */
-fetch('/api/auth/me' + (tenantParam ? `?tenant=${tenantParam}` : '')).then(r=>{if(r.ok)window.location.href=adminPanelUrl}).catch(()=>{});
+/* check existing session — solo redirigir si la sesión corresponde al tenant correcto */
+fetch('/api/auth/me' + (tenantParam ? `?tenant=${tenantParam}` : ''))
+  .then(r => r.ok ? r.json() : null)
+  .then(data => {
+    if (!data || !data.success || !data.user) return;
+    // Si hay tenant en URL, verificar que la sesión es de ese tenant (isOwner)
+    // Si hay sesión de superadmin (no isOwner), no redirigir automáticamente
+    if (tenantParam && !data.user.isOwner) return;
+    // Si no hay tenant, solo redirigir si es superadmin
+    if (!tenantParam && data.user.role !== 'admin') return;
+    window.location.href = adminPanelUrl;
+  })
+  .catch(()=>{});
 
 form.addEventListener('submit',async e=>{
   e.preventDefault();
