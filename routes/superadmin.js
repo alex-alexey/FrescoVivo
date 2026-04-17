@@ -183,7 +183,12 @@ function superAdminAuth(req, res, next) {
     }
     
     // Verificar que tenga permisos de Super Admin
-    if (!req.session.isSuperAdmin || req.session.role !== 'admin') {
+    // isSuperAdmin se setea en login cuando accede desde dominio de hosting
+    // También aceptar si el role es 'admin' y no tiene clientId (es admin master)
+    const isValidSuperAdmin = req.session.isSuperAdmin || 
+                              (req.session.role === 'admin' && !req.session.clientId);
+
+    if (!isValidSuperAdmin) {
         return res.status(403).json({ success: false, message: 'Acceso denegado - Se requieren permisos de Super Admin' });
     }
     

@@ -3,7 +3,7 @@ const express = require('express');
 const http = require('http');
 const socketIO = require('socket.io');
 const session = require('express-session');
-const MongoStore = require('connect-mongo').default;
+const MongoStore = require('connect-mongo');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 
@@ -88,22 +88,31 @@ if (!sessionSecret) {
   process.exit(1);
 }
 
-// Configurar sesiones con MongoDB Store (persistencia)
-app.use(session({
-  store: new MongoStore({
-    mongoUrl: process.env.MONGO_URI,
-    touchAfter: 24 * 3600 // Actualizar session cada 24h solo si se accede
-  }),
+// Sesión única con MongoDB store
+const sessionMiddleware = session({
   secret: sessionSecret,
   resave: false,
   saveUninitialized: false,
+  store: MongoStore.create({
+    mongoUrl: process.env.MONGO_URI,
+    dbName: 'pescadolive',
+    collectionName: 'sessions',
+    touchAfter: 24 * 3600,
+    ttl: 7 * 24 * 60 * 60,
+    autoRemove: 'native'
+  }),
+  name: 'frescos.sid',
   cookie: {
-    maxAge: 1000 * 60 * 60 * 24 * 7, // 7 días
+    maxAge: 1000 * 60 * 60 * 24 * 7,
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax'
-  }
-}));
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    path: '/'
+  },
+  proxy: process.env.NODE_ENV === 'production'
+});
+
+app.use(sessionMiddleware);
 
 app.use(express.static('public'));
 
@@ -151,17 +160,35 @@ app.use('/api/invoices', invoicesRoutes);
 
 // Rutas HTTP
 app.get('/', (req, res) => {
-  // Resolver por dominio exacto (sin puerto)
-  const host = req.get('host') || req.hostname;
+  const host = req.get('host') || req.hostname || '';
   const domain = host.split(':')[0];
+  const tenantSlug = req.query.tenant;
 
-  // Solo localhost/base muestra landing; subdominios (ej: miguel.localhost) muestran tienda
-  if (domain === 'localhost' || domain === '127.0.0.1' || domain.startsWith('admin.')) {
+  // Si viene ?tenant=slug desde un dominio de hosting, mostrar la tienda del cliente
+  if (tenantSlug) {
+    return res.sendFile(path.join(__dirname, 'public', 'tienda.html'));
+  }
+
+  const isPlatformHost =
+    domain === 'localhost' ||
+    domain === '127.0.0.1' ||
+    domain.startsWith('admin.') ||
+    domain.endsWith('.onrender.com') ||
+    domain.endsWith('.herokuapp.com') ||
+    domain.endsWith('.vercel.app') ||
+    domain.endsWith('.netlify.app');
+
+  if (isPlatformHost) {
     res.sendFile(path.join(__dirname, 'public', 'landing.html'));
   } else {
-    // Si es un dominio de cliente, mostrar su tienda
+    // Si es un dominio de cliente personalizado, mostrar su tienda
     res.sendFile(path.join(__dirname, 'public', 'tienda.html'));
   }
+});
+
+// Ruta directa a la tienda de un cliente por slug
+app.get('/tienda', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'tienda.html'));
 });
 
 // Ruta de login
@@ -175,11 +202,9 @@ app.get('/activate-account', (req, res) => {
 });
 
 // Ruta del panel de Super Admin (solo accesible desde admin.* o localhost)
-app.get('/superadmin', auth, (req, res) => {
-  const host = req.get('host');
-  // Solo permitir acceso desde subdomain admin.* o localhost
-  if (!host.startsWith('admin.') && host !== 'localhost:3000' && host !== '127.0.0.1:3000') {
-    return res.status(403).send('Acceso denegado');
+app.get('/superadmin', (req, res) => {
+  if (!req.session || !req.session.userId || !req.session.isSuperAdmin) {
+    return res.redirect('/superadmin-login.html');
   }
   res.sendFile(path.join(__dirname, 'public', 'superadmin.html'));
 });

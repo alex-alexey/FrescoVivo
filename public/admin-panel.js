@@ -2,38 +2,74 @@
 let storeConfig = null;
 let currentSection = 'dashboard';
 
+// Propagar ?tenant= en todas las llamadas API
+const _urlParams = new URLSearchParams(window.location.search);
+const _tenant = _urlParams.get('tenant');
+function apiUrl(path) {
+    return _tenant ? `${path}${path.includes('?') ? '&' : '?'}tenant=${_tenant}` : path;
+}
+function tenantHref(path) {
+    return _tenant ? `${path}${path.includes('?') ? '&' : '?'}tenant=${_tenant}` : path;
+}
+
 // Verificar autenticación
 async function checkAuth() {
     try {
-        const response = await fetch('/api/auth/me');
+        const response = await fetch(apiUrl('/api/auth/me'));
         const data = await response.json();
         
         if (!data.success || !data.user) {
-            window.location.href = '/login.html';
+            window.location.href = tenantHref('/login.html');
+            return false;
+        }
+
+        // Si hay tenant en URL, la sesión debe ser del propietario de ese tenant
+        // Si hay sesión de superadmin u otro tenant → cerrar sesión y redirigir
+        if (_tenant && !data.user.isOwner) {
+            showClosingSessions();
+            await fetch('/api/auth/logout', { method: 'POST' });
+            setTimeout(() => { window.location.href = tenantHref('/login.html'); }, 1500);
             return false;
         }
         
         // Mostrar nombre del negocio
-        if (data.user.fullName) {
-            document.getElementById('business-name').textContent = data.user.fullName;
-        }
+        document.getElementById('business-name').textContent = 
+            data.user.businessName || data.user.fullName || data.user.username;
         
         return true;
     } catch (error) {
         console.error('Error verificando autenticación:', error);
-        window.location.href = '/login.html';
+        window.location.href = tenantHref('/login.html');
         return false;
     }
+}
+
+// Mostrar pantalla de cierre de sesiones pendientes
+function showClosingSessions() {
+    const loadingEl = document.getElementById('loading');
+    loadingEl.innerHTML = `
+        <div style="text-align:center; padding: 3rem;">
+            <div style="font-size:3rem; margin-bottom:1rem;">🔒</div>
+            <h2 style="font-size:1.4rem; margin-bottom:0.75rem; color:#1f2937;">Cerrando sesiones pendientes...</h2>
+            <p style="color:#6b7280; margin-bottom:1.5rem;">Hay una sesión activa de otro usuario. Cerrándola automáticamente.</p>
+            <div style="width:200px; height:4px; background:#e5e7eb; border-radius:2px; margin:0 auto; overflow:hidden;">
+                <div style="height:100%; background:#2563eb; border-radius:2px; animation: progress 1.5s linear forwards;"></div>
+            </div>
+        </div>
+        <style>
+            @keyframes progress { from { width: 0% } to { width: 100% } }
+        </style>
+    `;
 }
 
 // Cerrar sesión
 async function logout() {
     try {
-        await fetch('/api/auth/logout', { method: 'POST' });
-        window.location.href = '/login.html';
+        await fetch(apiUrl('/api/auth/logout'), { method: 'POST' });
+        window.location.href = tenantHref('/login.html');
     } catch (error) {
         console.error('Error cerrando sesión:', error);
-        window.location.href = '/login.html';
+        window.location.href = tenantHref('/login.html');
     }
 }
 
@@ -102,7 +138,7 @@ async function loadSectionData(section) {
 // Cargar dashboard
 async function loadDashboard() {
     try {
-        const config = await fetch('/api/store/config/admin').then(r => r.json());
+        const config = await fetch(apiUrl('/api/store/config/admin')).then(r => r.json());
         
         // Actualizar stats
         document.getElementById('stat-products').textContent = config.products ? config.products.length : 0;
@@ -117,7 +153,7 @@ async function loadDashboard() {
 // Cargar configuración de tienda
 async function loadStoreConfig() {
     try {
-        const response = await fetch('/api/store/config/admin');
+        const response = await fetch(apiUrl('/api/store/config/admin'));
         const config = await response.json();
         storeConfig = config;
         
@@ -153,7 +189,7 @@ async function saveStoreConfig(e) {
     };
     
     try {
-        const response = await fetch('/api/store/config/basic', {
+        const response = await fetch(apiUrl('/api/store/config/basic'), {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
@@ -184,7 +220,7 @@ async function saveColors() {
     };
     
     try {
-        await fetch('/api/store/config/colors', {
+        await fetch(apiUrl('/api/store/config/colors'), {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
@@ -197,7 +233,7 @@ async function saveColors() {
 // Cargar productos
 async function loadProducts() {
     try {
-        const response = await fetch('/api/store/config/admin');
+        const response = await fetch(apiUrl('/api/store/config/admin'));
         const config = await response.json();
         
         const list = document.getElementById('products-list');
@@ -239,7 +275,7 @@ function openProductModal() {
 // Añadir producto
 async function addProduct(product) {
     try {
-        const response = await fetch('/api/store/products', {
+        const response = await fetch(apiUrl('/api/store/products'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(product)
@@ -264,7 +300,7 @@ async function deleteProduct(productId) {
     if (!confirm('¿Eliminar este producto?')) return;
     
     try {
-        const response = await fetch(`/api/store/products/${productId}`, {
+        const response = await fetch(apiUrl(`/api/store/products/${productId}`), {
             method: 'DELETE'
         });
         
@@ -285,7 +321,7 @@ async function deleteProduct(productId) {
 // Cargar horarios
 async function loadSchedule() {
     try {
-        const response = await fetch('/api/store/config/admin');
+        const response = await fetch(apiUrl('/api/store/config/admin'));
         const config = await response.json();
         
         const form = document.getElementById('schedule-form');
@@ -363,7 +399,7 @@ async function saveSchedule(e) {
     });
     
     try {
-        const response = await fetch('/api/store/config/schedule', {
+        const response = await fetch(apiUrl('/api/store/config/schedule'), {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ schedule })
@@ -385,7 +421,7 @@ async function saveSchedule(e) {
 // Cargar contacto
 async function loadContact() {
     try {
-        const response = await fetch('/api/store/config/admin');
+        const response = await fetch(apiUrl('/api/store/config/admin'));
         const config = await response.json();
         
         if (config.contact) {
@@ -604,7 +640,7 @@ async function saveContact(e) {
     };
     
     try {
-        const response = await fetch('/api/store/config/contact', {
+        const response = await fetch(apiUrl('/api/store/config/contact'), {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
@@ -691,7 +727,7 @@ async function loadCameras() {
         // Mostrar loading
         grid.innerHTML = '<div class="loading">Cargando cámaras...</div>';
 
-        const response = await authenticatedFetch('/api/cameras');
+        const response = await authenticatedFetch(apiUrl('/api/cameras'));
         const cameras = await response.json();
 
         if (cameras.length === 0) {

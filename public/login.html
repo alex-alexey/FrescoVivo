@@ -416,13 +416,20 @@ const okEl=document.getElementById('success-message');
 const uIn=document.getElementById('username');
 const pIn=document.getElementById('password');
 
-/* check existing session */
-fetch('/api/auth/me')
+/* Propagar parámetro ?tenant= si existe */
+const urlParams = new URLSearchParams(window.location.search);
+const tenantParam = urlParams.get('tenant');
+const withTenant = (base) => tenantParam ? `${base}?tenant=${tenantParam}` : base;
+
+/* check existing session — solo redirigir si la sesión corresponde al tenant correcto */
+fetch('/api/auth/me' + (tenantParam ? `?tenant=${tenantParam}` : ''))
   .then(async r => {
     if (!r.ok) return;
     const d = await r.json();
-    const redirectUrl=(d.user.businessName||d.user.role==='empleado')?'/vendor.html':'/admin-panel.html';
-    window.location.href=redirectUrl;
+    if (!d || !d.success || !d.user) return;
+    const isVendorUser = Boolean(d.user.businessName || d.user.role === 'empleado' || d.user.isOwner);
+    const redirectUrl = isVendorUser ? withTenant('/vendor.html') : withTenant('/admin-panel.html');
+    window.location.href = redirectUrl;
   })
   .catch(()=>{});
 
@@ -432,11 +439,12 @@ form.addEventListener('submit',async e=>{
   if(!u||!p){showErr('Por favor completa todos los campos');return}
   btn.classList.add('loading');btn.disabled=true;hide();
   try{
-    const r=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});
+    const r=await fetch('/api/auth/login' + (tenantParam ? `?tenant=${tenantParam}` : ''),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});
     const d=await r.json();
     if(d.success){
       showOk('¡Acceso correcto! Entrando al panel...');
-      const redirectUrl=(d.user.businessName||d.user.role==='empleado')?'/vendor.html':'/admin-panel.html';
+      const isVendorUser=Boolean(d.user&& (d.user.businessName||d.user.role==='empleado'||d.user.isOwner));
+      const redirectUrl=isVendorUser?withTenant('/vendor.html'):withTenant('/admin-panel.html');
       setTimeout(()=>window.location.href=redirectUrl,1000)
     }
     else{showErr(d.message||'Usuario o contraseña incorrectos');btn.classList.remove('loading');btn.disabled=false}

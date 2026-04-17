@@ -85,6 +85,20 @@ const auth = async (req, res, next) => {
                 isOwner: true
             });
 
+            if (!req.client) {
+                req.client = {
+                    _id: client._id,
+                    id: client._id,
+                    businessName: client.businessName,
+                    slug: client.slug,
+                    domain: client.domain,
+                    branding: client.branding,
+                    limits: client.limits,
+                    plan: client.plan,
+                    config: client.config
+                };
+            }
+
             return next();
         }
 
