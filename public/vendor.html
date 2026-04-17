@@ -358,7 +358,20 @@ nav{
 
 #end-current-call{min-width:180px;font-size:.78rem;font-weight:700;padding:.65rem 1.4rem}
 
-/* ══ SCROLLBAR ══ */
+/* ══ MODAL ══ */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:10000;align-items:center;justify-content:center}
+.modal.active{display:flex}
+.modal-content{background:var(--white);border-radius:12px;padding:2rem;max-width:500px;width:90%;max-height:80vh;overflow-y:auto}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem}
+.modal-title{font-size:1.5rem;font-weight:700}
+.modal-close{background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--g500)}
+.btn{padding:.5rem 1rem;border-radius:6px;border:1px solid;cursor:pointer;font-weight:600;font-size:.9rem;transition:all .2s}
+.btn-outline{background:transparent;border-color:var(--g300);color:var(--black)}
+.btn-outline:hover{background:var(--g100);border-color:var(--g400)}
+.btn-primary{background:var(--blue);color:var(--white);border-color:var(--blue)}
+.btn-primary:hover{background:#1d4ed8}
+.btn-danger{background:#dc2626;color:var(--white);border-color:#dc2626}
+.btn-danger:hover{background:#b91c1c}
 ::-webkit-scrollbar{width:3px;height:3px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--g200);border-radius:2px}
@@ -593,6 +606,39 @@ nav{
   </div><!-- /right -->
 
 </div><!-- /app -->
+
+<!-- Modal Genérico de Alerta -->
+<div id="alert-modal" class="modal">
+  <div class="modal-content" style="max-width:400px">
+    <div class="modal-header">
+      <h3 class="modal-title" id="alert-title">Aviso</h3>
+      <button class="modal-close" onclick="closeAlertModal()">✕</button>
+    </div>
+    <div style="margin-bottom:2rem">
+      <p id="alert-message" style="color:var(--g600);margin-bottom:1rem"></p>
+      <div style="display:flex;gap:.75rem;justify-content:flex-end">
+        <button class="btn btn-primary" onclick="closeAlertModal()">Aceptar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Genérico de Confirmación -->
+<div id="confirm-modal" class="modal">
+  <div class="modal-content" style="max-width:400px">
+    <div class="modal-header">
+      <h3 class="modal-title" id="confirm-title">Confirmación</h3>
+      <button class="modal-close" onclick="closeConfirmModal()">✕</button>
+    </div>
+    <div style="margin-bottom:2rem">
+      <p id="confirm-message" style="color:var(--g600);margin-bottom:1rem"></p>
+      <div style="display:flex;gap:.75rem;justify-content:flex-end">
+        <button class="btn btn-outline" onclick="closeConfirmModal()">Cancelar</button>
+        <button class="btn btn-danger" id="confirm-btn" onclick="_executeConfirm()">Aceptar</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script src="/socket.io/socket.io.js"></script>
 <script src="vendor.js"></script>

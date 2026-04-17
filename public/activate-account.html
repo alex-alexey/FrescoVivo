@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activar Cuenta - FrescosEnVivo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #059669;
+            --danger: #dc2626;
+            --warning: #f59e0b;
+            --success: #16a34a;
+            --bg: #f9fafb;
+            --bg-card: #ffffff;
+            --text: #111827;
+            --text-light: #6b7280;
+            --border: #e5e7eb;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .activate-container {
+            width: 100%;
+            max-width: 480px;
+        }
+
+        .activate-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            padding: 3rem 2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .activate-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .activate-logo {
+            width: 64px;
+            height: 64px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin: 0 auto 1rem;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+
+        .activate-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+        }
+
+        .activate-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            line-height: 1.5;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            margin-bottom: 1.5rem;
+            display: none;
+            border: 1px solid;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .alert.error {
+            background: #fef2f2;
+            color: var(--danger);
+            border-color: #fecaca;
+        }
+
+        .alert.success {
+            background: #f0fdf4;
+            color: var(--success);
+            border-color: #bbf7d0;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+        }
+
+        input[type="password"] {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+        }
+
+        input[type="password"]:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .strength-indicator {
+            margin-top: 0.75rem;
+        }
+
+        .strength-bar {
+            height: 4px;
+            border-radius: 2px;
+            background: var(--border);
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .strength-bar-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.3s, background 0.3s;
+            width: 0%;
+        }
+
+        .strength-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-light);
+        }
+
+        .hint {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            margin-top: 0.35rem;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 0.5rem;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .requirements {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: var(--bg);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .requirements-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-light);
+            margin-bottom: 0.75rem;
+        }
+
+        .requirement {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .requirement.met {
+            color: var(--success);
+        }
+
+        .requirement-icon {
+            width: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        @media (max-width: 600px) {
+            .activate-card {
+                padding: 2rem 1.5rem;
+            }
+
+            .activate-title {
+                font-size: 1.25rem;
+            }
+
+            .activate-subtitle {
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="activate-container">
+    <div class="activate-card">
+        <div class="activate-header">
+            <div class="activate-logo">🐟</div>
+            <h1 class="activate-title">Activar Cuenta</h1>
+            <p class="activate-subtitle">Establece tu contraseña para comenzar a usar el panel.</p>
+        </div>
+
+        <div id="alert" class="alert"></div>
+
+        <form id="activation-form">
+            <div class="form-group">
+                <label for="password">Nueva contraseña</label>
+                <input type="password" id="password" placeholder="Ingresa tu contraseña" autocomplete="new-password" required>
+                <div class="strength-indicator">
+                    <div class="strength-bar">
+                        <div class="strength-bar-fill" id="strength-fill"></div>
+                    </div>
+                    <div class="strength-label" id="strength-label">Introduce tu contraseña</div>
+                </div>
+                <p class="hint">Mínimo 8 caracteres con mayúscula, número y símbolo</p>
+            </div>
+
+            <div class="form-group">
+                <label for="password-confirm">Confirmar contraseña</label>
+                <input type="password" id="password-confirm" placeholder="Repite la contraseña" autocomplete="new-password" required>
+            </div>
+
+            <button type="submit" class="btn" id="submit-btn">🔐 Activar Cuenta</button>
+        </form>
+
+        <div class="requirements">
+            <div class="requirements-title">La contraseña debe contener:</div>
+            <div class="requirement" id="req-length">
+                <span class="requirement-icon" id="req-length-icon">○</span>
+                <span>Al menos 8 caracteres</span>
+            </div>
+            <div class="requirement" id="req-uppercase">
+                <span class="requirement-icon" id="req-uppercase-icon">○</span>
+                <span>Una letra mayúscula (A-Z)</span>
+            </div>
+            <div class="requirement" id="req-number">
+                <span class="requirement-icon" id="req-number-icon">○</span>
+                <span>Un número (0-9)</span>
+            </div>
+            <div class="requirement" id="req-special">
+                <span class="requirement-icon" id="req-special-icon">○</span>
+                <span>Un símbolo especial (!@#$%)</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+
+    if (!token) {
+        showAlert('Enlace de activación inválido. Contacta con soporte.', 'error');
+        document.getElementById('activation-form').style.display = 'none';
+    }
+
+    // Indicador de fortaleza de contraseña
+    document.getElementById('password').addEventListener('input', function () {
+        const val = this.value;
+        const fill = document.getElementById('strength-fill');
+        const label = document.getElementById('strength-label');
+
+        // Validaciones individuales
+        const hasLength = val.length >= 8;
+        const hasUppercase = /[A-Z]/.test(val);
+        const hasNumber = /[0-9]/.test(val);
+        const hasSpecial = /[!@#$%^&*()_+\-={}\[\]:;"'<>,.?/\\|`~]/.test(val);
+
+        // Actualizar indicadores de requisitos
+        updateRequirement('req-length', hasLength, 'req-length-icon');
+        updateRequirement('req-uppercase', hasUppercase, 'req-uppercase-icon');
+        updateRequirement('req-number', hasNumber, 'req-number-icon');
+        updateRequirement('req-special', hasSpecial, 'req-special-icon');
+
+        // Calcular puntuación de fortaleza
+        let score = 0;
+        if (hasLength) score++;
+        if (hasUppercase) score++;
+        if (hasNumber) score++;
+        if (hasSpecial) score++;
+
+        const levels = [
+            { width: '0%',   color: '#e5e7eb', text: 'Introduce tu contraseña' },
+            { width: '25%',  color: '#dc2626', text: 'Contraseña débil' },
+            { width: '50%',  color: '#f59e0b', text: 'Contraseña aceptable' },
+            { width: '75%',  color: '#84cc16', text: 'Contraseña buena' },
+            { width: '100%', color: '#16a34a', text: 'Contraseña fuerte' }
+        ];
+        const lvl = val.length === 0 ? levels[0] : levels[score] || levels[1];
+        fill.style.width = lvl.width;
+        fill.style.background = lvl.color;
+        label.textContent = lvl.text;
+        label.style.color = lvl.color;
+    });
+
+    function updateRequirement(elementId, met, iconId) {
+        const element = document.getElementById(elementId);
+        const icon = document.getElementById(iconId);
+        if (met) {
+            element.classList.add('met');
+            icon.textContent = '✓';
+        } else {
+            element.classList.remove('met');
+            icon.textContent = '○';
+        }
+    }
+
+    document.getElementById('activation-form').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        clearAlert();
+
+        const password = document.getElementById('password').value;
+        const confirm = document.getElementById('password-confirm').value;
+
+        // Validaciones estrictas
+        if (password.length < 8) {
+            return showAlert('❌ La contraseña debe tener al menos 8 caracteres.', 'error');
+        }
+
+        if (!/[A-Z]/.test(password)) {
+            return showAlert('❌ La contraseña debe incluir una letra mayúscula.', 'error');
+        }
+
+        if (!/[0-9]/.test(password)) {
+            return showAlert('❌ La contraseña debe incluir un número.', 'error');
+        }
+
+        if (!/[!@#$%^&*()_+\-={}\[\]:;"'<>,.?/\\|`~]/.test(password)) {
+            return showAlert('❌ La contraseña debe incluir un símbolo especial.', 'error');
+        }
+
+        if (password !== confirm) {
+            return showAlert('❌ Las contraseñas no coinciden.', 'error');
+        }
+
+        const btn = document.getElementById('submit-btn');
+        btn.disabled = true;
+        btn.textContent = 'Activando...';
+
+        try {
+            const res = await fetch('/api/auth/activate-account', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token, password })
+            });
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+                showAlert('✅ ¡Cuenta activada exitosamente! Redirigiendo al login...', 'success');
+                document.getElementById('activation-form').style.display = 'none';
+                setTimeout(() => {
+                    // Redirigir al login manteniendo el dominio del cliente
+                    const loginUrl = data.domain 
+                        ? `http://${data.domain}:${window.location.port || 3000}/login`
+                        : '/login';
+                    window.location.href = loginUrl;
+                }, 2500);
+            } else {
+                showAlert('❌ ' + (data.message || 'Error al activar la cuenta.'), 'error');
+                btn.disabled = false;
+                btn.textContent = '🔐 Activar Cuenta';
+            }
+        } catch (err) {
+            console.error('Error:', err);
+            showAlert('❌ Error de conexión. Inténtalo de nuevo.', 'error');
+            btn.disabled = false;
+            btn.textContent = '🔐 Activar Cuenta';
+        }
+    });
+
+    function showAlert(msg, type) {
+        const el = document.getElementById('alert');
+        el.textContent = msg;
+        el.className = `alert ${type} show`;
+    }
+
+    function clearAlert() {
+        const el = document.getElementById('alert');
+        el.className = 'alert';
+    }
+</script>
+</body>
+</html>

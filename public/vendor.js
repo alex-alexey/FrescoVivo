@@ -1,5 +1,14 @@
 // @ts-nocheck
 const socket = io();
+
+function escHtml(str) {
+    return String(str == null ? '' : str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
 let vendorStream = null;
 let productStreams = [null, null, null];
 let peerConnection = null;
@@ -77,20 +86,30 @@ let lastIssuedTicket = 0;  // Último turno emitido
 let currentServingTicket = null;  // Turno que se está atendiendo ahora
 
 // Event Listeners
-startCamerasBtn.addEventListener('click', startAllCameras);
-stopCamerasBtn.addEventListener('click', stopAllCameras);
-goLiveBtn.addEventListener('click', () => {
-    console.log('🔴 BOTÓN GO LIVE CLICKEADO');
-    goLive();
-});
-stopLiveBtn.addEventListener('click', stopLive);
-generateStoreNumberBtn.addEventListener('click', generateStoreNumber);
-acceptNextClientBtn.addEventListener('click', acceptNextClient);
-endCurrentCallBtn.addEventListener('click', endCurrentCall);
-toggleVendorAudioBtn.addEventListener('click', toggleVendorAudio);
-nextTicketBtn.addEventListener('click', advanceToNextTicket);
-resetCounterBtn.addEventListener('click', resetTicketCounter);
-logoutBtn.addEventListener('click', logout);
+if (startCamerasBtn) startCamerasBtn.addEventListener('click', startAllCameras);
+if (stopCamerasBtn) stopCamerasBtn.addEventListener('click', stopAllCameras);
+if (goLiveBtn) {
+    console.log('✅ goLiveBtn encontrado, agregando listener');
+    goLiveBtn.addEventListener('click', () => {
+        console.log('🔴 BOTÓN GO LIVE CLICKEADO');
+        goLive();
+    });
+} else {
+    console.error('❌ goLiveBtn NO encontrado en el DOM');
+}
+if (stopLiveBtn) {
+    console.log('✅ stopLiveBtn encontrado, agregando listener');
+    stopLiveBtn.addEventListener('click', stopLive);
+} else {
+    console.error('❌ stopLiveBtn NO encontrado en el DOM');
+}
+if (generateStoreNumberBtn) generateStoreNumberBtn.addEventListener('click', generateStoreNumber);
+if (acceptNextClientBtn) acceptNextClientBtn.addEventListener('click', acceptNextClient);
+if (endCurrentCallBtn) endCurrentCallBtn.addEventListener('click', endCurrentCall);
+if (toggleVendorAudioBtn) toggleVendorAudioBtn.addEventListener('click', toggleVendorAudio);
+if (nextTicketBtn) nextTicketBtn.addEventListener('click', advanceToNextTicket);
+if (resetCounterBtn) resetCounterBtn.addEventListener('click', resetTicketCounter);
+if (logoutBtn) logoutBtn.addEventListener('click', logout);
 
 // Cargar usuario actual
 async function loadCurrentUser() {
@@ -313,7 +332,7 @@ socket.on('client-accepted', async (client) => {
 });
 
 socket.on('no-clients', () => {
-    alert('No hay clientes en la cola');
+    showAlertModal('No hay clientes en la cola', '💯 Información');
 });
 
 socket.on('call-ended-confirm', () => {
@@ -321,7 +340,7 @@ socket.on('call-ended-confirm', () => {
 });
 
 socket.on('client-disconnected', () => {
-    alert('El cliente se ha desconectado');
+    showAlertModal('El cliente se ha desconectado', '🚫 Desconectado');
     resetCallState();
 });
 
@@ -363,21 +382,33 @@ socket.on('new-public-viewer', async (data) => {
     const viewerPeerConnection = new RTCPeerConnection(configuration);
     publicViewers.set(data.viewerId, viewerPeerConnection);
     
-    // Añadir los 4 streams (vendedor + 3 productos)
+    // Crear 4 MediaStreams separados (uno para cada cámara)
+    // Stream 1: Vendedor (video + audio)
+    const stream1 = new MediaStream();
     vendorStream.getTracks().forEach(track => {
-        viewerPeerConnection.addTrack(track, vendorStream);
+        stream1.addTrack(track);
+        viewerPeerConnection.addTrack(track, stream1);
     });
     
+    // Stream 2: Producto 1 (video)
+    const stream2 = new MediaStream();
     productStreams[0].getTracks().forEach(track => {
-        viewerPeerConnection.addTrack(track, productStreams[0]);
+        stream2.addTrack(track);
+        viewerPeerConnection.addTrack(track, stream2);
     });
     
+    // Stream 3: Producto 2 (video)
+    const stream3 = new MediaStream();
     productStreams[1].getTracks().forEach(track => {
-        viewerPeerConnection.addTrack(track, productStreams[1]);
+        stream3.addTrack(track);
+        viewerPeerConnection.addTrack(track, stream3);
     });
     
+    // Stream 4: Producto 3 (video)
+    const stream4 = new MediaStream();
     productStreams[2].getTracks().forEach(track => {
-        viewerPeerConnection.addTrack(track, productStreams[2]);
+        stream4.addTrack(track);
+        viewerPeerConnection.addTrack(track, stream4);
     });
     
     // Manejar ICE candidates
@@ -478,7 +509,7 @@ async function startCamera(deviceId, videoElement, withAudio = false) {
         return stream;
     } catch (error) {
         console.error('Error al iniciar cámara:', error);
-        alert('No se pudo acceder a la cámara. Verifica los permisos.');
+        showAlertModal('No se pudo acceder a la cámara. Verifica los permisos.', '💷 Error');
         return null;
     }
 }
@@ -504,6 +535,12 @@ async function startAllCameras() {
         startCamerasBtn.disabled = true;
         stopCamerasBtn.disabled = false;
         goLiveBtn.disabled = false;
+        
+        // Mostrar los videos de las cámaras
+        vendorCamera.style.display = 'block';
+        productCamera1.style.display = 'block';
+        productCamera2.style.display = 'block';
+        productCamera3.style.display = 'block';
         
         // Agregar indicador visual de cámaras activas
         if (cameraSection) {
@@ -540,38 +577,92 @@ function goLive() {
         return;
     }
     
+    // Timeout para respuesta del servidor (5 segundos)
+    const responseTimeout = setTimeout(() => {
+        console.error('⏱️ Timeout: El servidor no respondió');
+        isLive = false;
+        updateLiveStatus(false);
+        updateConnectionStatus();
+        showNotification('Error: Timeout del servidor. Intenta de nuevo.', 'error');
+    }, 5000);
+    
+    // Listener para respuesta del servidor
+    socket.once('vendor-go-live-response', (response) => {
+        clearTimeout(responseTimeout);
+        console.log('📡 Respuesta del servidor:', response);
+        if (response.success) {
+            console.log('✅ Transmisión iniciada exitosamente');
+            isLive = true;
+            updateLiveStatus(true);
+            updateConnectionStatus();
+            
+            // Mostrar los videos de las cámaras
+            vendorCamera.style.display = 'block';
+            productCamera1.style.display = 'block';
+            productCamera2.style.display = 'block';
+            productCamera3.style.display = 'block';
+            
+            showNotification('¡Transmisión iniciada! Los clientes pueden ver las cámaras.', 'success');
+        } else {
+            console.error('❌ Error al iniciar transmisión:', response.error);
+            isLive = false;
+            updateLiveStatus(false);
+            updateConnectionStatus();
+            showNotification(`Error: ${response.error || 'No se pudo iniciar la transmisión'}`, 'error');
+        }
+    });
+    
     socket.emit('vendor-go-live');
-    console.log('goLive: Evento vendor-go-live emitido');
-    isLive = true;
-    updateLiveStatus(true);
-    updateConnectionStatus();
-    showNotification('¡Transmisión iniciada! Los clientes pueden ver las cámaras.', 'success');
+    console.log('goLive: Evento vendor-go-live emitido - esperando respuesta del servidor...');
 }
 
 function stopLive() {
+    // Timeout para respuesta del servidor (5 segundos)
+    const responseTimeout = setTimeout(() => {
+        console.error('⏱️ Timeout: El servidor no respondió');
+        showNotification('Error: Timeout del servidor.', 'error');
+    }, 5000);
+    
+    socket.once('vendor-stop-live-response', (response) => {
+        clearTimeout(responseTimeout);
+        console.log('📡 Respuesta del servidor:', response);
+        if (response.success) {
+            isLive = false;
+            updateLiveStatus(false);
+            updateConnectionStatus();
+            
+            // Ocultar los videos de las cámaras
+            vendorCamera.style.display = 'none';
+            productCamera1.style.display = 'none';
+            productCamera2.style.display = 'none';
+            productCamera3.style.display = 'none';
+            
+            showNotification('Transmisión detenida. Los clientes no podrán unirse.', 'success');
+        } else {
+            showNotification(`Error: ${response.error || 'No se pudo detener la transmisión'}`, 'error');
+        }
+    });
+    
     socket.emit('vendor-stop-live');
-    isLive = false;
-    updateLiveStatus(false);
-    updateConnectionStatus();
-    alert('Transmisión detenida. Los clientes no podrán unirse.');
 }
 
 function updateLiveStatus(isLiveStatus) {
-    const liveDot = liveStatus.querySelector('.live-dot');
+    if (!liveStatus) {
+        console.error('❌ liveStatus element not found');
+        return;
+    }
     
     if (isLiveStatus) {
-        liveDot.classList.remove('offline');
-        liveDot.classList.add('online');
+        liveStatus.classList.remove('offline');
+        liveStatus.classList.add('live');
         liveStatusText.textContent = '🔴 EN VIVO';
-        liveStatus.style.background = '#c6f6d5';
         goLiveBtn.style.display = 'none';
         stopLiveBtn.style.display = 'inline-block';
         acceptNextClientBtn.disabled = false;
     } else {
-        liveDot.classList.remove('online');
-        liveDot.classList.add('offline');
+        liveStatus.classList.remove('live');
+        liveStatus.classList.add('offline');
         liveStatusText.textContent = 'FUERA DE LÍNEA';
-        liveStatus.style.background = '#fed7d7';
         goLiveBtn.style.display = 'inline-block';
         stopLiveBtn.style.display = 'none';
         acceptNextClientBtn.disabled = true;
@@ -595,6 +686,12 @@ function stopAllCameras() {
     productCamera1.srcObject = null;
     productCamera2.srcObject = null;
     productCamera3.srcObject = null;
+    
+    // Ocultar los videos
+    vendorCamera.style.display = 'none';
+    productCamera1.style.display = 'none';
+    productCamera2.style.display = 'none';
+    productCamera3.style.display = 'none';
     
     startCamerasBtn.disabled = false;
     stopCamerasBtn.disabled = true;
@@ -710,9 +807,9 @@ function advanceToNextTicket() {
     showNotification('Turno completado. Puedes atender al siguiente cliente.', 'success');
 }
 
-function resetTicketCounter() {
+async function resetTicketCounter() {
     // Confirmar acción con el usuario
-    if (!confirm('¿Estás seguro de que quieres resetear el contador de turnos? Esto reiniciará la numeración a 1 y limpiará todas las colas.')) {
+    if (!(await showConfirmModal('¿Estás seguro de que quieres resetear el contador de turnos? Esto reiniciará la numeración a 1 y limpiará todas las colas.', '⚠️ Resetear Contador'))) {
         return;
     }
     
@@ -915,17 +1012,17 @@ function updateQueues(storeQueue, onlineQueue) {
             
             item.innerHTML = `
                 <div class="queue-item-header">
-                    <div class="queue-item-name">🌐 ${client.name}</div>
+                    <div class="queue-item-name">🌐 ${escHtml(client.name)}</div>
                     <div class="queue-item-time">⏱️ ${waitTime}min</div>
                 </div>
                 <div style="font-size: 0.85em; color: var(--c-amber); font-weight: 600; margin-top: 4px;">${ticketDisplay}</div>
-                <div class="queue-item-phone">${client.phone ? '📱 ' + client.phone : '📞 Sin teléfono'}</div>
+                <div class="queue-item-phone">${client.phone ? '📱 ' + escHtml(client.phone) : '📞 Sin teléfono'}</div>
                 <div style="font-size: 0.8em; color: #a0aec0; margin-top: 4px;">Se unió a las ${timeStr}</div>
                 <div class="queue-item-actions">
-                    <button class="btn-queue-action btn-accept" onclick="acceptOnlineClient('${client.id}')">
+                    <button class="btn-queue-action btn-accept" onclick="acceptOnlineClient('${escHtml(client.id)}')">
                         ✅ Atender
                     </button>
-                    <button class="btn-queue-action btn-remove" onclick="removeFromQueue('online', '${client.id}')">
+                    <button class="btn-queue-action btn-remove" onclick="removeFromQueue('online', '${escHtml(client.id)}')">
                         ❌ Eliminar
                     </button>
                 </div>
@@ -985,10 +1082,9 @@ function acceptOnlineClient(clientId) {
     socket.emit('accept-online-client', { clientId });
 }
 
-function removeFromQueue(queueType, clientId) {
-    if (confirm('¿Seguro que quieres eliminar este cliente de la cola?')) {
+async function removeFromQueue(queueType, clientId) {
+    if (await showConfirmModal('¿Seguro que quieres eliminar este cliente de la cola?', '\u26a0️ Eliminar Cliente')) {
         console.log(`Eliminando cliente ${clientId} de cola ${queueType}`);
-        // TODO: Implementar evento en el servidor
         socket.emit('remove-from-queue', { queueType, clientId });
     }
 }
@@ -1014,10 +1110,10 @@ function addOrderToList(order) {
     const timeStr = orderTime.toLocaleTimeString('es-ES');
     
     item.innerHTML = `
-        <h4>Pedido #${order.id.substr(0, 8)}</h4>
-        <p><strong>${order.clientName}</strong></p>
-        <p>${order.items.length} artículo(s) - Total: ${order.total.toFixed(2)}€</p>
-        <p>📍 ${order.shippingAddress}</p>
+        <h4>Pedido #${escHtml(order.id.substr(0, 8))}</h4>
+        <p><strong>${escHtml(order.clientName)}</strong></p>
+        <p>${order.items.length} artículo(s) - Total: ${Number(order.total).toFixed(2)}€</p>
+        <p>📍 ${escHtml(order.shippingAddress)}</p>
         <p style="font-size: 0.8em; color: #a0aec0;">${timeStr}</p>
     `;
     

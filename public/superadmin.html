@@ -29,6 +29,14 @@
                 <span class="icon">🏢</span>
                 <span class="text">Clientes</span>
             </a>
+            <a href="#billing" class="nav-item" data-view="billing">
+                <span class="icon">💶</span>
+                <span class="text">Facturación</span>
+            </a>
+            <a href="#databases" class="nav-item" data-view="databases">
+                <span class="icon">🗄️</span>
+                <span class="text">Bases de Datos</span>
+            </a>
             <a href="#create" class="nav-item" data-view="create">
                 <span class="icon">➕</span>
                 <span class="text">Nuevo Cliente</span>
@@ -92,6 +100,14 @@
                     <div class="stat-content">
                         <div class="stat-label">Suspendidos</div>
                         <div class="stat-value" id="stat-suspended">0</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">💶</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Facturación Mensual Estimada</div>
+                        <div class="stat-value" id="stat-mrr">0.00 EUR</div>
                     </div>
                 </div>
             </div>
@@ -188,6 +204,20 @@
                                     <input type="text" id="domain" name="domain" required placeholder="Ej: pescaderiajuan.com">
                                     <small>El dominio que usará el cliente para acceder</small>
                                 </div>
+
+                                <div class="form-group">
+                                    <label for="storeType">Tipo de Tienda *</label>
+                                    <select id="storeType" name="storeType" required>
+                                        <option value="pescaderia">Pescadería</option>
+                                        <option value="marisqueria">Marisquería</option>
+                                        <option value="carniceria">Carnicería</option>
+                                        <option value="charcuteria">Charcutería</option>
+                                        <option value="polleria">Pollería</option>
+                                        <option value="fruteria">Frutería</option>
+                                        <option value="panaderia">Panadería</option>
+                                        <option value="otra">Otra</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
 
@@ -213,13 +243,59 @@
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="ownerPassword">Contraseña *</label>
-                                    <input type="password" id="ownerPassword" name="ownerPassword" required placeholder="Mínimo 8 caracteres">
-                                </div>
-
-                                <div class="form-group">
                                     <label for="ownerPhone">Teléfono</label>
                                     <input type="tel" id="ownerPhone" name="ownerPhone" placeholder="Ej: +34 600 123 456">
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group" style="flex: 1 1 100%;">
+                                    <small>Se enviará automáticamente un email al propietario para activar su cuenta y establecer su contraseña.</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3 class="section-title">🧾 Datos de Facturación</h3>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="billingLegalName">Razón social</label>
+                                    <input type="text" id="billingLegalName" name="billingLegalName" placeholder="Ej: Pescadería Miguel S.L.">
+                                </div>
+                                <div class="form-group">
+                                    <label for="billingTaxId">NIF/CIF</label>
+                                    <input type="text" id="billingTaxId" name="billingTaxId" placeholder="Ej: B12345678">
+                                </div>
+                                <div class="form-group">
+                                    <label for="billingEmail">Email facturación</label>
+                                    <input type="email" id="billingEmail" name="billingEmail" placeholder="Ej: facturas@negocio.com">
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="billingAddress">Dirección fiscal</label>
+                                    <input type="text" id="billingAddress" name="billingAddress" placeholder="Calle, número, piso">
+                                </div>
+                                <div class="form-group">
+                                    <label for="billingPostalCode">Código postal</label>
+                                    <input type="text" id="billingPostalCode" name="billingPostalCode" placeholder="08001">
+                                </div>
+                                <div class="form-group">
+                                    <label for="billingCity">Ciudad</label>
+                                    <input type="text" id="billingCity" name="billingCity" placeholder="Barcelona">
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="billingProvince">Provincia</label>
+                                    <input type="text" id="billingProvince" name="billingProvince" placeholder="Barcelona">
+                                </div>
+                                <div class="form-group">
+                                    <label for="billingCountry">País</label>
+                                    <input type="text" id="billingCountry" name="billingCountry" value="España">
                                 </div>
                             </div>
                         </div>
@@ -259,6 +335,101 @@
             </div>
         </section>
 
+        <!-- Databases View -->
+        <section id="databases-view" class="view">
+            <header class="page-header">
+                <h1>Inspección de Bases de Datos</h1>
+                <p>Visualiza y gestiona las bases de datos de los clientes</p>
+            </header>
+
+            <div class="card">
+                <div class="card-header">
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <label for="client-select">Selecciona un cliente:</label>
+                        <select id="client-select" onchange="loadDatabaseInfo()" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                            <option value="">-- Selecciona un cliente --</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="card-body" id="database-info-container">
+                    <div style="text-align: center; padding: 40px; color: #999;">
+                        Selecciona un cliente para ver la información de su base de datos
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Billing View -->
+        <section id="billing-view" class="view">
+            <header class="page-header">
+                <div>
+                    <h1>Facturación</h1>
+                    <p>Control de pagos y estado de cobros de todos los clientes</p>
+                </div>
+            </header>
+
+            <div class="stats-grid" style="margin-bottom:1.5rem;">
+                <div class="stat-card">
+                    <div class="stat-icon">💶</div>
+                    <div class="stat-content">
+                        <div class="stat-label">MRR Total</div>
+                        <div class="stat-value" id="billing-stat-mrr">0.00 EUR</div>
+                    </div>
+                </div>
+                <div class="stat-card suspended">
+                    <div class="stat-icon">🔴</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Vencidos</div>
+                        <div class="stat-value" id="billing-stat-vencidos">0</div>
+                    </div>
+                </div>
+                <div class="stat-card trial">
+                    <div class="stat-icon">🟡</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Pendientes</div>
+                        <div class="stat-value" id="billing-stat-pendientes">0</div>
+                    </div>
+                </div>
+                <div class="stat-card active">
+                    <div class="stat-icon">🟢</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Al día</div>
+                        <div class="stat-value" id="billing-stat-aldia">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="filters-bar">
+                <input type="text" id="billing-search-input" placeholder="🔍 Buscar cliente..." class="search-input">
+
+                <select id="billing-filter-status" class="filter-select">
+                    <option value="">Todos los estados</option>
+                    <option value="al_dia">Al día</option>
+                    <option value="pendiente">Pendiente</option>
+                    <option value="vencido">Vencido</option>
+                    <option value="pausado">Pausado</option>
+                </select>
+
+                <select id="billing-filter-plan" class="filter-select">
+                    <option value="">Todos los planes</option>
+                    <option value="basico">Básico</option>
+                    <option value="profesional">Profesional</option>
+                    <option value="empresarial">Empresarial</option>
+                    <option value="personalizado">Personalizado</option>
+                </select>
+
+                <button class="btn-secondary" onclick="applyBillingFilters()">Filtrar</button>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <div class="clients-table" id="billing-table">
+                        <div class="loading">Cargando facturación...</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- Settings View -->
         <section id="settings-view" class="view">
             <header class="page-header">
@@ -267,10 +438,50 @@
             </header>
 
             <div class="card">
+                <div class="card-header">
+                    <h2>🎨 Logo de FrescosEnVivo</h2>
+                    <p>Define el logo que aparecerá en todas las tiendas</p>
+                </div>
                 <div class="card-body">
-                    <p style="text-align: center; padding: 40px; color: #666;">
-                        Configuración próximamente...
-                    </p>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                        <!-- Preview actual -->
+                        <div>
+                            <label style="font-weight: 600; margin-bottom: 1rem; display: block;">Vista Previa Actual</label>
+                            <div style="width: 120px; height: 120px; border-radius: 12px; background: #f0f0f0; border: 2px solid #e5e7eb; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                                <img id="current-logo-preview" src="" alt="Logo actual" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                                <span id="logo-placeholder" style="font-size: 3rem; display: flex;">🐟</span>
+                            </div>
+                            <p style="font-size: 0.875rem; color: #666; margin-top: 0.75rem;">Tamaño recomendado: 256x256px</p>
+                        </div>
+
+                        <!-- Formulario de carga -->
+                        <div>
+                            <div class="form-group" style="margin-bottom: 2rem;">
+                                <label for="logo-upload" style="font-weight: 600; margin-bottom: 0.5rem; display: block;">Cargar Logo</label>
+                                <div style="position: relative;">
+                                    <input type="file" id="logo-upload" accept="image/*" style="display: none;">
+                                    <button type="button" onclick="document.getElementById('logo-upload').click()" style="width: 100%; padding: 0.75rem; border: 2px dashed #2563eb; border-radius: 8px; background: #f0f7ff; color: #2563eb; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                                        Seleccionar archivo
+                                    </button>
+                                </div>
+                                <p style="font-size: 0.75rem; color: #666; margin-top: 0.5rem;">PNG, JPG, SVG (máximo 2MB)</p>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="logo-url" style="font-weight: 600; margin-bottom: 0.5rem; display: block;">O URL del Logo</label>
+                                <input type="text" id="logo-url" placeholder="https://ejemplo.com/logo.png" style="width: 100%; padding: 0.75rem; border: 1.5px solid #e5e7eb; border-radius: 8px; font-family: monospace; font-size: 0.875rem;">
+                            </div>
+
+                            <div style="display: flex; gap: 0.75rem; margin-top: 2rem;">
+                                <button type="button" onclick="saveLogo()" style="flex: 1; padding: 0.75rem; background: #2563eb; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                                    💾 Guardar Logo
+                                </button>
+                                <button type="button" onclick="resetLogo()" style="flex: 1; padding: 0.75rem; background: #f0f0f0; color: #333; border: 1px solid #e5e7eb; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                                    Restaurar 🐟
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>

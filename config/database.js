@@ -16,32 +16,9 @@ const connectDB = async () => {
     }
 };
 
-// Crear usuario administrador por defecto
-const createDefaultAdmin = async () => {
-    try {
-        const User = require('../models/User');
-        
-        // Verificar si ya existe un admin
-        const adminExists = await User.findOne({ role: 'admin' });
-        
-        if (!adminExists) {
-            const defaultAdmin = new User({
-                username: 'admin',
-                email: 'admin@pescadolive.com',
-                password: 'admin123', // Cambiar en producción
-                fullName: 'Administrador',
-                role: 'admin'
-            });
-            
-            await defaultAdmin.save();
-            console.log('👤 Usuario administrador creado:');
-            console.log('   📧 Email: admin@pescadolive.com');
-            console.log('   🔑 Password: admin123');
-            console.log('   ⚠️  CAMBIAR CONTRASEÑA EN PRODUCCIÓN');
-        }
-    } catch (error) {
-        console.error('❌ Error creando admin por defecto:', error.message);
-    }
-};
+// Auto-creación de admin eliminada por seguridad.
+// Usa el script `node init-db.js` con variables de entorno INIT_ADMIN_USER,
+// INIT_ADMIN_EMAIL e INIT_ADMIN_PASS para crear el primer usuario superadmin.
+const createDefaultAdmin = async () => {};
 
 module.exports = connectDB;

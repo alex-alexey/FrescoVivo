@@ -56,6 +56,7 @@ function navigateTo(section) {
     // Actualizar título
     const titles = {
         'dashboard': 'Dashboard',
+        'billing': 'Facturacion',
         'store-config': 'Configuración de Tienda',
         'products': 'Productos',
         'schedule': 'Horarios',
@@ -76,6 +77,9 @@ async function loadSectionData(section) {
     switch(section) {
         case 'dashboard':
             loadDashboard();
+            break;
+        case 'billing':
+            loadBillingSection();
             break;
         case 'store-config':
             loadStoreConfig();
@@ -396,6 +400,197 @@ async function loadContact() {
     }
 }
 
+function formatCurrencyEUR(amount) {
+    const value = Number(amount || 0);
+    return value.toLocaleString('es-ES', {
+        style: 'currency',
+        currency: 'EUR'
+    });
+}
+
+function getInvoiceStatus(status) {
+    const normalized = String(status || 'pending').toLowerCase();
+    if (normalized === 'paid') {
+        return { label: 'Pagada', className: 'paid' };
+    }
+    if (normalized === 'sent') {
+        return { label: 'Enviada', className: 'sent' };
+    }
+    return { label: 'Pendiente', className: 'pending' };
+}
+
+function setBillingInfoMessage(message, isError = false) {
+    const messageEl = document.getElementById('billing-info-message');
+    if (!messageEl) return;
+    messageEl.textContent = message || '';
+    messageEl.style.color = isError ? 'var(--danger)' : 'var(--text-light)';
+}
+
+function fillBillingInfoForm(info = {}) {
+    const setValue = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) el.value = value || '';
+    };
+
+    setValue('billing-legal-name', info.legalName);
+    setValue('billing-tax-id', info.taxId);
+    setValue('billing-email', info.billingEmail);
+    setValue('billing-address', info.fiscalAddress);
+    setValue('billing-postal-code', info.postalCode);
+    setValue('billing-city', info.city);
+    setValue('billing-province', info.province);
+    setValue('billing-country', info.country || 'Espana');
+}
+
+async function saveBillingInfo(e) {
+    e.preventDefault();
+
+    const payload = {
+        legalName: document.getElementById('billing-legal-name')?.value || '',
+        taxId: document.getElementById('billing-tax-id')?.value || '',
+        billingEmail: document.getElementById('billing-email')?.value || '',
+        fiscalAddress: document.getElementById('billing-address')?.value || '',
+        postalCode: document.getElementById('billing-postal-code')?.value || '',
+        city: document.getElementById('billing-city')?.value || '',
+        province: document.getElementById('billing-province')?.value || '',
+        country: document.getElementById('billing-country')?.value || 'Espana'
+    };
+
+    try {
+        const response = await fetch('/api/invoices/billing-info', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+        if (!response.ok || !result.success) {
+            setBillingInfoMessage(result.error || 'No se pudieron guardar los datos de facturacion.', true);
+            return;
+        }
+
+        setBillingInfoMessage('Datos de facturacion guardados correctamente.');
+    } catch (error) {
+        console.error('Error guardando datos de facturacion:', error);
+        setBillingInfoMessage('Error de conexion al guardar datos de facturacion.', true);
+    }
+}
+
+async function loadBillingSection() {
+    const planEl = document.getElementById('billing-plan');
+    const nextEl = document.getElementById('billing-next');
+    const totalEl = document.getElementById('billing-total');
+    const stateEl = document.getElementById('billing-state');
+    const historyEl = document.getElementById('billing-history');
+
+    if (!planEl || !historyEl) return;
+
+    try {
+        const [currentRes, historyRes, billingInfoRes] = await Promise.all([
+            fetch('/api/invoices/current', { cache: 'no-store' }),
+            fetch('/api/invoices/history', { cache: 'no-store' }),
+            fetch('/api/invoices/billing-info', { cache: 'no-store' })
+        ]);
+
+        if (!currentRes.ok || !historyRes.ok) {
+            planEl.textContent = '-';
+            nextEl.textContent = '-';
+            totalEl.textContent = '-';
+            stateEl.textContent = currentRes.status === 401 ? 'No autenticado' : 'No disponible';
+            historyEl.innerHTML = '<div style="padding: 1rem; color: var(--text-light);">No se pudo cargar el historial de facturas.</div>';
+            return;
+        }
+
+        const current = await currentRes.json();
+        const history = await historyRes.json();
+        if (billingInfoRes.ok) {
+            const billingInfoData = await billingInfoRes.json();
+            fillBillingInfoForm(billingInfoData?.billingInfo || {});
+        } else {
+            setBillingInfoMessage('No se pudieron cargar los datos de facturacion.', true);
+        }
+
+        const nextDue = current?.billingCycle?.nextDueDate
+            ? new Date(current.billingCycle.nextDueDate).toLocaleDateString('es-ES')
+            : 'Sin fecha';
+
+        planEl.textContent = formatCurrencyEUR(current?.plan?.base || 0);
+        nextEl.textContent = nextDue;
+        totalEl.textContent = formatCurrencyEUR(current?.totalToCharge || 0);
+        stateEl.textContent = 'Activo';
+
+        const invoices = Array.isArray(history?.invoices) ? history.invoices : [];
+        if (invoices.length === 0) {
+            historyEl.innerHTML = '<div style="padding: 1rem; color: var(--text-light);">Todavia no hay facturas emitidas.</div>';
+            return;
+        }
+
+        historyEl.innerHTML = `
+            <table class="invoice-table">
+                <thead>
+                    <tr>
+                        <th>Factura</th>
+                        <th>Fecha</th>
+                        <th>Importe</th>
+                        <th>Estado</th>
+                        <th>Accion</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${invoices.map((invoice) => {
+                        const status = getInvoiceStatus(invoice.status);
+                        const invoiceDate = invoice.date ? new Date(invoice.date).toLocaleDateString('es-ES') : '-';
+                        return `
+                            <tr>
+                                <td>${invoice.invoiceNumber || '-'}</td>
+                                <td>${invoiceDate}</td>
+                                <td>${formatCurrencyEUR(invoice.amount || 0)}</td>
+                                <td><span class="invoice-status ${status.className}">${status.label}</span></td>
+                                <td><button class="btn btn-outline billing-download-btn" data-id="${invoice.invoiceId}">Descargar</button></td>
+                            </tr>
+                        `;
+                    }).join('')}
+                </tbody>
+            </table>
+        `;
+
+        historyEl.querySelectorAll('.billing-download-btn').forEach((button) => {
+            button.addEventListener('click', async () => {
+                const invoiceId = button.getAttribute('data-id');
+                await downloadInvoice(invoiceId);
+            });
+        });
+    } catch (error) {
+        console.error('Error cargando facturas:', error);
+        historyEl.innerHTML = '<div style="padding: 1rem; color: var(--danger);">Error cargando facturas.</div>';
+    }
+}
+
+async function downloadInvoice(invoiceId) {
+    if (!invoiceId) return;
+
+    try {
+        const response = await fetch(`/api/invoices/download/${encodeURIComponent(invoiceId)}`);
+        if (!response.ok) {
+            alert('No se pudo descargar la factura.');
+            return;
+        }
+
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `factura_${invoiceId}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+    } catch (error) {
+        console.error('Error descargando factura:', error);
+        alert('Error al descargar la factura.');
+    }
+}
+
 // Guardar contacto
 async function saveContact(e) {
     e.preventDefault();
@@ -461,6 +656,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Configurar formularios
     document.getElementById('store-form').addEventListener('submit', saveStoreConfig);
     document.getElementById('contact-form').addEventListener('submit', saveContact);
+    document.getElementById('billing-info-form')?.addEventListener('submit', saveBillingInfo);
     
     // Configurar color pickers
     setupColorPickers();

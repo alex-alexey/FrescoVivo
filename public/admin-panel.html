@@ -425,6 +425,87 @@
             color: var(--text);
         }
 
+        /* Billing */
+        .billing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin: 1.25rem 0 1.5rem;
+        }
+
+        .billing-mini-card {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1rem;
+        }
+
+        .billing-mini-label {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .billing-mini-value {
+            margin-top: 0.4rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .invoice-table-wrap {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow-x: auto;
+            background: var(--bg-card);
+        }
+
+        .invoice-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 680px;
+        }
+
+        .invoice-table th,
+        .invoice-table td {
+            padding: 0.8rem;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+            font-size: 0.875rem;
+        }
+
+        .invoice-table th {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background: #fafafa;
+        }
+
+        .invoice-status {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.55rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .invoice-status.paid {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .invoice-status.sent {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .invoice-status.pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
         .camera-actions {
             display: flex;
             gap: 0.5rem;
@@ -549,6 +630,10 @@
                     <a class="nav-item active" data-section="dashboard">
                         <span class="nav-icon">📊</span>
                         <span class="nav-text">Dashboard</span>
+                    </a>
+                    <a class="nav-item" data-section="billing">
+                        <span class="nav-icon">🧾</span>
+                        <span class="nav-text">Facturas</span>
                     </a>
                     <a class="nav-item" data-section="store-config">
                         <span class="nav-icon">🏪</span>
@@ -766,6 +851,91 @@
                     
                     <div id="cameras-list" style="display: grid; gap: 1rem;">
                         <!-- Se llenará dinámicamente -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Billing Section -->
+            <div id="billing" class="content-section">
+                <div class="card">
+                    <h2 class="card-title">Facturacion</h2>
+                    <p class="card-description">Consulta tu plan actual, actualiza tus datos de facturacion y descarga las facturas emitidas.</p>
+
+                    <div class="billing-grid">
+                        <div class="billing-mini-card">
+                            <div class="billing-mini-label">Plan base</div>
+                            <div class="billing-mini-value" id="billing-plan">Cargando...</div>
+                        </div>
+                        <div class="billing-mini-card">
+                            <div class="billing-mini-label">Proximo cobro</div>
+                            <div class="billing-mini-value" id="billing-next">Cargando...</div>
+                        </div>
+                        <div class="billing-mini-card">
+                            <div class="billing-mini-label">Total mensual</div>
+                            <div class="billing-mini-value" id="billing-total">Cargando...</div>
+                        </div>
+                        <div class="billing-mini-card">
+                            <div class="billing-mini-label">Estado</div>
+                            <div class="billing-mini-value" id="billing-state">-</div>
+                        </div>
+                    </div>
+
+                    <div id="billing-history" class="invoice-table-wrap">
+                        <div style="padding: 1rem; color: var(--text-light);">Cargando historial...</div>
+                    </div>
+
+                    <div style="margin-top: 1.5rem;">
+                        <h3 style="margin-bottom: 0.5rem;">Datos de facturacion</h3>
+                        <p class="card-description" style="margin-bottom: 1rem;">Estos datos se usan para emitir tus facturas.</p>
+
+                        <form id="billing-info-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label" for="billing-legal-name">Razon social</label>
+                                    <input type="text" class="form-input" id="billing-legal-name" name="legalName" placeholder="Ej: Pescaderia Miguel S.L.">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="billing-tax-id">NIF/CIF</label>
+                                    <input type="text" class="form-input" id="billing-tax-id" name="taxId" placeholder="Ej: B12345678">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="billing-email">Email de facturacion</label>
+                                <input type="email" class="form-input" id="billing-email" name="billingEmail" placeholder="facturas@negocio.com">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="billing-address">Direccion fiscal</label>
+                                <input type="text" class="form-input" id="billing-address" name="fiscalAddress" placeholder="Calle, numero, piso">
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label" for="billing-postal-code">Codigo postal</label>
+                                    <input type="text" class="form-input" id="billing-postal-code" name="postalCode" placeholder="08001">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="billing-city">Ciudad</label>
+                                    <input type="text" class="form-input" id="billing-city" name="city" placeholder="Barcelona">
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label" for="billing-province">Provincia</label>
+                                    <input type="text" class="form-input" id="billing-province" name="province" placeholder="Barcelona">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="billing-country">Pais</label>
+                                    <input type="text" class="form-input" id="billing-country" name="country" placeholder="Espana">
+                                </div>
+                            </div>
+
+                            <div id="billing-info-message" style="margin: 0.5rem 0 1rem; color: var(--text-light);"></div>
+
+                            <button type="submit" class="btn btn-primary">Guardar datos de facturacion</button>
+                        </form>
                     </div>
                 </div>
             </div>

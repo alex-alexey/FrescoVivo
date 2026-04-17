@@ -4,8 +4,13 @@ const productSchema = new mongoose.Schema({
     name: { type: String, required: true },
     description: String,
     price: Number,
-    image: String,
+    priceUnit: { type: String, default: '€/kg' },
+    icon: { type: String, default: '🐟' },
+    iconColor: { type: String, default: 'pi-blue' },
     category: String,
+    badge: String,
+    badgeType: { type: String, default: 'badge-fresh' },
+    image: String,
     available: { type: Boolean, default: true },
     order: { type: Number, default: 0 }
 }, { _id: true });
@@ -38,6 +43,10 @@ const storeConfigSchema = new mongoose.Schema({
         type: String, // URL de la imagen
         default: ''
     },
+    favicon: {
+        type: String,
+        default: ''
+    },
     colors: {
         primary: { type: String, default: '#2563eb' },
         secondary: { type: String, default: '#059669' },
@@ -49,6 +58,52 @@ const storeConfigSchema = new mongoose.Schema({
         type: String,
         default: ''
     },
+    typographyPreset: {
+        type: String,
+        enum: ['moderna', 'clasica', 'mercado'],
+        default: 'moderna'
+    },
+    visualStylePreset: {
+        type: String,
+        enum: ['clasico', 'moderno', 'mercado', 'premium'],
+        default: 'moderno'
+    },
+    cameraTitles: {
+        type: [String],
+        default: [
+            'Mostrador - Pescado fresco',
+            'Zona mariscos',
+            'Moluscos y cefalopodos',
+            'Zona conservas y ahumados'
+        ]
+    },
+    cameraSlotOrder: {
+        type: [Number],
+        default: [1, 2, 3, 4]
+    },
+    cameraEnabled: {
+        type: [Boolean],
+        default: [true, true, true, true]
+    },
+    cameraTitleVisibility: {
+        type: [Boolean],
+        default: [true, true, true, true]
+    },
+    cameraProducts: {
+        type: [{
+            icon: { type: String, default: '🐟' },
+            name: { type: String, default: '' },
+            price: { type: String, default: '' },
+            promoLabel: { type: String, default: '' },
+            visible: { type: Boolean, default: true }
+        }],
+        default: [
+            { icon: '🐟', name: 'Lubina salvaje', price: '11.90€/kg', promoLabel: '', visible: true },
+            { icon: '🦐', name: 'Gamba roja', price: '38€/kg', promoLabel: '', visible: true },
+            { icon: '🐙', name: 'Pulpo gallego', price: '12.80€/kg', promoLabel: '', visible: true },
+            { icon: '🥫', name: 'Conservas artesanas', price: 'desde 3.50€', promoLabel: '', visible: true }
+        ]
+    },
     gallery: [{
         url: String,
         caption: String,
@@ -57,6 +112,20 @@ const storeConfigSchema = new mongoose.Schema({
     
     // Productos
     products: [productSchema],
+    sectionTexts: {
+        products: {
+            label: { type: String, default: 'Catálogo' },
+            title: { type: String, default: 'El género de hoy' }
+        },
+        schedule: {
+            label: { type: String, default: 'Horarios y ubicación' },
+            title: { type: String, default: 'Encuéntranos' }
+        },
+        contact: {
+            label: { type: String, default: 'Contacto' },
+            title: { type: String, default: 'Habla con nosotros' }
+        }
+    },
     
     // Horarios
     schedule: {
@@ -76,7 +145,22 @@ const storeConfigSchema = new mongoose.Schema({
         address: String,
         city: String,
         postalCode: String,
-        country: { type: String, default: 'España' }
+        country: { type: String, default: 'España' },
+        mapsUrl: String
+    },
+    contactCards: {
+        phone: {
+            icon: { type: String, default: '📞' },
+            helpText: { type: String, default: 'Disponible en horario de apertura' }
+        },
+        email: {
+            icon: { type: String, default: '✉️' },
+            helpText: { type: String, default: 'Respondemos en menos de 24h' }
+        },
+        whatsapp: {
+            icon: { type: String, default: '💬' },
+            helpText: { type: String, default: 'La forma más rápida de hacer un encargo' }
+        }
     },
     
     // Redes sociales
@@ -103,6 +187,48 @@ const storeConfigSchema = new mongoose.Schema({
         description: String,
         keywords: [String]
     },
+
+    // Contenido editable para addons premium (habilitación en Client.features)
+    premiumDesign: {
+        heroBadgeText: {
+            type: String,
+            default: ''
+        },
+        heroCtaText: {
+            type: String,
+            default: ''
+        }
+    },
+    reputation: {
+        rating: {
+            type: Number,
+            default: 0
+        },
+        reviewCount: {
+            type: Number,
+            default: 0
+        },
+        featuredReview: {
+            type: String,
+            default: ''
+        }
+    },
+
+    // Textos legales / pie
+    legal: {
+        footerNotice: {
+            type: String,
+            default: ''
+        },
+        legalNotice: {
+            type: String,
+            default: 'Aviso legal'
+        },
+        copyrightText: {
+            type: String,
+            default: ''
+        }
+    },
     
     // Configuración avanzada
     customCSS: {
@@ -119,9 +245,6 @@ const storeConfigSchema = new mongoose.Schema({
     timestamps: true
 });
 
-// Índices
-storeConfigSchema.index({ clientId: 1 });
-
 // Método para obtener la configuración con valores por defecto
 storeConfigSchema.methods.getPublicConfig = function() {
     return {
@@ -129,15 +252,28 @@ storeConfigSchema.methods.getPublicConfig = function() {
         tagline: this.tagline,
         description: this.description,
         logo: this.logo,
+        favicon: this.favicon,
         colors: this.colors,
         heroImage: this.heroImage,
+        typographyPreset: this.typographyPreset,
+        visualStylePreset: this.visualStylePreset,
+        cameraTitles: this.cameraTitles,
+        cameraSlotOrder: this.cameraSlotOrder,
+        cameraEnabled: this.cameraEnabled,
+        cameraTitleVisibility: this.cameraTitleVisibility,
+        cameraProducts: this.cameraProducts,
         gallery: this.gallery,
         products: this.products.filter(p => p.available),
+        sectionTexts: this.sectionTexts,
         schedule: this.schedule,
         contact: this.contact,
+        contactCards: this.contactCards,
         social: this.social,
         features: this.features,
-        seo: this.seo
+        seo: this.seo,
+        premiumDesign: this.premiumDesign,
+        reputation: this.reputation,
+        legal: this.legal
     };
 };
 

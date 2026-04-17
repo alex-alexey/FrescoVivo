@@ -25,6 +25,11 @@ const clientSchema = new mongoose.Schema({
         trim: true
         // Ejemplo: "pescaderiajuan.com" o "mariscospepe.es"
     },
+    storeType: {
+        type: String,
+        enum: ['pescaderia', 'marisqueria', 'carniceria', 'charcuteria', 'polleria', 'fruteria', 'panaderia', 'otra'],
+        default: 'pescaderia'
+    },
     
     // Información del Propietario
     owner: {
@@ -99,6 +104,113 @@ const clientSchema = new mongoose.Schema({
         enum: ['basico', 'profesional', 'empresarial', 'personalizado'],
         default: 'basico'
     },
+    
+    // Características Premium
+    features: {
+        seoPro: {
+            type: Boolean,
+            default: false
+        },
+        premiumDesigns: {
+            type: Boolean,
+            default: false
+        },
+        reviewsReputation: {
+            type: Boolean,
+            default: false
+        }
+    },
+
+    // Facturación
+    billing: {
+        currency: {
+            type: String,
+            default: 'EUR'
+        },
+        basePlanPrice: {
+            type: Number,
+            default: 39,
+            min: 0
+        },
+        addonPrices: {
+            seoPro: {
+                type: Number,
+                default: 19,
+                min: 0
+            },
+            premiumDesigns: {
+                type: Number,
+                default: 29,
+                min: 0
+            },
+            reviewsReputation: {
+                type: Number,
+                default: 15,
+                min: 0
+            }
+        },
+        discount: {
+            type: Number,
+            default: 0,
+            min: 0
+        },
+        billingDayOfMonth: {
+            type: Number,
+            default: 5,
+            min: 1,
+            max: 28
+        },
+        nextDueDate: {
+            type: Date,
+            default: null
+        },
+        lastPaidAt: {
+            type: Date,
+            default: null
+        },
+        paymentStatus: {
+            type: String,
+            enum: ['al_dia', 'pendiente', 'vencido', 'pausado'],
+            default: 'pendiente'
+        }
+    },
+
+    // Datos fiscales para emisión de factura
+    billingInfo: {
+        legalName: {
+            type: String,
+            default: ''
+        },
+        taxId: {
+            type: String,
+            default: ''
+        },
+        billingEmail: {
+            type: String,
+            default: ''
+        },
+        fiscalAddress: {
+            type: String,
+            default: ''
+        },
+        postalCode: {
+            type: String,
+            default: ''
+        },
+        city: {
+            type: String,
+            default: ''
+        },
+        province: {
+            type: String,
+            default: ''
+        },
+        country: {
+            type: String,
+            default: 'España'
+        }
+    },
+    
     limits: {
         maxDailyTickets: {
             type: Number,
@@ -205,6 +317,16 @@ const clientSchema = new mongoose.Schema({
         }
     },
     
+    // Token de activación de cuenta (primer acceso)
+    activationToken: {
+        type: String,
+        default: null
+    },
+    activationTokenExpires: {
+        type: Date,
+        default: null
+    },
+
     // Auditoría
     createdBy: {
         type: String,
@@ -213,22 +335,54 @@ const clientSchema = new mongoose.Schema({
     lastModifiedBy: {
         type: String,
         default: null
-    }
+    },
+
+    // Historial de Facturas
+    invoices: [{
+        invoiceId: {
+            type: String,
+            required: true
+        },
+        invoiceNumber: {
+            type: String,
+            required: true
+        },
+        date: {
+            type: Date,
+            default: Date.now
+        },
+        amount: {
+            type: Number,
+            required: true
+        },
+        status: {
+            type: String,
+            enum: ['sent', 'paid', 'unpaid', 'overdue', 'cancelled'],
+            default: 'sent'
+        },
+        dueDate: {
+            type: Date
+        },
+        paidDate: {
+            type: Date,
+            default: null
+        }
+    }]
 }, {
     timestamps: true
 });
 
 // Índices para mejorar las búsquedas
-clientSchema.index({ domain: 1 });
-clientSchema.index({ slug: 1 });
-clientSchema.index({ 'owner.email': 1 });
 clientSchema.index({ status: 1 });
 
 // Hook pre-save para hashear la contraseña
 clientSchema.pre('save', async function() {
-    if (this.isModified('owner.password')) {
+    // Solo hashear si la contraseña no está ya hasheada (no empieza con bcrypt hash)
+    if (this.owner.password && !this.owner.password.startsWith('$2')) {
+        console.log('🔒 Hasheando contraseña para:', this.owner.username);
         const salt = await bcrypt.genSalt(10);
         this.owner.password = await bcrypt.hash(this.owner.password, salt);
+        console.log('✅ Contraseña hasheada correctamente');
     }
 });
 

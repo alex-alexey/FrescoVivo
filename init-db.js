@@ -4,8 +4,15 @@ const User = require('./models/User');
 
 const initDatabase = async () => {
     try {
+        const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI;
+
+        if (!mongoUri) {
+            console.error('❌ Falta URI de MongoDB. Define MONGODB_URI o MONGO_URI');
+            process.exit(1);
+        }
+
         // Conectar a MongoDB
-        await mongoose.connect(process.env.MONGODB_URI);
+        await mongoose.connect(mongoUri);
         console.log('✅ Conectado a MongoDB');
 
         // Verificar si ya existe un admin
@@ -15,52 +22,38 @@ const initDatabase = async () => {
             console.log('ℹ️  Usuario administrador ya existe:');
             console.log(`   👤 Usuario: ${adminExists.username}`);
             console.log(`   📧 Email: ${adminExists.email}`);
-            console.log(`   🔑 Rol: ${adminExists.role}`);
+            console.log(`   🎯 Rol: ${adminExists.role}`);
         } else {
-            // Crear usuario admin
+            const adminUser = process.env.INIT_ADMIN_USER || process.env.ADMIN_USER;
+            const adminEmail = process.env.INIT_ADMIN_EMAIL || process.env.ADMIN_EMAIL;
+            const adminPass = process.env.INIT_ADMIN_PASS || process.env.ADMIN_PASS;
+
+            if (!adminUser || !adminEmail || !adminPass) {
+                console.error('❌ Faltan variables de entorno para crear el admin:');
+                console.error('   INIT_ADMIN_USER/ADMIN_USER, INIT_ADMIN_EMAIL/ADMIN_EMAIL, INIT_ADMIN_PASS/ADMIN_PASS');
+                process.exit(1);
+            }
+
+            if (adminPass.length < 8) {
+                console.error('❌ INIT_ADMIN_PASS debe tener al menos 8 caracteres');
+                process.exit(1);
+            }
+
             const admin = new User({
-                username: 'admin',
-                email: 'admin@pescadolive.com',
-                password: 'admin123',
+                username: adminUser.toLowerCase().trim(),
+                email: adminEmail.toLowerCase().trim(),
+                password: adminPass,
                 fullName: 'Administrador',
                 role: 'admin',
                 isActive: true
             });
 
             await admin.save();
-            
+
             console.log('✅ Usuario administrador creado exitosamente!');
-            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-            console.log('   👤 Usuario: admin');
-            console.log('   🔑 Contraseña: admin123');
-            console.log('   📧 Email: admin@pescadolive.com');
+            console.log(`   👤 Usuario: ${admin.username}`);
+            console.log(`   📧 Email: ${admin.email}`);
             console.log('   🎯 Rol: Administrador');
-            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-            console.log('⚠️  IMPORTANTE: Cambia la contraseña después del primer login');
-        }
-
-        // Crear un empleado de ejemplo si no existe
-        const empleadoExists = await User.findOne({ username: 'empleado1' });
-        
-        if (!empleadoExists) {
-            const empleado = new User({
-                username: 'empleado1',
-                email: 'empleado1@pescadolive.com',
-                password: 'empleado123',
-                fullName: 'Empleado Ejemplo',
-                role: 'empleado',
-                isActive: true
-            });
-
-            await empleado.save();
-            
-            console.log('\n✅ Usuario empleado creado exitosamente!');
-            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-            console.log('   👤 Usuario: empleado1');
-            console.log('   🔑 Contraseña: empleado123');
-            console.log('   📧 Email: empleado1@pescadolive.com');
-            console.log('   🎯 Rol: Empleado');
-            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
         }
 
         console.log('\n📊 Resumen de usuarios en la base de datos:');

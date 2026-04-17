@@ -319,6 +319,21 @@ body {
     background: #dc2626;
 }
 
+.btn-success {
+    background: #16a34a;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+
+.btn-success:hover {
+    background: #15803d;
+}
+
 .btn-sm {
     padding: 6px 12px;
     font-size: 0.85em;

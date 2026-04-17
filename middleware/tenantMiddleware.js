@@ -152,10 +152,12 @@ async function tenantMiddleware(req, res, next) {
         
         // Agregar información del cliente y la DB al request
         req.client = {
+            _id: client._id,
             id: client._id,
             businessName: client.businessName,
             slug: client.slug,
             domain: client.domain,
+            storeType: client.storeType || 'pescaderia',
             branding: client.branding,
             limits: client.limits,
             plan: client.plan,

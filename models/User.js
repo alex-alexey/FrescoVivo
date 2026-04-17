@@ -44,6 +44,14 @@ const userSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         default: null
+    },
+    activationToken: {
+        type: String,
+        default: null
+    },
+    activationTokenExpires: {
+        type: Date,
+        default: null
     }
 }, {
     timestamps: true // Agrega createdAt y updatedAt automáticamente
@@ -51,8 +59,8 @@ const userSchema = new mongoose.Schema({
 
 // Encriptar contraseña antes de guardar
 userSchema.pre('save', async function() {
-    // Solo hashear si la contraseña fue modificada
-    if (!this.isModified('password')) {
+    // Solo hashear si la contraseña fue modificada Y existe
+    if (!this.isModified('password') || !this.password) {
         return;
     }
     

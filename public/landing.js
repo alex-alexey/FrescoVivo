@@ -3,6 +3,15 @@ let localStream = null;
 let peerConnection = null;
 let clientName = '';
 
+// SISTEMA GLOBAL DE MODALES
+let _confirmCallback = null;
+
+function showAlertModal(message, title = 'Aviso') {
+    return new Promise((resolve) => {
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `<div style="background:white;border-radius:12px;padding:2rem;max-width:400px;width:90%"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem"><h3 style="font-size:1.5rem;font-weight:700;margin:0">${title}</h3><button style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:#999" onclick="this.closest('[class=modal-overlay]').remove()">✕</button></div><div style="margin-bottom:2rem"><p style="color:#666">${message}</p></div><div style="display:flex;gap:0.75rem;justify-content:flex-end"><button style="padding:0.5rem 1rem;background:#2563eb;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600" onclick="this.closest('[class=modal-overlay]').remove()">Aceptar</button></div></div>`;\n        modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center';\n        document.body.appendChild(modal);\n        const cleanup = () => { modal.remove(); resolve(); };\n        const btn = modal.querySelector('button:not(:first-of-type)');\n        if (btn) btn.addEventListener('click', cleanup);\n    });\n}\n\nfunction showConfirmModal(message, title = 'Confirmaci\u00f3n') {\n    return new Promise((resolve) => {\n        const modal = document.createElement('div');\n        modal.innerHTML = `<div style="background:white;border-radius:12px;padding:2rem;max-width:400px;width:90%"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem"><h3 style="font-size:1.5rem;font-weight:700;margin:0">${title}</h3><button style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:#999" onclick="this.closest('div').parentElement.parentElement.remove()">✕</button></div><div style="margin-bottom:2rem"><p style="color:#666">${message}</p></div><div style="display:flex;gap:0.75rem;justify-content:flex-end"><button style="padding:0.5rem 1rem;background:transparent;color:#333;border:1px solid #ccc;border-radius:6px;cursor:pointer;font-weight:600" onclick="this.closest('div').parentElement.parentElement.remove()">Cancelar</button><button style="padding:0.5rem 1rem;background:#dc2626;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600" onclick="this.closest('div').parentElement.parentElement.remove()">Aceptar</button></div></div>`;\n        modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center';\n        document.body.appendChild(modal);\n        const btns = modal.querySelectorAll('button:nth-of-type(n+2)');\n        if (btns[0]) btns[0].addEventListener('click', () => { modal.remove(); resolve(false); });\n        if (btns[1]) btns[1].addEventListener('click', () => { modal.remove(); resolve(true); });\n    });\n}
+
 const configuration = {
     iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
@@ -95,8 +104,9 @@ socket.on('vendor-status-changed', (data) => {
 });
 
 socket.on('vendor-not-live', () => {
-    alert('Miguel no está transmitiendo en este momento. Por favor, espera a que inicie la transmisión.');
-    closeJoinModal();
+    showAlertModal('Miguel no está transmitiendo en este momento. Por favor, espera a que inicie la transmisión.', '⏰ Transmisión No Disponible').then(() => {
+        closeJoinModal();
+    });
 });
 
 socket.on('queue-position', (data) => {
@@ -172,13 +182,15 @@ socket.on('call-accepted', async () => {
 });
 
 socket.on('call-ended', () => {
-    alert('La llamada ha terminado');
-    leaveCall();
+    showAlertModal('La llamada ha terminado', '🌟 Fin de Llamada').then(() => {
+        leaveCall();
+    });
 });
 
 socket.on('vendor-disconnected', () => {
-    alert('El vendedor se ha desconectado');
-    leaveCall();
+    showAlertModal('El vendedor se ha desconectado', '🚫 Desconectado').then(() => {
+        leaveCall();
+    });
 });
 
 socket.on('webrtc-offer', async (data) => {
@@ -213,7 +225,7 @@ socket.on('webrtc-ice-candidate', async (data) => {
 // Funciones
 function showJoinModal() {
     if (!isVendorLive) {
-        alert('Miguel no está transmitiendo en este momento. Por favor, vuelve más tarde.');
+        showAlertModal('Miguel no está transmitiendo en este momento. Por favor, vuelve más tarde.', '🚫 No Disponible');
         return;
     }
     if (joinModal) {
@@ -234,7 +246,7 @@ function joinQueue() {
     
     if (!nameInput) {
         console.error('❌ No se encontró el campo de nombre');
-        alert('Error: No se pudo encontrar el formulario');
+        showAlertModal('Error: No se pudo encontrar el formulario', '❌ Error');
         return;
     }
     
@@ -290,7 +302,7 @@ async function startLocalStream() {
         console.log('✅ Audio capturado correctamente');
     } catch (error) {
         console.error('❌ Error al acceder al micrófono:', error);
-        alert('No se pudo acceder a tu micrófono. Verifica los permisos del navegador.');
+        showAlertModal('No se pudo acceder a tu micrófono. Verifica los permisos del navegador.', '🚫 Permiso Denegado');
     }
 }
 

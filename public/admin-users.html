@@ -220,6 +220,91 @@
             font-weight: 700;
             cursor: pointer;
         }
+        
+        /* MODAL STYLES */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 400px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+        
+        .btn-modal {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            border: 1px solid;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border-color: #ccc;
+            color: #333;
+        }
+        
+        .btn-outline:hover {
+            background: #f0f0f0;
+        }
+        
+        .btn-primary-modal {
+            background: #0066cc;
+            color: white;
+            border-color: #0066cc;
+        }
+        
+        .btn-primary-modal:hover {
+            background: #0052a3;
+        }
+        
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+            border-color: #dc2626;
+        }
+        
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
     </style>
 </head>
 <body>
@@ -319,6 +404,57 @@
     </div>
 
     <script>
+        // GLOBAL MODAL FUNCTIONS
+        let _confirmCallback = null;
+        
+        function showAlertModal(message, title = 'Aviso') {
+            return new Promise((resolve) => {
+                document.getElementById('alert-title').textContent = title;
+                document.getElementById('alert-message').textContent = message;
+                document.getElementById('alert-modal').classList.add('active');
+                
+                const closeBtn = document.querySelector('#alert-modal .modal-close');
+                const acceptBtn = document.querySelector('#alert-modal .btn-primary-modal');
+                
+                const cleanup = () => {
+                    document.getElementById('alert-modal').classList.remove('active');
+                    closeBtn.removeEventListener('click', cleanup);
+                    acceptBtn.removeEventListener('click', cleanup);
+                    resolve();
+                };
+                
+                closeBtn.addEventListener('click', cleanup);
+                acceptBtn.addEventListener('click', cleanup);
+            });
+        }
+        
+        function showConfirmModal(message, title = 'Confirmación') {
+            return new Promise((resolve) => {
+                document.getElementById('confirm-title').textContent = title;
+                document.getElementById('confirm-message').textContent = message;
+                document.getElementById('confirm-modal').classList.add('active');
+                
+                _confirmCallback = (result) => {
+                    document.getElementById('confirm-modal').classList.remove('active');
+                    resolve(result);
+                };
+            });
+        }
+        
+        function closeAlertModal() {
+            document.getElementById('alert-modal').classList.remove('active');
+        }
+        
+        function closeConfirmModal() {
+            document.getElementById('confirm-modal').classList.remove('active');
+            if (_confirmCallback) _confirmCallback(false);
+        }
+        
+        function _executeConfirm() {
+            document.getElementById('confirm-modal').classList.remove('active');
+            if (_confirmCallback) _confirmCallback(true);
+        }
+    </script>
         let currentUser = null;
         let isEditMode = false;
 
@@ -336,8 +472,10 @@
 
                 // Verificar si es admin
                 if (currentUser.role !== 'admin') {
-                    alert('Solo administradores pueden acceder a esta página');
-                    window.location.href = '/vendor';
+                    showAlertModal('Solo administradores pueden acceder a esta página', '❌ Acceso Denegado').then(() => {
+                        window.location.href = '/vendor';
+                    });
+                    return;
                 }
             } catch (error) {
                 console.error('Error:', error);
@@ -455,21 +593,22 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    alert(data.message);
-                    closeModal();
-                    loadUsers();
+                    showAlertModal(data.message, '✅ Éxito').then(() => {
+                        closeModal();
+                        loadUsers();
+                    });
                 } else {
-                    alert(data.message);
+                    showAlertModal(data.message, '❌ Error');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('Error al guardar usuario');
+                showAlertModal('Error al guardar usuario', '❌ Error');
             }
         });
 
         // Eliminar usuario
         async function deleteUser(id, username) {
-            if (!confirm(`¿Estás seguro de eliminar al usuario "${username}"?`)) return;
+            if (!(await showConfirmModal(`¿Estás seguro de eliminar al usuario "${username}"?`, '⚠️ Eliminar Usuario'))) return;
 
             try {
                 const response = await fetch(`/api/auth/users/${id}`, {
@@ -479,14 +618,15 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    alert(data.message);
-                    loadUsers();
+                    showAlertModal(data.message, '✅ Éxito').then(() => {
+                        loadUsers();
+                    });
                 } else {
-                    alert(data.message);
+                    showAlertModal(data.message || 'No se pudo eliminar el usuario', '❌ Error');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('Error al eliminar usuario');
+                showAlertModal('Error al eliminar usuario', '❌ Error');
             }
         }
 
@@ -504,5 +644,40 @@
         loadCurrentUser();
         loadUsers();
     </script>
+    <div id="modal-container"></div>
+    
+    <!-- Modal Genérico de Alerta -->
+    <div id="alert-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="alert-title">Aviso</h3>
+                <button class="modal-close" onclick="closeAlertModal()">✕</button>
+            </div>
+            <div style="margin-bottom: 2rem;">
+                <p id="alert-message" style="color: #666; margin-bottom: 1rem;"></p>
+                <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+                    <button class="btn-modal btn-primary-modal" onclick="closeAlertModal()">Aceptar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Genérico de Confirmación -->
+    <div id="confirm-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="confirm-title">Confirmación</h3>
+                <button class="modal-close" onclick="closeConfirmModal()">✕</button>
+            </div>
+            <div style="margin-bottom: 2rem;">
+                <p id="confirm-message" style="color: #666; margin-bottom: 1rem;"></p>
+                <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+                    <button class="btn-modal btn-outline" onclick="closeConfirmModal()">Cancelar</button>
+                    <button class="btn-modal btn-danger" id="confirm-btn" onclick="_executeConfirm()">Aceptar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
 </body>
 </html>

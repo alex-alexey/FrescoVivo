@@ -139,7 +139,6 @@ const cameraSchema = new mongoose.Schema({
 // Índices
 cameraSchema.index({ clientId: 1, position: 1 });
 cameraSchema.index({ clientId: 1, isActive: 1 });
-cameraSchema.index({ cameraId: 1 });
 
 // Métodos
 cameraSchema.methods.startStream = async function() {

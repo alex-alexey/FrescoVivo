@@ -1,716 +1,1460 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="page-title">Mi Tienda</title>
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <style id="base-styles">
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title id="page-title">Pescadería García</title>
+<link id="dynamic-favicon" rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='24' font-size='24'%3E🐟%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=Playfair+Display:wght@500;700&family=Source+Sans+3:wght@400;600&family=Merriweather:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #F8F6F1;
+  --white:    #FFFFFF;
+  --surface:  #F2EFE8;
+  --border:   #E8E3D8;
+  --text:     #18120A;
+  --muted:    #8C826E;
+  --accent:   #1A6B3C;
+  --accent2:  #C4472A;
+  --accent-soft: rgba(26,107,60,0.1);
+  --accent2-soft: rgba(196,71,42,0.1);
+  --live:     #E03030;
+  --gold:     #C9930A;
+  --serif: 'Syne', sans-serif;
+  --sans:  'DM Sans', sans-serif;
+  --hero-image: none;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--sans);
+  background:var(--bg);
+  color:var(--text);
+  overflow-x:hidden;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+a,button{transition:all 0.2s ease}
+section[id]{scroll-margin-top:88px}
 
-        :root {
-            --primary: #2563eb;
-            --secondary: #059669;
-            --accent: #f59e0b;
-            --bg: #ffffff;
-            --text: #111827;
-            --text-light: #6b7280;
-            --border: #e5e7eb;
-        }
+/* ── NAV ── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:200;
+  background:rgba(248,246,241,0.86);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  transition:background 0.2s, box-shadow 0.2s, border-color 0.2s;
+}
+.nav-scrolled{
+  background:rgba(248,246,241,0.96);
+  border-bottom-color:rgba(24,18,10,0.08);
+  box-shadow:0 10px 26px rgba(24,18,10,0.08);
+}
+.nav-inner{
+  max-width:1280px;margin:0 auto;padding:0 2rem;
+  height:60px;display:flex;align-items:center;justify-content:space-between;
+}
+.nav-logo{
+  font-family:var(--serif);font-size:1.15rem;font-weight:800;
+  color:var(--text);letter-spacing:-0.02em;text-decoration:none;
+  display:flex;align-items:center;gap:10px;
+}
+.nav-logo-badge{
+  width:32px;height:32px;border-radius:8px;
+  background:var(--accent);
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.9rem;color:white;
+}
+.nav-links{display:flex;gap:2rem;list-style:none;}
+.nav-links a{
+  font-size:0.85rem;font-weight:500;color:var(--muted);
+  text-decoration:none;transition:color 0.2s;
+}
+.nav-links a:hover{color:var(--text)}
+.nav-links a:focus-visible,.btn-call:focus-visible,.btn-primary:focus-visible,.btn-secondary:focus-visible,.social-btn:focus-visible,.filter-btn:focus-visible{
+  outline:2px solid rgba(26,107,60,0.38);
+  outline-offset:2px;
+}
+.nav-right{display:flex;align-items:center;gap:1rem}
+.live-pill{
+  display:flex;align-items:center;gap:6px;
+  background:var(--live);color:white;
+  font-size:0.7rem;font-weight:700;letter-spacing:0.06em;
+  padding:5px 12px;border-radius:100px;
+  animation:pulse-border 2s ease-in-out infinite;
+}
+.live-pill.offline{
+  background:rgba(24,18,10,0.6);
+  animation:none;
+}
+.live-pill.offline .live-dot{
+  opacity:0.6;
+  animation:none;
+}
+@keyframes pulse-border{
+  0%,100%{box-shadow:0 0 0 0 rgba(224,48,48,0.4)}
+  50%{box-shadow:0 0 0 6px rgba(224,48,48,0)}
+}
+.live-dot{width:6px;height:6px;border-radius:50%;background:white;animation:blink 1.4s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+.btn-call{
+  display:flex;align-items:center;gap:6px;
+  background:var(--text);color:white;
+  font-family:var(--sans);font-size:0.82rem;font-weight:500;
+  padding:8px 18px;border-radius:8px;
+  text-decoration:none;transition:opacity 0.2s;
+  border:none;cursor:pointer;
+}
+.btn-call:hover{opacity:0.85}
 
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            line-height: 1.6;
-        }
+/* Presets tipograficos */
+body[data-typography='moderna']{--serif:'Syne',sans-serif;--sans:'DM Sans',sans-serif}
+body[data-typography='clasica']{--serif:'Playfair Display',serif;--sans:'Source Sans 3',sans-serif}
+body[data-typography='mercado']{--serif:'Merriweather',serif;--sans:'Inter',sans-serif}
 
-        /* Header / Navigation */
-        .header {
-            background: white;
-            border-bottom: 1px solid var(--border);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
+/* Presets visuales */
+body[data-style='clasico']{--bg:#f8f6f1;--surface:#f2efe8;--border:#e8e3d8;--accent:#1a6b3c;--accent2:#c4472a}
+body[data-style='moderno']{--bg:#f5f8fb;--surface:#eef3f8;--border:#dce6f1;--accent:#1d4ed8;--accent2:#ea580c}
+body[data-style='mercado']{--bg:#fff8f0;--surface:#fff1de;--border:#f1dcc0;--accent:#0f766e;--accent2:#b45309}
+body[data-style='premium']{--bg:#f7f5fb;--surface:#efebf8;--border:#e1d9f2;--accent:#5b21b6;--accent2:#b91c1c}
 
-        .nav-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+/* ── HERO ── */
+.hero{
+  min-height:100vh;padding:100px 2rem 60px;
+  display:flex;align-items:center;
+  position:relative;overflow:hidden;
+  background-image:linear-gradient(rgba(248,246,241,0.88),rgba(248,246,241,0.92)), var(--hero-image);
+  background-size:cover;
+  background-position:center;
+}
+.hero::after{
+  content:'';position:absolute;
+  top:-200px;right:-300px;
+  width:700px;height:700px;border-radius:50%;
+  background:radial-gradient(circle,rgba(26,107,60,0.07),transparent 70%);
+  pointer-events:none;
+}
+.hero-inner{
+  max-width:1280px;margin:0 auto;width:100%;
+  display:grid;grid-template-columns:1fr 1.1fr;gap:5rem;align-items:center;
+}
+.hero-text{max-width:560px}
+.hero-tag{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--accent-soft);color:var(--accent);
+  font-size:0.72rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;
+  padding:6px 14px;border-radius:100px;margin-bottom:1.5rem;
+}
+.hero h1{
+  font-family:var(--serif);
+  font-size:clamp(3rem,5.5vw,5.2rem);
+  font-weight:800;line-height:1.0;
+  letter-spacing:-0.03em;
+  color:var(--text);margin-bottom:1.5rem;
+}
+.hero h1 span{color:var(--accent)}
+.hero-desc{
+  font-size:1.05rem;color:var(--muted);
+  line-height:1.75;max-width:440px;margin-bottom:2.5rem;
+}
+.hero-actions{display:flex;gap:1rem;flex-wrap:wrap;align-items:center;margin-bottom:3rem}
+.btn-primary{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--accent);color:white;
+  font-family:var(--sans);font-size:0.95rem;font-weight:500;
+  padding:14px 28px;border-radius:10px;text-decoration:none;
+  transition:transform 0.15s,opacity 0.15s;
+}
+.btn-primary:hover{transform:translateY(-1px);opacity:0.92}
+.btn-secondary{
+  display:inline-flex;align-items:center;gap:8px;
+  color:var(--text);font-size:0.95rem;font-weight:500;
+  text-decoration:none;
+}
+.btn-secondary svg{transition:transform 0.2s}
+.btn-secondary:hover svg{transform:translateX(3px)}
+.hero-info{
+  display:flex;gap:2.5rem;
+  padding-top:2rem;border-top:1px solid var(--border);
+}
+.info-item{}
+.info-num{font-family:var(--serif);font-size:1.6rem;font-weight:700;color:var(--text);line-height:1}
+.info-label{font-size:0.78rem;color:var(--muted);margin-top:3px}
 
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary);
-        }
+/* hero right: main camera big */
+.hero-cam{
+  position:relative;border-radius:20px;overflow:hidden;
+  aspect-ratio:4/3;
+  background:#0f1a12;
+  border:1px solid rgba(255,255,255,0.14);
+  box-shadow:0 40px 100px rgba(0,0,0,0.18),0 8px 24px rgba(0,0,0,0.08);
+}
+.hero-cam-inner{
+  position:absolute;inset:0;
+  background:linear-gradient(160deg,#0d2117,#162a1d,#1a3320);
+  display:flex;align-items:center;justify-content:center;
+}
+.cam-emoji{font-size:3.5rem;opacity:0.3;filter:grayscale(0.5)}
+.hero-cam-overlay{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;justify-content:space-between;
+  padding:16px;
+}
+.cam-top{display:flex;justify-content:space-between;align-items:flex-start}
+.cam-live-badge{
+  display:flex;align-items:center;gap:5px;
+  background:var(--live);color:white;
+  font-size:0.65rem;font-weight:800;letter-spacing:0.08em;
+  padding:4px 10px;border-radius:100px;
+}
+.cam-viewers{
+  background:rgba(0,0,0,0.45);color:rgba(255,255,255,0.8);
+  font-size:0.68rem;padding:4px 10px;border-radius:100px;
+  display:flex;align-items:center;gap:4px;
+}
+.cam-bottom{}
+.cam-product-chips{display:flex;flex-wrap:wrap;gap:6px;}
+.cam-chip{
+  background:rgba(255,255,255,0.1);
+  backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,0.18);
+  border-radius:8px;padding:6px 12px;
+  color:white;font-size:0.72rem;
+}
+.cam-chip strong{display:block;font-size:0.8rem;margin-bottom:1px}
+/* scan lines */
+.cam-lines{
+  position:absolute;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.025) 2px,rgba(0,0,0,0.025) 3px);
+  pointer-events:none;border-radius:20px;
+}
+/* corner focus */
+.fc{position:absolute;width:20px;height:20px;border-color:rgba(255,255,255,0.5);border-style:solid;border-width:0}
+.fc.tl{top:16px;left:16px;border-top-width:2px;border-left-width:2px;border-radius:3px 0 0 0}
+.fc.tr{top:16px;right:16px;border-top-width:2px;border-right-width:2px;border-radius:0 3px 0 0}
+.fc.bl{bottom:16px;left:16px;border-bottom-width:2px;border-left-width:2px;border-radius:0 0 0 3px}
+.fc.br{bottom:16px;right:16px;border-bottom-width:2px;border-right-width:2px;border-radius:0 0 3px 0}
 
-        .logo-img {
-            height: 40px;
-            width: auto;
-        }
+/* ── SECTION BASE ── */
+.section{padding:6rem 2rem}
+.wrap{max-width:1280px;margin:0 auto}
+.section-label{
+  display:inline-block;font-size:0.7rem;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;
+  color:var(--accent);margin-bottom:0.75rem;
+}
+.section-title{
+  font-family:var(--serif);font-size:clamp(2rem,3.5vw,3rem);
+  font-weight:800;letter-spacing:-0.02em;line-height:1.1;color:var(--text);
+}
 
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-            list-style: none;
-        }
+/* ── 4 CAMERAS ── */
+.cameras-section{
+  background:var(--white);
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  padding:5rem 2rem;
+}
+.cameras-header{
+  display:flex;justify-content:space-between;align-items:flex-end;
+  margin-bottom:2.5rem;
+}
+.cameras-header-left{}
+.cameras-header-right{
+  font-size:0.82rem;color:var(--muted);text-align:right;line-height:1.5;
+}
+.cameras-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  grid-template-rows:repeat(2,1fr);
+  gap:12px;
+  max-width:1280px;margin:0 auto;
+}
+.cam-card{
+  position:relative;border-radius:14px;overflow:hidden;
+  background:#0f1a12;
+  border:1px solid rgba(255,255,255,0.08);
+  aspect-ratio:16/10;
+  cursor:pointer;
+  transition:transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+}
+.cam-card:hover{transform:translateY(-2px) scale(1.01);z-index:2;border-color:rgba(255,255,255,0.22);box-shadow:0 14px 30px rgba(0,0,0,0.24)}
+.cam-card-bg{
+  position:absolute;inset:0;
+}
+.cg1{background:linear-gradient(135deg,#0d2117,#1a3a22)}
+.cg2{background:linear-gradient(135deg,#12181e,#1e2d3a)}
+.cg3{background:linear-gradient(135deg,#1e1208,#3a2210)}
+.cg4{background:linear-gradient(135deg,#0e1820,#1a2e3c)}
+.cam-card-emoji{
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:2.5rem;opacity:0.2;filter:grayscale(0.3);
+}
+.cam-card-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(to top,rgba(0,0,0,0.55) 0%,transparent 50%);
+}
+.cam-card-top{
+  position:absolute;top:12px;left:12px;right:12px;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.cam-card-live{
+  display:flex;align-items:center;gap:4px;
+  background:var(--live);color:white;
+  font-size:0.58rem;font-weight:800;letter-spacing:0.08em;
+  padding:3px 8px;border-radius:100px;
+}
+.cam-card-offline{
+  background:rgba(0,0,0,0.45);color:rgba(255,255,255,0.5);
+  font-size:0.58rem;font-weight:600;letter-spacing:0.06em;
+  padding:3px 8px;border-radius:100px;
+}
+.cam-card-viewers{
+  background:rgba(0,0,0,0.4);color:rgba(255,255,255,0.7);
+  font-size:0.62rem;padding:3px 8px;border-radius:100px;
+}
+.cam-viewers,
+.cam-card-viewers{
+  display:none !important;
+}
+.cam-card-bottom{
+  position:absolute;bottom:12px;left:12px;right:12px;
+}
+.cam-card-name{
+  font-family:var(--serif);font-weight:700;font-size:0.95rem;
+  color:white;margin-bottom:4px;
+}
+.cam-card-product{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(255,255,255,0.1);backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,0.15);
+  border-radius:6px;padding:4px 10px;
+  color:rgba(255,255,255,0.85);font-size:0.7rem;
+}
+.cam-card-price{
+  color:var(--gold) !important;font-weight:600 !important;
+  font-size:0.72rem !important;
+}
+.cam-card-promo{
+  color:#ef4444;
+  font-weight:700;
+  font-size:0.66rem;
+  letter-spacing:0.05em;
+  text-transform:uppercase;
+}
+.cam-expand{
+  position:absolute;top:12px;right:12px;
+  width:28px;height:28px;border-radius:6px;
+  background:rgba(255,255,255,0.1);backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,0.18);
+  display:flex;align-items:center;justify-content:center;
+  color:rgba(255,255,255,0.7);font-size:0.7rem;
+  transition:background 0.2s;
+}
+.cam-card:hover .cam-expand{background:rgba(255,255,255,0.2)}
+/* call button overlay on hover */
+.cam-call-btn{
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity 0.2s;
+  background:rgba(0,0,0,0.25);
+}
+.cam-card:hover .cam-call-btn{opacity:1}
+.cam-call-inner{
+  display:flex;align-items:center;gap:8px;
+  background:white;color:var(--text);
+  font-size:0.82rem;font-weight:600;
+  padding:10px 20px;border-radius:10px;
+  box-shadow:0 8px 24px rgba(0,0,0,0.3);
+}
 
-        .nav-links a {
-            text-decoration: none;
-            color: var(--text);
-            font-weight: 500;
-            transition: color 0.3s;
-        }
+/* ── PRODUCTS ── */
+.products-section{background:var(--bg);padding:5rem 2rem}
+.products-header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:2.5rem}
+.products-filters{display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:2rem}
+.filter-btn{
+  padding:6px 16px;border-radius:100px;
+  font-family:var(--sans);font-size:0.8rem;font-weight:500;
+  border:1px solid var(--border);background:var(--white);
+  color:var(--muted);cursor:pointer;transition:all 0.2s;
+}
+.filter-btn.active,.filter-btn:hover{background:var(--text);color:white;border-color:var(--text)}
+.products-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:16px;
+}
+.product-card{
+  background:var(--white);border-radius:16px;
+  border:1px solid var(--border);
+  overflow:hidden;
+  display:flex;flex-direction:column;
+  transition:transform 0.2s,box-shadow 0.2s;
+}
+.product-card:hover{transform:translateY(-3px);box-shadow:0 16px 40px rgba(0,0,0,0.09)}
+.product-img{
+  height:180px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:3rem;
+  overflow:hidden;
+}
+.product-img-photo{width:100%;height:100%;object-fit:cover;display:block}
+.pi-green{background:linear-gradient(135deg,#dff0e3,#c2e0ca)}
+.pi-blue{background:linear-gradient(135deg,#ddeaf7,#c0d8f0)}
+.pi-orange{background:linear-gradient(135deg,#fde8d8,#f5cdb0)}
+.pi-purple{background:linear-gradient(135deg,#ede5f5,#ddd0ef)}
+.pi-yellow{background:linear-gradient(135deg,#fdf0d0,#f5dfa0)}
+.pi-red{background:linear-gradient(135deg,#fde0d8,#f5c0b0)}
+.product-body{padding:1.25rem;display:flex;flex-direction:column;flex:1}
+.product-cat{
+  font-size:0.65rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;
+  color:var(--accent);margin-bottom:4px;
+}
+.product-name{font-family:var(--serif);font-weight:700;font-size:1.05rem;margin-bottom:4px}
+.product-desc{font-size:0.8rem;color:var(--muted);line-height:1.5;margin-bottom:1rem;flex:1}
+.product-foot{display:flex;align-items:center;justify-content:space-between}
+.product-price{font-family:var(--serif);font-size:1.3rem;font-weight:700;color:var(--text)}
+.product-unit{font-size:0.72rem;color:var(--muted);font-weight:400}
+.product-badge{
+  font-size:0.65rem;font-weight:600;letter-spacing:0.06em;
+  padding:4px 10px;border-radius:100px;
+}
+.badge-fresh{background:var(--accent-soft);color:var(--accent)}
+.badge-limited{background:var(--accent2-soft);color:var(--accent2)}
 
-        .nav-links a:hover {
-            color: var(--primary);
-        }
+/* ── SCHEDULE ── */
+.schedule-section{background:var(--white);padding:5rem 2rem;border-top:1px solid var(--border)}
+.schedule-inner{max-width:1280px;margin:0 auto;display:grid;grid-template-columns:1fr 2fr;gap:5rem;align-items:start}
+.schedule-days{display:flex;flex-direction:column;gap:0}
+.sched-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:1rem 0;border-bottom:1px solid var(--border);
+}
+.sched-row:first-child{border-top:1px solid var(--border)}
+.sched-day{font-weight:500;font-size:0.9rem}
+.sched-today{color:var(--accent);font-weight:600}
+.sched-hours{font-size:0.9rem;color:var(--muted)}
+.sched-open{color:var(--accent)}
+.sched-closed{color:var(--muted);opacity:0.5}
+.today-chip{
+  font-size:0.6rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;
+  background:rgba(26,107,60,0.12);color:var(--accent);
+  padding:2px 8px;border-radius:100px;
+}
 
-        /* Hero Section */
-        .hero {
-            position: relative;
-            height: 500px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            overflow: hidden;
-        }
+/* map placeholder */
+.map-placeholder{
+  background:var(--surface);border-radius:16px;
+  aspect-ratio:4/3;
+  border:1px solid var(--border);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:1rem;color:var(--muted);font-size:0.9rem;
+  position:relative;overflow:hidden;
+}
+.map-placeholder::before{
+  content:'';position:absolute;inset:0;
+  background:
+    linear-gradient(rgba(232,227,216,0.5) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(232,227,216,0.5) 1px,transparent 1px);
+  background-size:40px 40px;
+}
+.map-pin{
+  width:48px;height:48px;border-radius:50% 50% 50% 0;
+  background:var(--accent);transform:rotate(-45deg);
+  display:flex;align-items:center;justify-content:center;
+  position:relative;z-index:1;
+  box-shadow:0 8px 20px rgba(26,107,60,0.3);
+}
+.map-pin::after{
+  content:'📍';font-size:1.2rem;transform:rotate(45deg);
+}
+.map-address{position:relative;z-index:1;text-align:center;font-size:0.85rem}
+.map-address strong{display:block;color:var(--text);margin-bottom:2px}
 
-        .hero-bg {
-            position: absolute;
-            inset: 0;
-            object-fit: cover;
-            opacity: 0.3;
-        }
+/* ── CONTACT ── */
+.contact-section{background:var(--bg);padding:5rem 2rem;border-top:1px solid var(--border)}
+.contact-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:2.5rem}
+.contact-card{
+  background:var(--white);border-radius:16px;border:1px solid var(--border);
+  padding:2rem;display:flex;flex-direction:column;gap:1rem;
+  transition:border-color 0.2s,box-shadow 0.2s;
+}
+.contact-card:hover{border-color:var(--accent);box-shadow:0 8px 24px rgba(26,107,60,0.08)}
+.contact-icon{
+  width:44px;height:44px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.2rem;
+}
+.ci-green{background:rgba(26,107,60,0.1)}
+.ci-blue{background:rgba(37,99,235,0.1)}
+.ci-red{background:rgba(196,71,42,0.1)}
+.contact-label{font-size:0.72rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted)}
+.contact-value{font-family:var(--serif);font-size:1.1rem;font-weight:700;color:var(--text)}
+.contact-value a{color:inherit;text-decoration:none}
+.contact-value a:hover{color:var(--accent)}
+.contact-hint{font-size:0.78rem;color:var(--muted)}
 
-        .hero-content {
-            position: relative;
-            z-index: 1;
-            max-width: 800px;
-            padding: 2rem;
-        }
+/* ── FOOTER ── */
+footer{
+  background:var(--text);
+  padding:3rem 2rem 2rem;
+}
+.footer-inner{
+  max-width:1280px;margin:0 auto;
+  display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:2rem;
+  padding-bottom:2rem;border-bottom:1px solid rgba(255,255,255,0.08);
+  margin-bottom:1.5rem;
+}
+.footer-brand{font-family:var(--serif);font-size:1.2rem;font-weight:800;color:white;margin-bottom:0.5rem}
+.footer-tagline{font-size:0.82rem;color:rgba(255,255,255,0.35);max-width:220px;line-height:1.6}
+.footer-socials{display:flex;gap:0.75rem;margin-top:1.25rem}
+.social-btn{
+  width:36px;height:36px;border-radius:9px;
+  background:rgba(255,255,255,0.07);
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.85rem;color:rgba(255,255,255,0.5);
+  text-decoration:none;transition:background 0.2s;
+}
+.social-btn:hover{background:rgba(255,255,255,0.14);color:white}
+.footer-links-col{}
+.footer-col-title{font-size:0.68rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:1rem}
+.footer-links-list{list-style:none;display:flex;flex-direction:column;gap:0.6rem}
+.footer-links-list a{font-size:0.82rem;color:rgba(255,255,255,0.4);text-decoration:none;transition:color 0.2s}
+.footer-links-list a:hover{color:white}
+.footer-bottom{max-width:1280px;margin:0 auto;display:flex;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+.footer-copy{font-size:0.75rem;color:rgba(255,255,255,0.2)}
+.powered{font-size:0.75rem;color:rgba(255,255,255,0.15)}
+.powered a{color:rgba(255,255,255,0.3);text-decoration:none}
+.powered a:hover{color:rgba(255,255,255,0.6)}
 
-        .hero h1 {
-            font-size: 3.5rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            line-height: 1.1;
-        }
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.hero-text>*{opacity:0;animation:fadeUp 0.55s ease forwards}
+.hero-tag{animation-delay:0.05s}
+.hero h1{animation-delay:0.15s}
+.hero-desc{animation-delay:0.25s}
+.hero-actions{animation-delay:0.35s}
+.hero-info{animation-delay:0.45s}
+.hero-cam{opacity:0;animation:fadeUp 0.6s 0.2s ease forwards}
 
-        .hero p {
-            font-size: 1.25rem;
-            opacity: 0.95;
-            margin-bottom: 2rem;
-        }
-
-        .btn {
-            display: inline-block;
-            padding: 14px 32px;
-            border-radius: 8px;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.3s;
-            cursor: pointer;
-            border: none;
-            font-size: 1rem;
-        }
-
-        .btn-primary {
-            background: white;
-            color: var(--primary);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-        }
-
-        /* Container */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 4rem 2rem;
-        }
-
-        .section-title {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            text-align: center;
-        }
-
-        .section-subtitle {
-            font-size: 1.125rem;
-            color: var(--text-light);
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-
-        /* Products Grid */
-        .products-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 2rem;
-            margin-top: 2rem;
-        }
-
-        .product-card {
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-
-        .product-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-        }
-
-        .product-image {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-            background: var(--border);
-        }
-
-        .product-info {
-            padding: 1.5rem;
-        }
-
-        .product-name {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
-
-        .product-description {
-            color: var(--text-light);
-            font-size: 0.9rem;
-            margin-bottom: 1rem;
-            line-height: 1.5;
-        }
-
-        .product-price {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary);
-        }
-
-        .product-category {
-            display: inline-block;
-            padding: 4px 12px;
-            background: var(--border);
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            margin-bottom: 0.5rem;
-        }
-
-        /* Schedule */
-        .schedule-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-            margin-top: 2rem;
-        }
-
-        .schedule-day {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }
-
-        .schedule-day.closed {
-            opacity: 0.5;
-        }
-
-        .day-name {
-            font-weight: 600;
-            font-size: 1.1rem;
-            margin-bottom: 0.5rem;
-            color: var(--primary);
-        }
-
-        .day-hours {
-            color: var(--text-light);
-        }
-
-        /* Contact */
-        .contact-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            margin-top: 2rem;
-        }
-
-        .contact-item {
-            display: flex;
-            align-items: flex-start;
-            gap: 1rem;
-        }
-
-        .contact-icon {
-            width: 48px;
-            height: 48px;
-            background: var(--primary);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            font-size: 1.5rem;
-        }
-
-        .contact-info h3 {
-            font-size: 1.1rem;
-            margin-bottom: 0.25rem;
-        }
-
-        .contact-info p {
-            color: var(--text-light);
-        }
-
-        /* Gallery */
-        .gallery-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1.5rem;
-            margin-top: 2rem;
-        }
-
-        .gallery-item {
-            position: relative;
-            height: 250px;
-            border-radius: 12px;
-            overflow: hidden;
-            cursor: pointer;
-        }
-
-        .gallery-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.3s;
-        }
-
-        .gallery-item:hover img {
-            transform: scale(1.05);
-        }
-
-        /* Footer */
-        .footer {
-            background: #111827;
-            color: white;
-            padding: 3rem 2rem;
-            margin-top: 4rem;
-        }
-
-        .footer-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 2rem;
-        }
-
-        .footer-section h3 {
-            margin-bottom: 1rem;
-        }
-
-        .social-links {
-            display: flex;
-            gap: 1rem;
-            margin-top: 1rem;
-        }
-
-        .social-link {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 50%;
-            color: white;
-            text-decoration: none;
-            transition: background 0.3s;
-        }
-
-        .social-link:hover {
-            background: var(--primary);
-        }
-
-        /* Loading */
-        .loading {
-            text-align: center;
-            padding: 4rem;
-        }
-
-        .spinner {
-            width: 48px;
-            height: 48px;
-            border: 4px solid var(--border);
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 4rem 2rem;
-            color: var(--text-light);
-        }
-
-        .empty-state-icon {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-            opacity: 0.5;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .hero h1 {
-                font-size: 2rem;
-            }
-
-            .nav-links {
-                display: none;
-            }
-
-            .products-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
-    
-    <style id="custom-styles">
-        /* Estilos personalizados del cliente se cargarán aquí */
-    </style>
+/* ── RESPONSIVE ── */
+@media(max-width:1024px){
+  .nav-inner{padding:0 1.2rem}
+  .hero-inner{grid-template-columns:1fr;gap:3rem}
+  .cameras-grid{grid-template-columns:1fr 1fr}
+  .schedule-inner{grid-template-columns:1fr}
+  .contact-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:640px){
+  .nav-inner{height:58px}
+  .nav-logo{font-size:1rem}
+  .nav-logo-badge{width:28px;height:28px;font-size:0.78rem}
+  .cameras-grid{grid-template-columns:1fr}
+  .nav-links{display:none}
+  .btn-call{padding:7px 12px;font-size:0.74rem}
+  .hero{padding:88px 1rem 48px}
+  .hero h1{font-size:2.6rem}
+  .hero-desc{font-size:0.95rem}
+  .hero-info{gap:1rem;flex-wrap:wrap}
+  .section,.products-section,.contact-section,.schedule-section,.cameras-section{padding-left:1rem;padding-right:1rem}
+  .products-grid{grid-template-columns:1fr}
+  .contact-grid{grid-template-columns:1fr}
+  .footer-inner{flex-direction:column}
+}
+</style>
 </head>
 <body>
-    <!-- Loading State -->
-    <div id="loading" class="loading">
-        <div class="spinner"></div>
-        <p>Cargando tienda...</p>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a class="nav-logo" href="#">
+      <div class="nav-logo-badge" id="nav-logo-badge">🐟</div>
+      <span id="nav-store-name">Pescadería García</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#camaras">En directo</a></li>
+      <li><a href="#productos">Productos</a></li>
+      <li><a href="#horarios">Horarios</a></li>
+      <li><a href="#contacto">Contacto</a></li>
+    </ul>
+    <div class="nav-right">
+      <div class="live-pill"><span class="live-dot"></span>4 CÁMARAS EN VIVO</div>
+      <a class="btn-call" id="nav-call-link" href="tel:+34930000000">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.22 2.18 2 2 0 012.18 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.08 6.08l1.08-1.08a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+        Llamar
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-text">
+      <div class="hero-tag">🐟 Pescado fresco cada día</div>
+      <h1>El mejor<br>género,<br><span>en vivo.</span></h1>
+      <p class="hero-desc">Mira nuestras cámaras en tiempo real, elige lo que más te guste y llámanos. Te lo preparamos al momento.</p>
+      <div class="hero-actions">
+        <a href="#camaras" class="btn-primary">Ver cámaras en directo</a>
+        <a href="#productos" class="btn-secondary">
+          Ver productos
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+      <div class="hero-info">
+        <div class="info-item">
+          <div class="info-num">6:00</div>
+          <div class="info-label">Abrimos cada día</div>
+        </div>
+        <div class="info-item">
+          <div class="info-num">+30</div>
+          <div class="info-label">Especies frescas</div>
+        </div>
+        <div class="info-item">
+          <div class="info-num">35</div>
+          <div class="info-label">Años en el mercado</div>
+        </div>
+      </div>
     </div>
 
-    <!-- Main Content (se cargará dinámicamente) -->
-    <div id="store-content" style="display: none;">
-        <!-- Header -->
-        <header class="header">
-            <nav class="nav-container">
-                <div class="logo">
-                    <img id="store-logo" class="logo-img" style="display: none;" alt="Logo">
-                    <span id="store-name">Mi Tienda</span>
-                </div>
-                <ul class="nav-links">
-                    <li><a href="#products">Productos</a></li>
-                    <li><a href="#schedule">Horario</a></li>
-                    <li><a href="#contact">Contacto</a></li>
-                </ul>
-            </nav>
-        </header>
-
-        <!-- Hero -->
-        <section class="hero" id="hero-section">
-            <img id="hero-image" class="hero-bg" style="display: none;" alt="Hero">
-            <div class="hero-content">
-                <h1 id="hero-title">Bienvenido a nuestra tienda</h1>
-                <p id="hero-tagline">Productos frescos de calidad</p>
-                <a href="#products" class="btn btn-primary">Ver productos</a>
-            </div>
-        </section>
-
-        <!-- Products Section -->
-        <div id="products-section" class="container">
-            <h2 class="section-title">Nuestros Productos</h2>
-            <p class="section-subtitle">Descubre nuestra selección de productos frescos</p>
-            <div id="products-grid" class="products-grid"></div>
+    <!-- Hero main camera -->
+    <div class="hero-cam">
+      <div class="hero-cam-inner">
+        <div class="cam-emoji">🐟</div>
+      </div>
+      <div class="cam-lines"></div>
+      <div class="fc tl"></div><div class="fc tr"></div>
+      <div class="fc bl"></div><div class="fc br"></div>
+      <div class="hero-cam-overlay">
+        <div class="cam-top">
+          <div class="cam-live-badge">
+            <span style="width:5px;height:5px;border-radius:50%;background:white;display:inline-block;animation:blink 1.4s ease-in-out infinite"></span>
+            EN VIVO — Mostrador principal
+          </div>
+          <div class="cam-viewers">👁 42 viendo</div>
         </div>
-
-        <!-- Schedule Section -->
-        <div id="schedule-section" class="container">
-            <h2 class="section-title">Horarios</h2>
-            <p class="section-subtitle">Estamos abiertos en estos horarios</p>
-            <div id="schedule-grid" class="schedule-grid"></div>
+        <div>
+          <div class="cam-product-chips">
+            <div class="cam-chip"><strong>Lubina salvaje</strong>11.90€/kg · Disponible</div>
+            <div class="cam-chip"><strong>Gamba roja</strong>38€/kg · Última bandeja</div>
+            <div class="cam-chip"><strong>Dorada fresca</strong>8.50€/kg</div>
+          </div>
         </div>
-
-        <!-- Contact Section -->
-        <div id="contact-section" class="container">
-            <h2 class="section-title">Contacto</h2>
-            <p class="section-subtitle">¿Tienes alguna pregunta? Contáctanos</p>
-            <div id="contact-grid" class="contact-grid"></div>
-        </div>
-
-        <!-- Gallery Section -->
-        <div id="gallery-section" class="container" style="display: none;">
-            <h2 class="section-title">Galería</h2>
-            <div id="gallery-grid" class="gallery-grid"></div>
-        </div>
-
-        <!-- Footer -->
-        <footer class="footer">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h3 id="footer-name">Mi Tienda</h3>
-                    <p id="footer-description">Productos frescos de calidad</p>
-                </div>
-                <div class="footer-section">
-                    <h3>Síguenos</h3>
-                    <div id="social-links" class="social-links"></div>
-                </div>
-            </div>
-            <div style="text-align: center; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1);">
-                <p>&copy; 2026 <span id="footer-store-name"></span> - Powered by FrescosEnVivo</p>
-            </div>
-        </footer>
+      </div>
     </div>
+  </div>
+</section>
 
-    <!-- Socket.IO -->
-    <script src="/socket.io/socket.io.js"></script>
+<!-- 4 CAMERAS -->
+<section class="cameras-section" id="camaras">
+  <div class="wrap">
+    <div class="cameras-header">
+      <div class="cameras-header-left">
+        <span class="section-label">Cámaras en directo</span>
+        <h2 class="section-title">Ve el género<br>antes de pedir</h2>
+      </div>
+      <div class="cameras-header-right">
+        Actualización en tiempo real<br>Haz clic para llamar
+      </div>
+    </div>
+    <div class="cameras-grid">
+
+      <!-- Cam 1 -->
+      <div class="cam-card">
+        <div class="cam-card-bg cg1"></div>
+        <div class="cam-card-emoji">🐟</div>
+        <div class="cam-card-overlay"></div>
+        <video id="stream-video-1" autoplay playsinline muted style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:14px;"></video>
+        <div class="cam-call-btn">
+          <div class="cam-call-inner">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.22 2.18 2 2 0 012.18 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.08 6.08l1.08-1.08a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+            Llamar sobre este género
+          </div>
+        </div>
+        <div class="cam-card-top">
+          <div class="cam-card-live"><span class="live-dot"></span> VIVO</div>
+          <div class="cam-card-offline" style="display:none">SIN TRANSMISION</div>
+          <div class="cam-card-viewers">👁 42</div>
+        </div>
+        <div class="cam-card-bottom">
+          <div class="cam-card-name">Mostrador — Pescado fresco</div>
+          <div class="cam-card-product" data-cam-product="1">
+            <span class="cam-product-icon">🐟</span>
+            <span class="cam-product-name">Lubina salvaje</span>
+            <span class="cam-card-price">11.90€/kg</span>
+            <span class="cam-card-promo" style="display:none"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cam 2 -->
+      <div class="cam-card">
+        <div class="cam-card-bg cg2"></div>
+        <div class="cam-card-emoji">🦐</div>
+        <div class="cam-card-overlay"></div>
+        <video id="stream-video-2" autoplay playsinline muted style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:14px;"></video>
+        <div class="cam-call-btn">
+          <div class="cam-call-inner">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.22 2.18 2 2 0 012.18 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.08 6.08l1.08-1.08a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+            Llamar sobre este género
+          </div>
+        </div>
+        <div class="cam-card-top">
+          <div class="cam-card-live"><span class="live-dot"></span> VIVO</div>
+          <div class="cam-card-offline" style="display:none">SIN TRANSMISION</div>
+          <div class="cam-card-viewers">👁 18</div>
+        </div>
+        <div class="cam-card-bottom">
+          <div class="cam-card-name">Zona mariscos</div>
+          <div class="cam-card-product" data-cam-product="2">
+            <span class="cam-product-icon">🦐</span>
+            <span class="cam-product-name">Gamba roja</span>
+            <span class="cam-card-price">38€/kg</span>
+            <span class="cam-card-promo" style="display:none"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cam 3 -->
+      <div class="cam-card">
+        <div class="cam-card-bg cg3"></div>
+        <div class="cam-card-emoji">🐙</div>
+        <div class="cam-card-overlay"></div>
+        <video id="stream-video-3" autoplay playsinline muted style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:14px;"></video>
+        <div class="cam-call-btn">
+          <div class="cam-call-inner">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.22 2.18 2 2 0 012.18 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.08 6.08l1.08-1.08a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+            Llamar sobre este género
+          </div>
+        </div>
+        <div class="cam-card-top">
+          <div class="cam-card-live"><span class="live-dot"></span> VIVO</div>
+          <div class="cam-card-offline" style="display:none">SIN TRANSMISION</div>
+          <div class="cam-card-viewers">👁 11</div>
+        </div>
+        <div class="cam-card-bottom">
+          <div class="cam-card-name">Molluscos y cefalópodos</div>
+          <div class="cam-card-product" data-cam-product="3">
+            <span class="cam-product-icon">🐙</span>
+            <span class="cam-product-name">Pulpo gallego</span>
+            <span class="cam-card-price">12.80€/kg</span>
+            <span class="cam-card-promo" style="display:none"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cam 4 — offline -->
+      <div class="cam-card">
+        <div class="cam-card-bg cg4"></div>
+        <div class="cam-card-emoji">🦪</div>
+        <div class="cam-card-overlay"></div>
+        <video id="stream-video-4" autoplay playsinline muted style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:14px;"></video>
+        <div class="cam-card-top">
+          <div class="cam-card-live" style="display:none"><span class="live-dot"></span> VIVO</div>
+          <div class="cam-card-offline">⏸ OFFLINE — Abre a las 10:00</div>
+        </div>
+        <div class="cam-card-bottom">
+          <div class="cam-card-name">Zona conservas y ahumados</div>
+          <div class="cam-card-product" data-cam-product="4">
+            <span class="cam-product-icon">🥫</span>
+            <span class="cam-product-name">Conservas artesanas</span>
+            <span class="cam-card-price">desde 3.50€</span>
+            <span class="cam-card-promo" style="display:none"></span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- PRODUCTS -->
+<section class="products-section" id="productos">
+  <div class="wrap">
+    <div class="products-header">
+      <div>
+        <span class="section-label" id="section-products-label">Catálogo</span>
+        <h2 class="section-title" id="section-products-title">El género de hoy</h2>
+      </div>
+    </div>
+    <div class="products-filters">
+    </div>
+    <div class="products-filters" id="products-filters" style="display:none">
+      <!-- Se rellena dinámicamente -->
+    </div>
+    <div class="products-grid" id="products-grid">
+      <!-- Se rellena dinámicamente desde la configuración -->
+    </div>
+  </div>
+</section>
+
+<!-- SCHEDULE + MAP -->
+<section class="schedule-section" id="horarios">
+  <div class="wrap">
+    <span class="section-label" id="section-schedule-label">Horarios y ubicación</span>
+    <h2 class="section-title" id="section-schedule-title" style="margin-bottom:3rem">Encuéntranos</h2>
+    <div class="schedule-inner">
+      <div>
+        <div class="schedule-days" id="schedule-days">
+          <!-- Se rellena dinámicamente desde la configuración -->
+        </div>
+      </div>
+      <div class="map-placeholder" id="map-area">
+        <div class="map-pin"></div>
+        <div class="map-address">
+          <strong id="map-address-line1"></strong>
+          <span id="map-address-line2"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact-section" id="contacto">
+  <div class="wrap">
+    <span class="section-label" id="section-contact-label">Contacto</span>
+    <h2 class="section-title" id="section-contact-title">Habla con nosotros</h2>
+    <div class="contact-grid">
+      <div class="contact-card">
+        <div class="contact-icon ci-green">📞</div>
+        <div class="contact-label">Teléfono</div>
+        <div class="contact-value"><a id="contact-phone-link" href="tel:+34930000000">+34 93 000 00 00</a></div>
+        <div class="contact-hint">Disponible en horario de apertura</div>
+      </div>
+      <div class="contact-card">
+        <div class="contact-icon ci-blue">✉️</div>
+        <div class="contact-label">Email</div>
+        <div class="contact-value"><a id="contact-email-link" href="mailto:hola@pescaderiagarcia.com">hola@pescaderiagarcia.com</a></div>
+        <div class="contact-hint">Respondemos en menos de 24h</div>
+      </div>
+      <div class="contact-card">
+        <div class="contact-icon ci-red">💬</div>
+        <div class="contact-label">WhatsApp</div>
+        <div class="contact-value"><a id="contact-whatsapp-link" href="https://wa.me/34930000000">Escribir por WhatsApp</a></div>
+        <div class="contact-hint">La forma más rápida de hacer un encargo</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div>
+      <div class="footer-brand" id="footer-store-name">Pescadería García</div>
+      <div class="footer-tagline" id="footer-store-tagline">Género fresco del Mediterráneo y el Atlántico. Desde 1989 en el Mercat de l'Abaceria.</div>
+      <div class="footer-socials">
+        <a class="social-btn" href="#">f</a>
+        <a class="social-btn" href="#">📷</a>
+        <a class="social-btn" href="#">💬</a>
+      </div>
+    </div>
+    <div class="footer-links-col">
+      <div class="footer-col-title">Tienda</div>
+      <ul class="footer-links-list">
+        <li><a href="#camaras">Cámaras en vivo</a></li>
+        <li><a href="#productos">Catálogo</a></li>
+        <li><a href="#horarios">Horarios</a></li>
+        <li><a href="#contacto">Contacto</a></li>
+      </ul>
+    </div>
+    <div class="footer-links-col">
+      <div class="footer-col-title">Información</div>
+      <ul class="footer-links-list">
+        <li><a href="#">Sobre nosotros</a></li>
+        <li><a href="#">Política de privacidad</a></li>
+        <li><a href="#" id="footer-legal-link">Aviso legal</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom" id="footer-legal-notice" style="padding-top:0.2rem;font-size:0.8rem;color:var(--muted);"></div>
+  <div class="footer-bottom">
+    <div class="footer-copy" id="footer-copy-text">© 2026 Pescadería García — Todos los derechos reservados</div>
+    <div class="powered">Tienda creada con <a href="#">FrescosEnVivo</a></div>
+  </div>
+</footer>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const nav = document.querySelector('nav');
+  const livePill = document.querySelector('.live-pill');
+  const socket = io();
+
+  // Variables globales de WebRTC - ANTES de usarlas en funciones
+  const videoElements = {
+    1: document.getElementById('stream-video-1'),
+    2: document.getElementById('stream-video-2'),
+    3: document.getElementById('stream-video-3'),
+    4: document.getElementById('stream-video-4')
+  };
+  let cameraSlotOrder = [1, 2, 3, 4];
+  let cameraEnabled = [true, true, true, true];
+
+  let peerConnection = null;
+  const configuration = {
+    iceServers: [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' }
+    ]
+  };
+
+  // ═══════════════════════════════════════════════════════════════
+  // GESTIÓN DEL ESTADO "EN VIVO"
+  // ═══════════════════════════════════════════════════════════════
+  
+  // Verificar estado inicial del live
+  async function checkInitialLiveStatus() {
+    try {
+      const response = await fetch('/api/live-status');
+      if (response.ok) {
+        const data = await response.json();
+        updateLiveStatus(data.isLive);
+      }
+    } catch (error) {
+      console.error('Error verificando estado live inicial:', error);
+    }
+  }
+
+  function applyProducts(config) {
+    const products = Array.isArray(config.products) ? config.products : [];
+    const grid = document.getElementById('products-grid');
+    const filtersEl = document.getElementById('products-filters');
+    if (!grid) return;
+    if (products.length === 0) {
+      grid.innerHTML = '';
+      if (filtersEl) filtersEl.style.display = 'none';
+      return;
+    }
+
+    // Categorías únicas
+    const cats = [...new Set(products.map(p => p.category).filter(Boolean))];
+
+    // Filtros
+    if (filtersEl) {
+      filtersEl.style.display = '';
+      filtersEl.innerHTML = `<button class="filter-btn active" data-cat="">Todo</button>` +
+        cats.map(c => `<button class="filter-btn" data-cat="${esc(c)}">${esc(c)}</button>`).join('');
+      filtersEl.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          filtersEl.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          const cat = btn.dataset.cat;
+          grid.querySelectorAll('.product-card').forEach(card => {
+            card.style.display = (!cat || card.dataset.cat === cat) ? '' : 'none';
+          });
+        });
+      });
+    }
+
+    grid.innerHTML = products.map(p => {
+      const priceHtml = p.price != null
+        ? `<div class="product-price">${Number(p.price).toFixed(2)}<span class="product-unit">${esc(p.priceUnit || '€/kg')}</span></div>`
+        : '';
+      const badgeHtml = p.badge
+        ? `<span class="product-badge ${esc(p.badgeType || 'badge-fresh')}">${esc(p.badge)}</span>`
+        : '';
+      return `<div class="product-card" data-cat="${esc(p.category || '')}">
+        <div class="product-img ${esc(p.iconColor || 'pi-blue')}">${p.image ? `<img class="product-img-photo" src="${esc(p.image)}" alt="${esc(p.name || 'Producto')}">` : esc(p.icon || '🐟')}</div>
+        <div class="product-body">
+          ${p.category ? `<div class="product-cat">${esc(p.category)}</div>` : ''}
+          <div class="product-name">${esc(p.name)}</div>
+          ${p.description ? `<div class="product-desc">${esc(p.description)}</div>` : ''}
+          <div class="product-foot">${priceHtml}${badgeHtml}</div>
+        </div>
+      </div>`;
+    }).join('');
+
+    function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  }
+
+  function applySchedule(config) {
+    const container = document.getElementById('schedule-days');
+    if (!container) return;
+    const sched = config?.schedule || {};
+    const days = [
+      { key: 'monday',    label: 'Lunes' },
+      { key: 'tuesday',   label: 'Martes' },
+      { key: 'wednesday', label: 'Miércoles' },
+      { key: 'thursday',  label: 'Jueves' },
+      { key: 'friday',    label: 'Viernes' },
+      { key: 'saturday',  label: 'Sábado' },
+      { key: 'sunday',    label: 'Domingo' }
+    ];
+    const todayIndex = (new Date().getDay() + 6) % 7; // 0=lunes … 6=domingo
+    container.innerHTML = days.map(({ key, label }, i) => {
+      const d = sched[key];
+      if (!d) return '';
+      const isToday = i === todayIndex;
+      const isClosed = d.closed;
+      const dayClass = isClosed ? 'sched-day sched-closed' : isToday ? 'sched-day sched-today' : 'sched-day';
+      const hoursClass = isClosed ? 'sched-hours sched-closed' : isToday ? 'sched-hours sched-open' : 'sched-hours';
+      const todayChip = isToday ? ' <span class="today-chip">Hoy</span>' : '';
+      const hoursText = isClosed ? 'Cerrado' : `${d.open || ''} – ${d.close || ''}`;
+      return `<div class="sched-row"><span class="${dayClass}">${label}${todayChip}</span><span class="${hoursClass}">${hoursText}</span></div>`;
+    }).join('');
+  }
+
+  function applyStoreBranding(config) {
+    const storeName = (config?.storeName || 'Pescadería García').toString().trim();
+    const tagline = (config?.tagline || "Género fresco del Mediterráneo y el Atlántico. Desde 1989 en el Mercat de l'Abaceria.").toString().trim();
+    const year = new Date().getFullYear();
+    const typographyPreset = (config?.typographyPreset || 'moderna').toString().trim();
+    const visualStylePreset = (config?.visualStylePreset || 'moderno').toString().trim();
+    const heroImage = (config?.heroImage || '').toString().trim();
+    const logo = (config?.logo || '').toString().trim();
+    const favicon = (config?.favicon || '').toString().trim();
+    const legal = config?.legal || {};
+    const colors = config?.colors || {};
+    const addons = config?.addons || {};
+    const seo = config?.seo || {};
+    const premiumDesign = config?.premiumDesign || {};
+    const reputation = config?.reputation || {};
+
+    // Cargar logo global de FrescosEnVivo desde localStorage si existe
+    const globalLogo = localStorage.getItem('frescosenvivo_logo');
+    const finalLogo = globalLogo && globalLogo.trim() ? globalLogo : logo;
+
+    const pageTitle = document.getElementById('page-title');
+    const navStoreName = document.getElementById('nav-store-name');
+    const navLogoBadge = document.getElementById('nav-logo-badge');
+    const footerStoreName = document.getElementById('footer-store-name');
+    const footerTagline = document.getElementById('footer-store-tagline');
+    const footerCopyText = document.getElementById('footer-copy-text');
+    const footerLegalNotice = document.getElementById('footer-legal-notice');
+    const footerLegalLink = document.getElementById('footer-legal-link');
+    const faviconLink = document.getElementById('dynamic-favicon');
+    const heroTag = document.querySelector('.hero-tag');
+    const heroPrimaryBtn = document.querySelector('.hero-actions .btn-primary');
+    const infoItems = document.querySelectorAll('.hero-info .info-item');
+
+    const escAttr = (value) => String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+    if (addons.seoPro && seo.title && seo.title.trim()) {
+      document.title = seo.title.trim();
+    } else {
+      document.title = storeName;
+    }
+    document.body.dataset.typography = ['moderna', 'clasica', 'mercado'].includes(typographyPreset) ? typographyPreset : 'moderna';
+    document.body.dataset.style = ['clasico', 'moderno', 'mercado', 'premium'].includes(visualStylePreset) ? visualStylePreset : 'moderno';
+    document.documentElement.style.setProperty('--hero-image', heroImage ? `url("${heroImage}")` : 'none');
+
+    const toRgba = (hex, alpha) => {
+      const h = (hex || '').replace('#', '').trim();
+      if (!/^[0-9a-fA-F]{3,8}$/.test(h)) return '';
+      const full = h.length === 3 ? h.split('').map(ch => ch + ch).join('') : h.slice(0, 6);
+      const int = parseInt(full, 16);
+      const r = (int >> 16) & 255;
+      const g = (int >> 8) & 255;
+      const b = int & 255;
+      return `rgba(${r},${g},${b},${alpha})`;
+    };
+
+    const brandPrimary = (colors.primary || '').toString().trim();
+    const brandSecondary = (colors.secondary || '').toString().trim();
+    const brandAccent = (colors.accent || '').toString().trim();
+    if (brandPrimary) {
+      document.documentElement.style.setProperty('--accent', brandPrimary);
+      const soft = toRgba(brandPrimary, 0.1);
+      if (soft) document.documentElement.style.setProperty('--accent-soft', soft);
+    }
+    if (brandSecondary) {
+      document.documentElement.style.setProperty('--accent2', brandSecondary);
+      const soft2 = toRgba(brandSecondary, 0.1);
+      if (soft2) document.documentElement.style.setProperty('--accent2-soft', soft2);
+    }
+    if (brandAccent) {
+      document.documentElement.style.setProperty('--gold', brandAccent);
+    }
+    if (pageTitle) pageTitle.textContent = storeName;
+    if (navStoreName) navStoreName.textContent = storeName;
+    if (navLogoBadge) {
+      navLogoBadge.innerHTML = finalLogo
+        ? `<img src="${escAttr(finalLogo)}" alt="Logo" style="width:100%;height:100%;object-fit:cover;border-radius:8px;">`
+        : '🐟';
+    }
+    if (footerStoreName) footerStoreName.textContent = storeName;
+    if (footerTagline) footerTagline.textContent = tagline;
+    if (footerLegalNotice) footerLegalNotice.textContent = (legal.footerNotice || '').toString().trim();
+    if (footerLegalLink) footerLegalLink.textContent = (legal.legalNotice || 'Aviso legal').toString().trim();
+    if (footerCopyText) {
+      const customCopy = (legal.copyrightText || '').toString().trim();
+      footerCopyText.textContent = customCopy || `© ${year} ${storeName} — Todos los derechos reservados`;
+    }
+    if (faviconLink && favicon) faviconLink.href = favicon;
+
+    if (addons.seoPro) {
+      const ensureMeta = (name) => {
+        let el = document.querySelector(`meta[name="${name}"]`);
+        if (!el) {
+          el = document.createElement('meta');
+          el.setAttribute('name', name);
+          document.head.appendChild(el);
+        }
+        return el;
+      };
+
+      if (seo.description && seo.description.trim()) {
+        ensureMeta('description').setAttribute('content', seo.description.trim());
+      }
+      if (Array.isArray(seo.keywords) && seo.keywords.length) {
+        ensureMeta('keywords').setAttribute('content', seo.keywords.join(', '));
+      }
+    }
+
+    if (addons.premiumDesigns) {
+      if (heroTag && premiumDesign.heroBadgeText && premiumDesign.heroBadgeText.trim()) {
+        heroTag.textContent = premiumDesign.heroBadgeText.trim();
+      }
+      if (heroPrimaryBtn && premiumDesign.heroCtaText && premiumDesign.heroCtaText.trim()) {
+        heroPrimaryBtn.textContent = premiumDesign.heroCtaText.trim();
+      }
+    }
+
+    if (addons.reviewsReputation && infoItems && infoItems.length >= 3) {
+      const rating = Number(reputation.rating || 0);
+      const reviewCount = Number(reputation.reviewCount || 0);
+      if (rating > 0) {
+        const numEl = infoItems[2].querySelector('.info-num');
+        const labelEl = infoItems[2].querySelector('.info-label');
+        if (numEl) numEl.textContent = `${rating.toFixed(1)}★`;
+        if (labelEl) labelEl.textContent = reviewCount > 0 ? `${reviewCount} reseñas` : 'Valoración clientes';
+      }
+    }
+  }
+
+  function applyStoreContact(config) {
+    const contact = config?.contact || {};
+    const social = config?.social || {};
+
+    const phone = (contact.phone || '+34 93 000 00 00').toString().trim();
+    const email = (contact.email || 'hola@pescaderiagarcia.com').toString().trim();
+    const address = (contact.address || '').toString().trim();
+    const cityPostal = `${(contact.postalCode || '').toString().trim()} ${(contact.city || '').toString().trim()}`.trim();
+    const whatsappSource = (social.whatsapp || contact.phone || '').toString().trim();
+    const whatsappDigits = whatsappSource.replace(/\D/g, '');
+
+    const navCall = document.getElementById('nav-call-link');
+    const phoneLink = document.getElementById('contact-phone-link');
+    const emailLink = document.getElementById('contact-email-link');
+    const whatsappLink = document.getElementById('contact-whatsapp-link');
+    const mapLine1 = document.getElementById('map-address-line1');
+    const mapLine2 = document.getElementById('map-address-line2');
+
+    if (navCall) {
+      navCall.href = `tel:${phone}`;
+    }
+    if (phoneLink) {
+      phoneLink.href = `tel:${phone}`;
+      phoneLink.textContent = phone;
+    }
+    if (emailLink) {
+      emailLink.href = `mailto:${email}`;
+      emailLink.textContent = email;
+    }
+    if (whatsappLink) {
+      whatsappLink.href = whatsappDigits ? `https://wa.me/${whatsappDigits}` : '#';
+    }
+    if (mapLine1) {
+      mapLine1.textContent = address;
+    }
+    if (mapLine2) {
+      mapLine2.textContent = cityPostal;
+    }
+
+    const mapsUrl = (contact.mapsUrl || '').trim();
+    const mapArea = document.getElementById('map-area');
+    if (mapArea) {
+      if (mapsUrl) {
+        mapArea.classList.remove('map-placeholder');
+        mapArea.style.cssText = 'overflow:hidden;border-radius:12px;';
+        mapArea.innerHTML = `<iframe src="${mapsUrl}" width="100%" height="320" style="border:0;border-radius:12px;display:block" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Mapa de la tienda"></iframe><div class="map-address" style="margin-top:0.75rem"><strong>${address}</strong><span style="display:block">${cityPostal}</span></div>`;
+      } else {
+        mapArea.classList.add('map-placeholder');
+        mapArea.style.cssText = '';
+        mapArea.innerHTML = `<div class="map-pin"></div><div class="map-address"><strong id="map-address-line1">${address}</strong><span id="map-address-line2">${cityPostal}</span></div>`;
+      }
+    }
+  }
+
+  function applySectionTexts(config) {
+    const sectionTexts = config?.sectionTexts || {};
+
+    const setText = (id, value, fallback) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.textContent = (value || '').toString().trim() || fallback;
+    };
+
+    setText('section-products-label', sectionTexts.products?.label, 'Catálogo');
+    setText('section-products-title', sectionTexts.products?.title, 'El género de hoy');
+    setText('section-schedule-label', sectionTexts.schedule?.label, 'Horarios y ubicación');
+    setText('section-schedule-title', sectionTexts.schedule?.title, 'Encuéntranos');
+    setText('section-contact-label', sectionTexts.contact?.label, 'Contacto');
+    setText('section-contact-title', sectionTexts.contact?.title, 'Habla con nosotros');
+  }
+
+  async function loadCameraTitles() {
+    try {
+      const response = await fetch('/api/store/config', { cache: 'no-store' });
+      if (!response.ok) return;
+
+      const config = await response.json();
+      applyStoreBranding(config);
+      applyStoreContact(config);
+      applySectionTexts(config);
+      applySchedule(config);
+        applyProducts(config);
+      const titles = Array.isArray(config.cameraTitles) ? config.cameraTitles : [];
+      const slotOrderRaw = Array.isArray(config.cameraSlotOrder) ? config.cameraSlotOrder : [1, 2, 3, 4];
+      const normalizedSlotOrder = [];
+      slotOrderRaw.slice(0, 4).forEach((value) => {
+        const parsed = Number(value);
+        if (Number.isInteger(parsed) && parsed >= 1 && parsed <= 4 && !normalizedSlotOrder.includes(parsed)) {
+          normalizedSlotOrder.push(parsed);
+        }
+      });
+      [1, 2, 3, 4].forEach((value) => {
+        if (!normalizedSlotOrder.includes(value)) normalizedSlotOrder.push(value);
+      });
+      cameraSlotOrder = normalizedSlotOrder.slice(0, 4);
+      const rawEnabled = Array.isArray(config.cameraEnabled) ? config.cameraEnabled : [true, true, true, true];
+      cameraEnabled = [0, 1, 2, 3].map((index) => rawEnabled[index] !== false);
+      const defaultCameraProducts = [
+        { icon: '🐟', name: 'Lubina salvaje', price: '11.90€/kg', promoLabel: '', visible: true },
+        { icon: '🦐', name: 'Gamba roja', price: '38€/kg', promoLabel: '', visible: true },
+        { icon: '🐙', name: 'Pulpo gallego', price: '12.80€/kg', promoLabel: '', visible: true },
+        { icon: '🥫', name: 'Conservas artesanas', price: 'desde 3.50€', promoLabel: '', visible: true }
+      ];
+      const cameraProducts = Array.isArray(config.cameraProducts) ? config.cameraProducts : [];
+      const titleElements = document.querySelectorAll('.cam-card-name');
+      const productElements = document.querySelectorAll('[data-cam-product]');
+
+      titleElements.forEach((el, index) => {
+        const sourceIndex = (cameraSlotOrder[index] || (index + 1)) - 1;
+        if (titles[sourceIndex] && titles[sourceIndex].trim()) {
+          el.textContent = titles[sourceIndex].trim();
+        }
+      });
+
+      productElements.forEach((el, index) => {
+        const sourceIndex = (cameraSlotOrder[index] || (index + 1)) - 1;
+        const current = cameraProducts[sourceIndex] || defaultCameraProducts[sourceIndex];
+        const iconEl = el.querySelector('.cam-product-icon');
+        const nameEl = el.querySelector('.cam-product-name');
+        const priceEl = el.querySelector('.cam-card-price');
+        const promoEl = el.querySelector('.cam-card-promo');
+        const promoValue = (current.promoLabel || '').toString().trim().toUpperCase();
+        const promoText = promoValue === 'PROMOCION' ? 'Promoción' : (promoValue === 'OFERTA' ? 'OFERTA' : '');
+
+        if (iconEl) iconEl.textContent = current.icon || defaultCameraProducts[sourceIndex].icon;
+        if (nameEl) nameEl.textContent = current.name || defaultCameraProducts[sourceIndex].name;
+        if (priceEl) priceEl.textContent = current.price || defaultCameraProducts[sourceIndex].price;
+        if (promoEl) {
+          if (promoText) {
+            promoEl.textContent = promoText;
+            promoEl.style.display = 'inline';
+          } else {
+            promoEl.textContent = '';
+            promoEl.style.display = 'none';
+          }
+        }
+
+        el.style.display = current.visible === false ? 'none' : 'flex';
+      });
+
+      updateLiveStatus(false);
+    } catch (error) {
+      console.error('Error cargando titulos de camaras:', error);
+    }
+  }
+
+  // Actualizar visibilidad del live-pill y solicitar stream si está disponible
+  function updateLiveStatus(isLive) {
+    console.log('📡 Estado live actualizado:', isLive);
+    const cards = document.querySelectorAll('.cam-card');
+    cards.forEach((card, index) => {
+      const sourceIndex = (cameraSlotOrder[index] || (index + 1)) - 1;
+      const enabled = cameraEnabled[sourceIndex] !== false;
+      const liveEl = card.querySelector('.cam-card-live');
+      const offlineEl = card.querySelector('.cam-card-offline');
+      const callEl = card.querySelector('.cam-call-btn');
+      const slotVideo = videoElements[index + 1];
+
+      if (liveEl) {
+        liveEl.style.display = (isLive && enabled) ? 'inline-flex' : 'none';
+      }
+      if (offlineEl) {
+        offlineEl.textContent = enabled ? 'SIN TRANSMISION' : 'CAMARA NO DISPONIBLE';
+        offlineEl.style.display = (isLive && enabled) ? 'none' : 'inline-flex';
+      }
+      if (callEl) {
+        callEl.style.display = (isLive && enabled) ? 'flex' : 'none';
+        callEl.style.opacity = (isLive && enabled) ? '' : '0';
+        callEl.style.pointerEvents = (isLive && enabled) ? '' : 'none';
+      }
+      if (!enabled && slotVideo) {
+        slotVideo.srcObject = null;
+      }
+    });
+
+    if (livePill) {
+      if (isLive) {
+        livePill.classList.remove('offline');
+        livePill.style.display = 'flex';
+        livePill.innerHTML = '<span class="live-dot"></span>EN DIRECTO';
+        console.log('✅ live-pill mostrado');
+        // Solicitar stream público
+        setTimeout(() => requestPublicStream(), 500);
+      } else {
+        livePill.classList.add('offline');
+        livePill.style.display = 'flex';
+        livePill.innerHTML = '<span class="live-dot"></span>SIN TRANSMISION';
+        console.log('❌ live-pill en estado offline');
+        // Cerrar conexión WebRTC
+        if (peerConnection) {
+          peerConnection.close();
+          peerConnection = null;
+        }
+        // Limpiar videos
+        Object.values(videoElements).forEach(video => {
+          if (video) video.srcObject = null;
+        });
+      }
+    }
+  }
+
+  // Solicitar stream público cuando está en vivo
+  function requestPublicStream() {
+    try {
+      console.log('📹 Solicitando stream público...');
+      socket.emit('request-public-stream');
+    } catch (error) {
+      console.error('Error solicitando stream público:', error);
+    }
+  }
+
+  // Stream público no disponible
+  socket.on('public-stream-unavailable', () => {
+    console.log('❌ Stream público no disponible');
+  });
+
+  // Offer del servidor con el stream de las 4 cámaras
+  socket.on('public-stream-offer', async (data) => {
+    console.log('📨 Offer de stream público recibido');
     
-    <!-- Store Script -->
-    <script>
-        let storeConfig = null;
+    if (peerConnection) {
+      peerConnection.close();
+    }
 
-        // Cargar configuración de la tienda
-        async function loadStoreConfig() {
-            try {
-                const response = await fetch('/api/store/config');
-                if (!response.ok) throw new Error('Error cargando configuración');
-                
-                storeConfig = await response.json();
-                renderStore(storeConfig);
-                
-                // Ocultar loading
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('store-content').style.display = 'block';
-            } catch (error) {
-                console.error('Error:', error);
-                document.getElementById('loading').innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">⚠️</div>
-                        <h2>Error al cargar la tienda</h2>
-                        <p>Por favor, intenta de nuevo más tarde</p>
-                    </div>
-                `;
-            }
+    peerConnection = new RTCPeerConnection(configuration);
+    let tracksReceived = 0;
+
+    // Manejar tracks remotos (los 4 videos)
+    peerConnection.ontrack = (event) => {
+      tracksReceived++;
+      console.log(`📺 Track ${tracksReceived} recibido:`, event.track.kind);
+      
+      if (event.streams && event.streams[0]) {
+        const sourceEnabled = cameraEnabled[tracksReceived - 1] !== false;
+        if (!sourceEnabled) {
+          return;
         }
+        const slotIndex = cameraSlotOrder.findIndex((sourceCamera) => sourceCamera === tracksReceived);
+        const slot = slotIndex >= 0 ? slotIndex + 1 : tracksReceived;
 
-        // Renderizar tienda
-        function renderStore(config) {
-            // Aplicar colores personalizados
-            document.documentElement.style.setProperty('--primary', config.colors.primary);
-            document.documentElement.style.setProperty('--secondary', config.colors.secondary);
-            document.documentElement.style.setProperty('--accent', config.colors.accent);
-
-            // Título de la página
-            document.getElementById('page-title').textContent = config.storeName;
-
-            // Logo y nombre
-            const logo = document.getElementById('store-logo');
-            const storeName = document.getElementById('store-name');
-            if (config.logo) {
-                logo.src = config.logo;
-                logo.style.display = 'block';
-            }
-            storeName.textContent = config.storeName;
-
-            // Hero
-            document.getElementById('hero-title').textContent = config.storeName;
-            document.getElementById('hero-tagline').textContent = config.tagline;
-            if (config.heroImage) {
-                const heroImg = document.getElementById('hero-image');
-                heroImg.src = config.heroImage;
-                heroImg.style.display = 'block';
-            }
-
-            // Productos
-            if (config.features.showProducts && config.products.length > 0) {
-                renderProducts(config.products);
-            } else {
-                document.getElementById('products-section').style.display = 'none';
-            }
-
-            // Horarios
-            if (config.features.showSchedule && config.schedule) {
-                renderSchedule(config.schedule);
-            } else {
-                document.getElementById('schedule-section').style.display = 'none';
-            }
-
-            // Contacto
-            if (config.features.showContact && config.contact) {
-                renderContact(config.contact);
-            } else {
-                document.getElementById('contact-section').style.display = 'none';
-            }
-
-            // Galería
-            if (config.features.showGallery && config.gallery && config.gallery.length > 0) {
-                renderGallery(config.gallery);
-                document.getElementById('gallery-section').style.display = 'block';
-            }
-
-            // Redes sociales
-            renderSocial(config.social);
-
-            // Footer
-            document.getElementById('footer-name').textContent = config.storeName;
-            document.getElementById('footer-description').textContent = config.tagline;
-            document.getElementById('footer-store-name').textContent = config.storeName;
-
-            // CSS personalizado
-            if (config.customCSS) {
-                document.getElementById('custom-styles').textContent = config.customCSS;
-            }
+        if (videoElements[slot]) {
+          videoElements[slot].srcObject = event.streams[0];
+          console.log(`✅ Video fuente ${tracksReceived} mostrado en slot ${slot}`);
         }
+      }
+    };
 
-        // Renderizar productos
-        function renderProducts(products) {
-            const grid = document.getElementById('products-grid');
-            grid.innerHTML = products
-                .sort((a, b) => (a.order || 0) - (b.order || 0))
-                .map(product => `
-                    <div class="product-card">
-                        ${product.image ? `<img src="${product.image}" alt="${product.name}" class="product-image">` : '<div class="product-image"></div>'}
-                        <div class="product-info">
-                            ${product.category ? `<span class="product-category">${product.category}</span>` : ''}
-                            <h3 class="product-name">${product.name}</h3>
-                            ${product.description ? `<p class="product-description">${product.description}</p>` : ''}
-                            ${product.price ? `<div class="product-price">${product.price.toFixed(2)}€</div>` : ''}
-                        </div>
-                    </div>
-                `).join('');
-        }
+    // Manejar ICE candidates
+    peerConnection.onicecandidate = (event) => {
+      if (event.candidate) {
+        socket.emit('public-stream-ice-candidate', {
+          candidate: event.candidate
+        });
+      }
+    };
 
-        // Renderizar horarios
-        function renderSchedule(schedule) {
-            const grid = document.getElementById('schedule-grid');
-            const days = {
-                monday: 'Lunes',
-                tuesday: 'Martes',
-                wednesday: 'Miércoles',
-                thursday: 'Jueves',
-                friday: 'Viernes',
-                saturday: 'Sábado',
-                sunday: 'Domingo'
-            };
+    // Procesar offer
+    try {
+      await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
+      
+      // Crear y enviar answer
+      const answer = await peerConnection.createAnswer();
+      await peerConnection.setLocalDescription(answer);
+      
+      socket.emit('public-stream-answer', {
+        answer: answer
+      });
+      
+      console.log('✅ Answer enviado al servidor');
+    } catch (error) {
+      console.error('Error procesando offer:', error);
+    }
+  });
 
-            grid.innerHTML = Object.entries(days).map(([key, name]) => {
-                const day = schedule[key] || {};
-                const closed = day.closed || !day.open || !day.close;
-                return `
-                    <div class="schedule-day ${closed ? 'closed' : ''}">
-                        <div class="day-name">${name}</div>
-                        <div class="day-hours">
-                            ${closed ? 'Cerrado' : `${day.open} - ${day.close}`}
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
+  // ICE candidates del servidor
+  socket.on('public-stream-ice-candidate', async (data) => {
+    if (peerConnection && data.candidate) {
+      try {
+        await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+      } catch (error) {
+        console.error('Error añadiendo ICE candidate:', error);
+      }
+    }
+  });
 
-        // Renderizar contacto
-        function renderContact(contact) {
-            const grid = document.getElementById('contact-grid');
-            const items = [];
+  // Escuchar cambios de estado live desde el servidor
+  socket.on('vendor-status-changed', (data) => {
+    console.log('📡 Cambio de estado live recibido:', data);
+    updateLiveStatus(data.isLive);
+  });
 
-            if (contact.phone) {
-                items.push(`
-                    <div class="contact-item">
-                        <div class="contact-icon">📞</div>
-                        <div class="contact-info">
-                            <h3>Teléfono</h3>
-                            <p><a href="tel:${contact.phone}">${contact.phone}</a></p>
-                        </div>
-                    </div>
-                `);
-            }
+  // Conectar Socket.IO
+  socket.on('connect', () => {
+    console.log('✅ Conectado al servidor con Socket.IO');
+    checkInitialLiveStatus();
+  });
 
-            if (contact.email) {
-                items.push(`
-                    <div class="contact-item">
-                        <div class="contact-icon">✉️</div>
-                        <div class="contact-info">
-                            <h3>Email</h3>
-                            <p><a href="mailto:${contact.email}">${contact.email}</a></p>
-                        </div>
-                    </div>
-                `);
-            }
+  loadCameraTitles();
 
-            if (contact.address) {
-                items.push(`
-                    <div class="contact-item">
-                        <div class="contact-icon">📍</div>
-                        <div class="contact-info">
-                            <h3>Dirección</h3>
-                            <p>${contact.address}<br>${contact.postalCode} ${contact.city}</p>
-                        </div>
-                    </div>
-                `);
-            }
+  // ═══════════════════════════════════════════════════════════════
+  // NAV SCROLL
+  // ═══════════════════════════════════════════════════════════════
+  
+  const handleNavScroll = () => {
+    if (window.scrollY > 8) nav.classList.add('nav-scrolled');
+    else nav.classList.remove('nav-scrolled');
+  };
+  handleNavScroll();
+  window.addEventListener('scroll', handleNavScroll, { passive: true });
 
-            grid.innerHTML = items.join('');
-        }
+  // ═══════════════════════════════════════════════════════════════
+  // FILTROS DE PRODUCTOS
+  // ═══════════════════════════════════════════════════════════════
+  
+  document.querySelectorAll('.filter-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
 
-        // Renderizar galería
-        function renderGallery(gallery) {
-            const grid = document.getElementById('gallery-grid');
-            grid.innerHTML = gallery
-                .sort((a, b) => (a.order || 0) - (b.order || 0))
-                .map(item => `
-                    <div class="gallery-item">
-                        <img src="${item.url}" alt="${item.caption || ''}">
-                    </div>
-                `).join('');
-        }
+  // Ocultar live-pill inicialmente hasta confirmar el estado real
+  updateLiveStatus(false);
+</script>
 
-        // Renderizar redes sociales
-        function renderSocial(social) {
-            const container = document.getElementById('social-links');
-            const links = [];
-
-            if (social.facebook) links.push(`<a href="${social.facebook}" class="social-link" target="_blank">f</a>`);
-            if (social.instagram) links.push(`<a href="${social.instagram}" class="social-link" target="_blank">📷</a>`);
-            if (social.twitter) links.push(`<a href="${social.twitter}" class="social-link" target="_blank">🐦</a>`);
-            if (social.whatsapp) links.push(`<a href="https://wa.me/${social.whatsapp}" class="social-link" target="_blank">💬</a>`);
-
-            container.innerHTML = links.join('');
-        }
-
-        // Inicializar
-        document.addEventListener('DOMContentLoaded', loadStoreConfig);
-    </script>
 </body>
 </html>
