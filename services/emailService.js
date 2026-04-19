@@ -717,6 +717,257 @@ Si tienes preguntas sobre tu factura, contactanos en billing@frescosenvivo.com
             return { success: false, error: error.message };
         }
     }
+
+    // Template: Envío de propuesta comercial a un cliente en estado "propuesta"
+    async sendProposalEmail(client, proposalDetails = {}, baseUrl = '') {
+        const recipientEmail = client?.billingInfo?.billingEmail || client?.owner?.email || '';
+        const acceptUrl = `${baseUrl}/propuesta/aceptar/${client._id}`;
+        const recipientName =
+            client?.billingInfo?.legalName ||
+            client?.owner?.fullName ||
+            client?.businessName ||
+            'estimado cliente';
+
+        const {
+            planLabel = client.plan || 'basico',
+            basePlanPrice,
+            discount = client.billing?.discount || 0,
+            addonLines = [],
+            notes = client.notes || '',
+            senderName = 'El equipo de FrescosEnVivo'
+        } = proposalDetails;
+
+        const planPrices = { basico: 39, profesional: 79, empresarial: 149, personalizado: 249 };
+        const resolvedBasePrice =
+            basePlanPrice !== undefined
+                ? Number(basePlanPrice)
+                : (client.billing?.basePlanPrice || planPrices[planLabel] || 39);
+
+        const discountAmount = Math.round(resolvedBasePrice * (Number(discount) / 100) * 100) / 100;
+        const subtotal = addonLines.reduce((sum, a) => sum + Number(a.price || 0), resolvedBasePrice);
+        const total = Math.max(0, Math.round((subtotal - discountAmount) * 100) / 100);
+
+        const planNames = { basico: 'Básico', profesional: 'Profesional', empresarial: 'Empresarial', personalizado: 'Personalizado' };
+        const planName = planNames[planLabel] || planLabel;
+
+        // Características incluidas en cada plan
+        const PLAN_FEATURES = {
+            basico: {
+                color: '#2563eb',
+                bg: '#eff6ff',
+                features: [
+                    '🛒 Tienda online con catálogo de productos',
+                    '📷 Hasta 2 cámaras de videovigilancia',
+                    '👤 1 usuario propietario',
+                    '📱 Tienda adaptada a móvil y tablet',
+                    '🔒 Panel de administración seguro',
+                    '📧 Soporte por email'
+                ]
+            },
+            profesional: {
+                color: '#7c3aed',
+                bg: '#f5f3ff',
+                features: [
+                    '🛒 Tienda online con catálogo avanzado',
+                    '📷 Hasta 4 cámaras de videovigilancia',
+                    '👥 Hasta 5 usuarios / vendedores',
+                    '📱 Tienda adaptada a móvil y tablet',
+                    '🔒 Panel de administración seguro',
+                    '📊 Estadísticas e informes de ventas',
+                    '⚡ Soporte prioritario'
+                ]
+            },
+            empresarial: {
+                color: '#b45309',
+                bg: '#fffbeb',
+                features: [
+                    '🛒 Tienda online con catálogo ilimitado',
+                    '📷 Hasta 8 cámaras de videovigilancia',
+                    '👥 Usuarios y vendedores ilimitados',
+                    '📱 Tienda adaptada a móvil y tablet',
+                    '🔒 Panel de administración avanzado',
+                    '📊 Estadísticas, informes y exportación',
+                    '🌐 Dominio personalizado incluido',
+                    '🚀 Soporte dedicado y configuración asistida'
+                ]
+            },
+            personalizado: {
+                color: '#1A6B3C',
+                bg: '#f0fdf4',
+                features: [
+                    '✨ Todo lo del plan Empresarial',
+                    '⚙️ Funcionalidades a medida',
+                    '🔗 Integraciones con sistemas externos',
+                    '🎨 Diseño personalizado de tienda',
+                    '📞 Soporte telefónico directo',
+                    '🤝 Account manager asignado'
+                ]
+            }
+        };
+
+        const planMeta = PLAN_FEATURES[planLabel] || PLAN_FEATURES.basico;
+        const featuresHtml = `
+            <div style="background:${planMeta.bg};border:1px solid ${planMeta.color}33;border-radius:10px;padding:20px 22px;margin:24px 0;">
+                <p style="margin:0 0 14px;font-weight:bold;color:${planMeta.color};font-size:15px;">📦 ¿Qué incluye el Plan ${planName}?</p>
+                <ul style="margin:0;padding:0;list-style:none;">
+                    ${planMeta.features.map(f => `<li style="padding:5px 0;font-size:14px;color:#374151;">${f}</li>`).join('')}
+                </ul>
+            </div>`;
+
+        const addonFeaturesMap = {
+            'SEO Pro': ['🔍 Posicionamiento en Google optimizado', '📝 Metaetiquetas y URLs amigables automáticas', '📈 Informe mensual de visibilidad'],
+            'Diseños Premium': ['🎨 Temas visuales exclusivos para tu tienda', '🖼️ Banners y portadas personalizadas', '✨ Animaciones y efectos visuales'],
+            'Reputación & Reseñas': ['⭐ Sistema de valoraciones de clientes', '💬 Gestión de reseñas y respuestas', '📣 Widget de reputación en la tienda']
+        };
+
+        const addonFeaturesHtml = addonLines.length > 0 ? addonLines.map(a => {
+            const feats = addonFeaturesMap[a.label];
+            if (!feats) return '';
+            return `
+            <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:16px 18px;margin:12px 0;">
+                <p style="margin:0 0 10px;font-weight:bold;color:#374151;font-size:14px;">➕ ${a.label}</p>
+                <ul style="margin:0;padding:0;list-style:none;">
+                    ${feats.map(f => `<li style="padding:4px 0;font-size:13px;color:#6b7280;">${f}</li>`).join('')}
+                </ul>
+            </div>`;
+        }).join('') : '';
+
+        const addonRowsHtml = addonLines.map(a => `
+            <tr>
+                <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">${a.label}</td>
+                <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;text-align:right;">${Number(a.price).toFixed(2)} €/mes</td>
+            </tr>`).join('');
+
+        const discountRowHtml = discount > 0 ? `
+            <tr>
+                <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;color:#059669;">Descuento (${discount}%)</td>
+                <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;text-align:right;color:#059669;">-${discountAmount.toFixed(2)} €/mes</td>
+            </tr>` : '';
+
+        const notesHtml = notes ? `
+            <div style="background:#f9fafb;border-left:4px solid #667eea;padding:14px 18px;border-radius:4px;margin:20px 0;">
+                <p style="margin:0;font-size:14px;color:#374151;white-space:pre-line;">${notes}</p>
+            </div>` : '';
+
+        const subscriptionEndDate = client.subscriptionEndDate
+            ? new Date(client.subscriptionEndDate).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })
+            : null;
+
+        const html = `
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { margin:0; padding:0; background:#edf4ef; font-family:Arial,sans-serif; color:#173126; }
+        .wrap { width:100%; padding:24px 0; }
+        .container { max-width:620px; margin:0 auto; background:#fff; border-radius:14px; overflow:hidden; border:1px solid #d7e4dc; }
+        .header { background:linear-gradient(135deg,#1A6B3C 0%,#0f4c2f 100%); color:white; padding:28px 30px; text-align:center; }
+        .header h1 { margin:0 0 6px; font-size:26px; }
+        .header p { margin:0; font-size:14px; opacity:.9; }
+        .content { padding:28px 30px; }
+        .greeting { font-size:16px; color:#374151; margin-bottom:18px; }
+        table { width:100%; border-collapse:collapse; margin:20px 0; }
+        th { background:#f3f4f6; padding:10px 12px; text-align:left; font-size:13px; color:#6b7280; text-transform:uppercase; letter-spacing:.5px; }
+        tr:last-child td { border-bottom:none !important; }
+        .total-row td { padding:12px; font-weight:bold; font-size:16px; background:#f9fafb; }
+        .cta { text-align:center; margin:28px 0 10px; }
+        .cta a { display:inline-block; background:#1A6B3C; color:white; text-decoration:none; padding:14px 36px; border-radius:8px; font-size:15px; font-weight:bold; }
+        .footer { text-align:center; color:#9ca3af; font-size:12px; padding:18px 30px; border-top:1px solid #e5e7eb; }
+    </style>
+</head>
+<body>
+<div class="wrap">
+<div class="container">
+    <div class="header">
+        <h1>📋 Propuesta comercial</h1>
+        <p>FrescosEnVivo — Tienda online para tu negocio</p>
+    </div>
+    <div class="content">
+        <p class="greeting">Hola <strong>${recipientName}</strong>,</p>
+        <p style="color:#374151;line-height:1.7;">
+            Te enviamos la propuesta para poner en marcha tu tienda online con <strong>FrescosEnVivo</strong>.
+            A continuación encontrarás el detalle de servicios y precio mensual.
+        </p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Servicio</th>
+                    <th style="text-align:right;">Precio/mes</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">Plan ${planName}</td>
+                    <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;text-align:right;">${resolvedBasePrice.toFixed(2)} €/mes</td>
+                </tr>
+                ${addonRowsHtml}
+                ${discountRowHtml}
+                <tr class="total-row">
+                    <td>Total</td>
+                    <td style="text-align:right;">${total.toFixed(2)} €/mes</td>
+                </tr>
+            </tbody>
+        </table>
+
+        ${subscriptionEndDate ? `<p style="font-size:13px;color:#6b7280;">📅 Fecha de inicio prevista: <strong>${subscriptionEndDate}</strong></p>` : ''}
+
+        ${featuresHtml}
+        ${addonFeaturesHtml}
+
+        ${notesHtml}
+
+        <p style="color:#374151;line-height:1.7;">
+            Si tienes cualquier pregunta o quieres ajustar algún detalle, responde a este email y te atendemos enseguida.
+        </p>
+
+        <div class="cta">
+            <a href="${acceptUrl}">✅ Aceptar propuesta</a>
+        </div>
+    </div>
+    <div class="footer">
+        <p><strong>FrescosEnVivo</strong> · Propuesta preparada por ${senderName}</p>
+        <p>Este mensaje se ha enviado a ${recipientEmail}</p>
+    </div>
+</div>
+</div>
+</body>
+</html>`;
+
+        const text = `
+Propuesta comercial - FrescosEnVivo
+
+Hola ${recipientName},
+
+Te enviamos la propuesta para tu tienda online con FrescosEnVivo.
+
+Plan ${planName}: ${resolvedBasePrice.toFixed(2)} €/mes
+${addonLines.map(a => `${a.label}: ${Number(a.price).toFixed(2)} €/mes`).join('\n')}
+${discount > 0 ? `Descuento (${discount}%): -${discountAmount.toFixed(2)} €/mes` : ''}
+Total: ${total.toFixed(2)} €/mes
+
+¿Qué incluye el Plan ${planName}?
+${planMeta.features.join('\n')}
+${addonLines.length > 0 ? '\nAddons incluidos:\n' + addonLines.map(a => {
+    const feats = addonFeaturesMap[a.label];
+    return `\n${a.label}:\n${feats ? feats.join('\n') : ''}`;
+}).join('\n') : ''}
+
+${subscriptionEndDate ? `Fecha de inicio prevista: ${subscriptionEndDate}` : ''}
+${notes ? `\nNotas:\n${notes}` : ''}
+
+Para aceptar o consultar cualquier duda, responde a este email.
+
+---
+FrescosEnVivo · Preparada por ${senderName}`;
+
+        return await this.sendEmail({
+            to: recipientEmail,
+            subject: `📋 Propuesta comercial FrescosEnVivo — ${client.businessName}`,
+            html,
+            text
+        });
+    }
 }
 
 // Exportar instancia única (Singleton)

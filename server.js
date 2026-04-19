@@ -3,7 +3,7 @@ const express = require('express');
 const http = require('http');
 const socketIO = require('socket.io');
 const session = require('express-session');
-const MongoStore = require('connect-mongo');
+const { MongoStore } = require('connect-mongo');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 
@@ -12,6 +12,7 @@ const connectDB = require('./config/database');
 
 // Importar servicios
 const emailService = require('./services/emailService');
+const Client = require('./models/Client');
 
 // Importar rutas
 const authRoutes = require('./routes/auth');
@@ -157,6 +158,76 @@ app.use('/api', cameraRoutes);
 
 // Rutas de Facturas (requiere tenant middleware)
 app.use('/api/invoices', invoicesRoutes);
+
+// Ruta pública: aceptación de propuesta por el cliente (sin autenticación)
+app.get('/propuesta/aceptar/:clientId', async (req, res) => {
+    try {
+        const client = await Client.findById(req.params.clientId).lean();
+        if (!client) {
+            return res.status(404).send('<h2>Propuesta no encontrada.</h2>');
+        }
+
+        // Enviar notificación al superadmin
+        const adminEmail = process.env.SUPERADMIN_EMAIL || process.env.EMAIL_USER || process.env.EMAIL_FROM;
+        if (adminEmail) {
+            const recipientName = client?.billingInfo?.legalName || client?.owner?.fullName || client.businessName;
+            await emailService.sendEmail({
+                to: adminEmail,
+                subject: `✅ Propuesta aceptada — ${client.businessName}`,
+                html: `
+<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;color:#173126;background:#edf4ef;padding:20px;">
+<div style="max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #d7e4dc;">
+    <div style="background:linear-gradient(135deg,#1A6B3C,#0f4c2f);color:white;padding:24px 28px;">
+        <h2 style="margin:0;">✅ Propuesta aceptada</h2>
+        <p style="margin:6px 0 0;opacity:.9;">Un cliente ha aceptado su propuesta</p>
+    </div>
+    <div style="padding:24px 28px;">
+        <p><strong>Negocio:</strong> ${client.businessName}</p>
+        <p><strong>Contacto:</strong> ${recipientName}</p>
+        <p><strong>Email:</strong> ${client?.billingInfo?.billingEmail || client?.owner?.email || '—'}</p>
+        <p><strong>Plan:</strong> ${client.plan || '—'}</p>
+        <p><strong>Estado:</strong> ${client.status}</p>
+        <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0;">
+        <p style="color:#6b7280;font-size:13px;">Accede al panel de administración para activar la cuenta del cliente.</p>
+    </div>
+</div>
+</body></html>`,
+                text: `Propuesta aceptada\n\nNegocio: ${client.businessName}\nContacto: ${recipientName}\nEmail: ${client?.billingInfo?.billingEmail || client?.owner?.email || '—'}\nPlan: ${client.plan || '—'}\n\nAccede al panel para activar la cuenta.`
+            });
+        }
+
+        // Página de confirmación para el cliente
+        res.send(`
+<!DOCTYPE html><html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Propuesta aceptada — FrescosEnVivo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, sans-serif; background: #edf4ef; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .card { background: white; border-radius: 16px; padding: 40px 36px; max-width: 480px; width: 100%; text-align: center; box-shadow: 0 8px 40px rgba(26,107,60,.12); border: 1px solid #d7e4dc; }
+        .icon { font-size: 56px; margin-bottom: 16px; }
+        h1 { color: #1A6B3C; font-size: 24px; margin-bottom: 12px; }
+        p { color: #374151; line-height: 1.7; font-size: 15px; }
+        .business { font-weight: bold; color: #1A6B3C; }
+        .note { margin-top: 24px; background: #f0fdf4; border-left: 4px solid #1A6B3C; padding: 14px 16px; border-radius: 6px; text-align: left; font-size: 14px; color: #166534; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="icon">✅</div>
+        <h1>¡Propuesta aceptada!</h1>
+        <p>Hemos recibido tu confirmación para <span class="business">${client.businessName}</span>.</p>
+        <div class="note">📬 Nos pondremos en contacto contigo en breve para dar el siguiente paso y activar tu tienda.</div>
+    </div>
+</body>
+</html>`);
+    } catch (err) {
+        console.error('Error en aceptación de propuesta:', err);
+        res.status(500).send('<h2>Ha ocurrido un error. Por favor, contacta con nosotros directamente.</h2>');
+    }
+});
 
 // Rutas HTTP
 app.get('/', (req, res) => {

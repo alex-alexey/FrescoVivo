@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Client = require('../models/Client');
+const DEBUG_TENANT = process.env.DEBUG_TENANT === 'true';
 
 // Cache para almacenar conexiones de bases de datos
 const dbConnections = new Map();
@@ -16,7 +17,9 @@ async function tenantMiddleware(req, res, next) {
         // Extraer el dominio (sin puerto si existe)
         const domain = host.split(':')[0];
         
-        console.log('🌐 Dominio detectado:', domain);
+        if (DEBUG_TENANT) {
+            console.log('🌐 Dominio detectado:', domain);
+        }
         
         // Detectar si es dominio de hosting (superadmin) o tiene parámetro ?tenant=
         const isHostingDomain = (
@@ -32,7 +35,9 @@ async function tenantMiddleware(req, res, next) {
         // Si viene ?tenant=slug desde un dominio de hosting, cargar ese tenant
         const tenantSlug = req.query.tenant || req.headers['x-tenant-slug'];
         if (isHostingDomain && tenantSlug) {
-            console.log('🔑 Acceso por parámetro tenant:', tenantSlug);
+            if (DEBUG_TENANT) {
+                console.log('🔑 Acceso por parámetro tenant:', tenantSlug);
+            }
             const client = await Client.findOne({ slug: tenantSlug });
             if (client && client.isActive()) {
                 // Configurar tenant igual que con dominio propio
@@ -65,16 +70,22 @@ async function tenantMiddleware(req, res, next) {
                 req.isSuperAdmin = false;
                 client.stats.lastActivityAt = new Date();
                 await client.save();
-                console.log('🎯 Tenant cargado por slug:', client.businessName);
+                if (DEBUG_TENANT) {
+                    console.log('🎯 Tenant cargado por slug:', client.businessName);
+                }
                 return next();
             }
             // Si el slug no existe, continuar como superadmin
-            console.log('⚠️ Tenant slug no encontrado, continuando como superadmin');
+            if (DEBUG_TENANT) {
+                console.log('⚠️ Tenant slug no encontrado, continuando como superadmin');
+            }
         }
 
         // Si es dominio de hosting sin ?tenant=, modo superadmin
         if (isHostingDomain) {
-            console.log('🔧 Acceso de Super Admin o servicio de hosting detectado');
+            if (DEBUG_TENANT) {
+                console.log('🔧 Acceso de Super Admin o servicio de hosting detectado');
+            }
             req.isSuperAdmin = true;
             return next();
         }

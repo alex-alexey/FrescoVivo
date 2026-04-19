@@ -237,7 +237,7 @@ const clientSchema = new mongoose.Schema({
     // Estado y Fechas
     status: {
         type: String,
-        enum: ['activo', 'suspendido', 'prueba', 'expirado', 'eliminado'],
+        enum: ['activo', 'suspendido', 'prueba', 'propuesta', 'expirado', 'eliminado'],
         default: 'prueba'
     },
     subscriptionStartDate: {
@@ -395,6 +395,7 @@ clientSchema.methods.comparePassword = async function(candidatePassword) {
 clientSchema.methods.isActive = function() {
     if (this.status === 'eliminado') return false;
     if (this.status === 'suspendido') return false;
+    if (this.status === 'propuesta') return false;
     if (this.status === 'expirado') return false;
     
     // Verificar si la suscripción ha expirado

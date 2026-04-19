@@ -135,6 +135,7 @@ router.post('/login', loginLimiter, async (req, res) => {
             req.session.username = user.username;
             req.session.role = user.role;
             req.session.isSuperAdmin = true;
+            req.session.superAdminRole = user.superAdminRole || 'owner';
             
             console.log(`✅ Login exitoso (Super Admin): ${user.username} (${user.role})`);
             
@@ -146,7 +147,8 @@ router.post('/login', loginLimiter, async (req, res) => {
                     username: user.username,
                     email: user.email,
                     fullName: user.fullName,
-                    role: user.role
+                    role: user.role,
+                    superAdminRole: user.superAdminRole || 'owner'
                 }
             });
             
@@ -360,6 +362,7 @@ router.post('/superadmin-login', superadminLoginLimiter, async (req, res) => {
         req.session.username = user.username;
         req.session.role = user.role;
         req.session.isSuperAdmin = true;
+        req.session.superAdminRole = user.superAdminRole || 'owner';
         
         // Guardar la sesión explícitamente antes de responder
         req.session.save((err) => {
@@ -386,7 +389,8 @@ router.post('/superadmin-login', superadminLoginLimiter, async (req, res) => {
                     username: user.username,
                     email: user.email,
                     fullName: user.fullName,
-                    role: user.role
+                    role: user.role,
+                    superAdminRole: user.superAdminRole || 'owner'
                 }
             });
         });
@@ -717,7 +721,9 @@ router.get('/me', auth, async (req, res) => {
                 fullName: req.user.fullName || req.user.businessName,
                 role: req.user.role,
                 businessName: req.user.businessName || null,
-                isOwner: req.user.isOwner || false
+                isOwner: req.user.isOwner || false,
+                isSuperAdmin: Boolean(req.session?.isSuperAdmin),
+                superAdminRole: req.session?.superAdminRole || null
             }
         });
     } catch (error) {

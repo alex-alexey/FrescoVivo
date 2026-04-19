@@ -10,6 +10,8 @@
     <link rel="stylesheet" href="superadmin.css">
 </head>
 <body>
+    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
     <!-- Sidebar -->
     <aside class="sidebar">
         <div class="sidebar-header">
@@ -24,6 +26,7 @@
             <a href="#dashboard" class="nav-item active" data-view="dashboard">
                 <span class="icon">📊</span>
                 <span class="text">Dashboard</span>
+                <span id="alert-badge" style="display:none;background:#dc2626;color:white;padding:2px 6px;border-radius:12px;font-size:0.75rem;font-weight:700;margin-left:auto;"></span>
             </a>
             <a href="#clients" class="nav-item" data-view="clients">
                 <span class="icon">🏢</span>
@@ -33,13 +36,25 @@
                 <span class="icon">💶</span>
                 <span class="text">Facturación</span>
             </a>
+            <a href="#activity" class="nav-item" data-view="activity">
+                <span class="icon">🧾</span>
+                <span class="text">Actividad</span>
+            </a>
             <a href="#databases" class="nav-item" data-view="databases">
                 <span class="icon">🗄️</span>
                 <span class="text">Bases de Datos</span>
             </a>
+            <a href="#pricing" class="nav-item" data-view="pricing">
+                <span class="icon">💶</span>
+                <span class="text">Planes y Precios</span>
+            </a>
             <a href="#create" class="nav-item" data-view="create">
                 <span class="icon">➕</span>
                 <span class="text">Nuevo Cliente</span>
+            </a>
+            <a href="#users" class="nav-item" data-view="users" style="display:none;">
+                <span class="icon">👥</span>
+                <span class="text">Usuarios</span>
             </a>
             <a href="#settings" class="nav-item" data-view="settings">
                 <span class="icon">⚙️</span>
@@ -52,7 +67,7 @@
                 <div class="user-avatar">👤</div>
                 <div class="user-details">
                     <div class="user-name" id="admin-name">Super Admin</div>
-                    <div class="user-role">Administrador</div>
+                    <div class="user-role" id="admin-role">Administrador</div>
                 </div>
             </div>
             <button class="btn-logout" onclick="logout()">
@@ -63,6 +78,13 @@
 
     <!-- Main Content -->
     <main class="main-content">
+        <div class="mobile-topbar">
+            <button type="button" class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Abrir menú">
+                ☰
+            </button>
+            <div class="mobile-topbar-title">Super Admin</div>
+        </div>
+
         <!-- Dashboard View -->
         <section id="dashboard-view" class="view active">
             <header class="page-header">
@@ -112,8 +134,36 @@
                 </div>
             </div>
 
+            <!-- Alerts Section -->
+            <div id="dashboard-alerts" style="margin-bottom: 24px;"></div>
+
+            <!-- Próximos Vencimientos Alert -->
+            <div id="upcoming-due-dates-alert" style="margin-bottom: 24px; display: none;"></div>
+
             <div class="content-grid">
                 <div class="card">
+                    <div class="card-header">
+                        <h3>Tendencia de Ingresos (30 días)</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="revenue-trend-chart" id="revenue-trend-chart">
+                            <div class="loading">Cargando...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Ingresos por Plan</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="revenue-by-plan-chart" id="revenue-by-plan-chart">
+                            <div class="loading">Cargando...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" style="grid-column: 1 / -1;">
                     <div class="card-header">
                         <h3>Clientes Recientes</h3>
                     </div>
@@ -123,15 +173,66 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </section>
 
-                <div class="card">
-                    <div class="card-header">
-                        <h3>Distribución por Plan</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="plans-chart" id="plans-chart">
-                            <div class="loading">Cargando...</div>
+        <!-- Pricing View -->
+        <section id="pricing-view" class="view">
+            <header class="page-header">
+                <h1>Planes y Precios</h1>
+                <p>Configura precios globales para planes, addons y moneda</p>
+            </header>
+
+            <div class="card" style="margin-bottom: 1.5rem;">
+                <div class="card-header">
+                    <h2>💶 Catálogo Global</h2>
+                    <p>Estos precios se usan por defecto en altas nuevas y cálculos de facturación</p>
+                </div>
+                <div class="card-body">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="price-plan-basico">Plan Básico (€)</label>
+                            <input type="number" id="price-plan-basico" min="0" step="0.01" value="39">
                         </div>
+                        <div class="form-group">
+                            <label for="price-plan-profesional">Plan Profesional (€)</label>
+                            <input type="number" id="price-plan-profesional" min="0" step="0.01" value="79">
+                        </div>
+                        <div class="form-group">
+                            <label for="price-plan-empresarial">Plan Empresarial (€)</label>
+                            <input type="number" id="price-plan-empresarial" min="0" step="0.01" value="149">
+                        </div>
+                        <div class="form-group">
+                            <label for="price-plan-personalizado">Plan Personalizado (€)</label>
+                            <input type="number" id="price-plan-personalizado" min="0" step="0.01" value="249">
+                        </div>
+                    </div>
+
+                    <div class="form-row" style="margin-top: 10px;">
+                        <div class="form-group">
+                            <label for="price-addon-seo-pro">Addon SEO PRO (€)</label>
+                            <input type="number" id="price-addon-seo-pro" min="0" step="0.01" value="19">
+                        </div>
+                        <div class="form-group">
+                            <label for="price-addon-premium-designs">Addon Diseños Premium (€)</label>
+                            <input type="number" id="price-addon-premium-designs" min="0" step="0.01" value="29">
+                        </div>
+                        <div class="form-group">
+                            <label for="price-addon-reviews">Addon Reputación y Reseñas (€)</label>
+                            <input type="number" id="price-addon-reviews" min="0" step="0.01" value="15">
+                        </div>
+                        <div class="form-group">
+                            <label for="price-currency">Moneda</label>
+                            <select id="price-currency">
+                                <option value="EUR" selected>EUR</option>
+                                <option value="USD">USD</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="display:flex;gap:0.75rem;justify-content:flex-end;margin-top:1rem;">
+                        <button type="button" class="btn-secondary" onclick="loadPricingSettings()">Recargar</button>
+                        <button type="button" class="btn-primary" onclick="savePricingSettings()">💾 Guardar precios</button>
                     </div>
                 </div>
             </div>
@@ -144,20 +245,39 @@
                     <h1>Gestión de Clientes</h1>
                     <p>Administra todas las cuentas de clientes</p>
                 </div>
-                <button class="btn-primary" onclick="showView('create')">
+                <button class="btn-primary" data-action="create-client" onclick="showView('create')">
                     ➕ Nuevo Cliente
                 </button>
             </header>
+
+            <div class="clients-segments" id="clients-segments">
+                <button class="segment-btn active" data-segment="all" onclick="applyClientSegment('all')">Todos</button>
+                <button class="segment-btn" data-segment="active" onclick="applyClientSegment('active')">Activos</button>
+                <button class="segment-btn" data-segment="trial" onclick="applyClientSegment('trial')">En prueba</button>
+                <button class="segment-btn" data-segment="suspended" onclick="applyClientSegment('suspended')">Suspendidos</button>
+                <button class="segment-btn" data-segment="overdue" onclick="applyClientSegment('overdue')">Con cobro vencido</button>
+                <button class="segment-btn" data-segment="new_7d" onclick="applyClientSegment('new_7d')">Nuevos 7 días</button>
+            </div>
+
+            <div class="bulk-actions-bar" id="bulk-actions-bar" style="display:none;">
+                <div class="bulk-actions-info" id="bulk-actions-info">0 seleccionados</div>
+                <div class="bulk-actions-controls">
+                    <button class="btn-secondary" onclick="runBulkClientAction('activate')">✅ Activar</button>
+                    <button class="btn-secondary" onclick="runBulkClientAction('deactivate')">⛔ Desactivar</button>
+                    <button class="btn-secondary" onclick="runBulkClientAction('resend_welcome')">📧 Reenviar acceso</button>
+                    <button class="btn-secondary" onclick="clearClientSelection()">Limpiar selección</button>
+                </div>
+            </div>
 
             <div class="filters-bar">
                 <input type="text" id="search-input" placeholder="🔍 Buscar por nombre, dominio o email..." class="search-input">
                 
                 <select id="filter-status" class="filter-select">
-                    <option value="">Todos los estados</option>
+                    <option value="">Clientes activos y suspendidos</option>
                     <option value="activo">Activo</option>
-                    <option value="prueba">En Prueba</option>
                     <option value="suspendido">Suspendido</option>
                     <option value="expirado">Expirado</option>
+                    <option value="posibles-clientes">🎯 Posibles clientes (Propuesta + Prueba)</option>
                 </select>
 
                 <select id="filter-plan" class="filter-select">
@@ -168,7 +288,17 @@
                     <option value="personalizado">Personalizado</option>
                 </select>
 
+                <select id="filter-sort" class="filter-select">
+                    <option value="createdAt_desc">Más recientes</option>
+                    <option value="createdAt_asc">Más antiguos</option>
+                    <option value="businessName_asc">Negocio A-Z</option>
+                    <option value="businessName_desc">Negocio Z-A</option>
+                    <option value="status_asc">Estado A-Z</option>
+                    <option value="plan_asc">Plan A-Z</option>
+                </select>
+
                 <button class="btn-secondary" onclick="applyFilters()">Filtrar</button>
+                <button class="btn-secondary" onclick="resetClientFilters()">Limpiar</button>
             </div>
 
             <div class="card">
@@ -176,8 +306,20 @@
                     <div class="clients-table" id="clients-table">
                         <div class="loading">Cargando clientes...</div>
                     </div>
+                    <div id="clients-pagination" class="clients-pagination"></div>
                 </div>
             </div>
+
+            <div class="client-drawer-backdrop" id="client-drawer-backdrop" onclick="closeClientDrawer()"></div>
+            <aside class="client-drawer" id="client-drawer">
+                <div class="client-drawer-header">
+                    <h3>Ficha de cliente</h3>
+                    <button class="drawer-close-btn" onclick="closeClientDrawer()">✕</button>
+                </div>
+                <div class="client-drawer-body" id="client-drawer-body">
+                    <div class="loading">Selecciona un cliente</div>
+                </div>
+            </aside>
         </section>
 
         <!-- Create Client View -->
@@ -190,6 +332,59 @@
             <div class="card">
                 <div class="card-body">
                     <form id="create-client-form" class="client-form">
+                        <div class="form-section">
+                            <h3 class="section-title">🧾 Datos Fiscales</h3>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="billingLegalName">Razón social</label>
+                                    <input type="text" id="billingLegalName" name="billingLegalName" placeholder="Ej: Pescadería Miguel S.L.">
+                                </div>
+                                <div class="form-group">
+                                    <label for="billingTaxId">NIF/CIF</label>
+                                    <input type="text" id="billingTaxId" name="billingTaxId" placeholder="Ej: B12345678">
+                                </div>
+                                <div class="form-group">
+                                    <label for="billingEmail">Email facturación</label>
+                                    <input type="email" id="billingEmail" name="billingEmail" placeholder="Ej: facturas@negocio.com">
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="billingAddress">Dirección fiscal</label>
+                                    <input type="text" id="billingAddress" name="billingAddress" placeholder="Calle, número, piso">
+                                </div>
+                                <div class="form-group">
+                                    <label for="billingPostalCode">Código postal</label>
+                                    <input type="text" id="billingPostalCode" name="billingPostalCode" placeholder="08001">
+                                </div>
+                                <div class="form-group">
+                                    <label for="billingCity">Ciudad</label>
+                                    <input type="text" id="billingCity" name="billingCity" placeholder="Barcelona">
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="billingProvince">Provincia</label>
+                                    <input type="text" id="billingProvince" name="billingProvince" placeholder="Barcelona">
+                                </div>
+                                <div class="form-group">
+                                    <label for="billingCountry">País</label>
+                                    <input type="text" id="billingCountry" name="billingCountry" value="España">
+                                </div>
+                                <div class="form-group">
+                                    <label for="createBillingDay">Día cobro mensual</label>
+                                    <input type="number" id="createBillingDay" name="createBillingDay" min="1" max="28" value="5">
+                                </div>
+                                <div class="form-group">
+                                    <label for="createDiscount">Descuento mensual (€)</label>
+                                    <input type="number" id="createDiscount" name="createDiscount" min="0" step="0.01" value="0">
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="form-section">
                             <h3 class="section-title">📋 Información del Negocio</h3>
                             
@@ -256,57 +451,12 @@
                         </div>
 
                         <div class="form-section">
-                            <h3 class="section-title">🧾 Datos de Facturación</h3>
+                            <h3 class="section-title">💎 Configuración Inicial</h3>
 
                             <div class="form-row">
                                 <div class="form-group">
-                                    <label for="billingLegalName">Razón social</label>
-                                    <input type="text" id="billingLegalName" name="billingLegalName" placeholder="Ej: Pescadería Miguel S.L.">
-                                </div>
-                                <div class="form-group">
-                                    <label for="billingTaxId">NIF/CIF</label>
-                                    <input type="text" id="billingTaxId" name="billingTaxId" placeholder="Ej: B12345678">
-                                </div>
-                                <div class="form-group">
-                                    <label for="billingEmail">Email facturación</label>
-                                    <input type="email" id="billingEmail" name="billingEmail" placeholder="Ej: facturas@negocio.com">
-                                </div>
-                            </div>
-
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="billingAddress">Dirección fiscal</label>
-                                    <input type="text" id="billingAddress" name="billingAddress" placeholder="Calle, número, piso">
-                                </div>
-                                <div class="form-group">
-                                    <label for="billingPostalCode">Código postal</label>
-                                    <input type="text" id="billingPostalCode" name="billingPostalCode" placeholder="08001">
-                                </div>
-                                <div class="form-group">
-                                    <label for="billingCity">Ciudad</label>
-                                    <input type="text" id="billingCity" name="billingCity" placeholder="Barcelona">
-                                </div>
-                            </div>
-
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="billingProvince">Provincia</label>
-                                    <input type="text" id="billingProvince" name="billingProvince" placeholder="Barcelona">
-                                </div>
-                                <div class="form-group">
-                                    <label for="billingCountry">País</label>
-                                    <input type="text" id="billingCountry" name="billingCountry" value="España">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-section">
-                            <h3 class="section-title">💎 Plan y Límites</h3>
-                            
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="plan">Plan</label>
-                                    <select id="plan" name="plan">
+                                    <label for="plan">Plan *</label>
+                                    <select id="plan" name="plan" required>
                                         <option value="basico">Básico</option>
                                         <option value="profesional">Profesional</option>
                                         <option value="empresarial">Empresarial</option>
@@ -315,16 +465,82 @@
                                 </div>
 
                                 <div class="form-group">
+                                    <label for="initialStatus">Estado inicial *</label>
+                                    <select id="initialStatus" name="initialStatus" required>
+                                        <option value="prueba" selected>En Prueba</option>
+                                        <option value="propuesta">Propuesta (sin activar)</option>
+                                        <option value="activo">Activo</option>
+                                        <option value="suspendido">Suspendido</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="subscriptionEndDate">Fin de suscripción (opcional)</label>
+                                    <input type="date" id="subscriptionEndDate" name="subscriptionEndDate">
+                                </div>
+                            </div>
+
+                            <div class="form-row" style="margin-top: 10px;">
+                                <div class="form-group" style="flex: 1 1 100%; border:1px solid var(--border);border-radius:10px;padding:0.9rem;">
+                                    <label style="display:flex;align-items:center;gap:0.5rem;font-weight:600;">
+                                        <input type="checkbox" id="create-proposal-only" name="createProposalOnly" onchange="toggleProposalRequiredFields(this.checked)">
+                                        Guardar como propuesta (no activar cuenta ni enviar email de acceso)
+                                    </label>
+                                    <small>Útil para registrar datos fiscales/comerciales y enviar presupuesto antes de activar.</small>
+                                </div>
+                            </div>
+
+                            <div class="form-row" style="margin-top: 10px;">
+                                <div class="form-group" style="border:1px solid var(--border);border-radius:10px;padding:0.9rem;">
+                                    <label style="display:flex;align-items:center;gap:0.5rem;font-weight:600;">
+                                        <input type="checkbox" id="create-addon-seo-pro">
+                                        🔍 SEO PRO
+                                    </label>
+                                    <small>Habilita configuración avanzada de posicionamiento.</small>
+                                </div>
+                                <div class="form-group" style="border:1px solid var(--border);border-radius:10px;padding:0.9rem;">
+                                    <label style="display:flex;align-items:center;gap:0.5rem;font-weight:600;">
+                                        <input type="checkbox" id="create-addon-premium-designs">
+                                        🎨 Diseños Premium
+                                    </label>
+                                    <small>Activa variantes avanzadas de diseño para la tienda.</small>
+                                </div>
+                                <div class="form-group" style="border:1px solid var(--border);border-radius:10px;padding:0.9rem;">
+                                    <label style="display:flex;align-items:center;gap:0.5rem;font-weight:600;">
+                                        <input type="checkbox" id="create-addon-reviews">
+                                        ⭐ Reputación y Reseñas
+                                    </label>
+                                    <small>Permite gestión y visibilidad de reseñas.</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <details class="form-section">
+                            <summary class="section-title" style="cursor:pointer;list-style:none;">⚙️ Campos Avanzados (Opcional)</summary>
+
+                            <div class="form-row" style="margin-top: 12px;">
+                                <div class="form-group">
                                     <label for="maxDailyTickets">Tickets Diarios Máx.</label>
                                     <input type="number" id="maxDailyTickets" name="maxDailyTickets" value="200" min="1">
                                 </div>
-
                                 <div class="form-group">
                                     <label for="maxCameras">Cámaras Máx.</label>
                                     <input type="number" id="maxCameras" name="maxCameras" value="4" min="1" max="10">
                                 </div>
+                                <div class="form-group">
+                                    <label for="createTags">Etiquetas internas</label>
+                                    <input type="text" id="createTags" name="createTags" placeholder="Ej: vip, seguimiento, potencial-upgrade">
+                                    <small>Separadas por coma.</small>
+                                </div>
                             </div>
-                        </div>
+
+                            <div class="form-row">
+                                <div class="form-group" style="flex: 1 1 100%;">
+                                    <label for="createNotes">Notas internas</label>
+                                    <textarea id="createNotes" name="createNotes" rows="3" placeholder="Contexto comercial, observaciones o acuerdos..."></textarea>
+                                </div>
+                            </div>
+                        </details>
 
                         <div class="form-actions">
                             <button type="button" class="btn-secondary" onclick="showView('clients')">Cancelar</button>
@@ -364,68 +580,221 @@
             <header class="page-header">
                 <div>
                     <h1>Facturación</h1>
-                    <p>Control de pagos y estado de cobros de todos los clientes</p>
+                    <p>Control completo de pagos, facturas y previsión de cobros</p>
                 </div>
             </header>
 
-            <div class="stats-grid" style="margin-bottom:1.5rem;">
-                <div class="stat-card">
-                    <div class="stat-icon">💶</div>
-                    <div class="stat-content">
-                        <div class="stat-label">MRR Total</div>
-                        <div class="stat-value" id="billing-stat-mrr">0.00 EUR</div>
+            <!-- Pestañas de navegación -->
+            <div style="display:flex;gap:0;border-bottom:2px solid #e5e7eb;margin-bottom:1.5rem;overflow-x:auto;">
+                <button class="billing-tab active" data-tab="resumen" onclick="showBillingTab('resumen')" style="padding:10px 20px;border:none;background:none;cursor:pointer;font-weight:600;color:#6b7280;border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:all 0.2s;">📊 Resumen</button>
+                <button class="billing-tab" data-tab="clientes" onclick="showBillingTab('clientes')" style="padding:10px 20px;border:none;background:none;cursor:pointer;font-weight:600;color:#6b7280;border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:all 0.2s;">🏢 Clientes</button>
+                <button class="billing-tab" data-tab="facturas" onclick="showBillingTab('facturas')" style="padding:10px 20px;border:none;background:none;cursor:pointer;font-weight:600;color:#6b7280;border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:all 0.2s;">🧾 Facturas</button>
+                <button class="billing-tab" data-tab="prevision" onclick="showBillingTab('prevision')" style="padding:10px 20px;border:none;background:none;cursor:pointer;font-weight:600;color:#6b7280;border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:all 0.2s;">📅 Previsión</button>
+            </div>
+
+            <!-- TAB: RESUMEN -->
+            <div id="billing-tab-resumen" class="billing-tab-content">
+                <div class="stats-grid" style="margin-bottom:1.5rem;">
+                    <div class="stat-card">
+                        <div class="stat-icon">💶</div>
+                        <div class="stat-content">
+                            <div class="stat-label">MRR Total</div>
+                            <div class="stat-value" id="billing-stat-mrr">—</div>
+                        </div>
+                    </div>
+                    <div class="stat-card active">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-content">
+                            <div class="stat-label">Al día</div>
+                            <div class="stat-value" id="billing-stat-aldia">0</div>
+                            <small id="billing-stat-aldia-amount" style="color:#16a34a;font-size:0.8rem;"></small>
+                        </div>
+                    </div>
+                    <div class="stat-card trial">
+                        <div class="stat-icon">⏳</div>
+                        <div class="stat-content">
+                            <div class="stat-label">Pendiente</div>
+                            <div class="stat-value" id="billing-stat-pendientes">0</div>
+                            <small id="billing-stat-pendientes-amount" style="color:#d97706;font-size:0.8rem;"></small>
+                        </div>
+                    </div>
+                    <div class="stat-card suspended">
+                        <div class="stat-icon">🔴</div>
+                        <div class="stat-content">
+                            <div class="stat-label">Vencido</div>
+                            <div class="stat-value" id="billing-stat-vencidos">0</div>
+                            <small id="billing-stat-vencidos-amount" style="color:#dc2626;font-size:0.8rem;"></small>
+                        </div>
                     </div>
                 </div>
-                <div class="stat-card suspended">
-                    <div class="stat-icon">🔴</div>
-                    <div class="stat-content">
-                        <div class="stat-label">Vencidos</div>
-                        <div class="stat-value" id="billing-stat-vencidos">0</div>
+
+                <div class="content-grid">
+                    <div class="card">
+                        <div class="card-header"><h3>⏰ Próximos cobros (30 días)</h3></div>
+                        <div class="card-body" id="billing-upcoming-list"><div class="loading">Cargando...</div></div>
                     </div>
-                </div>
-                <div class="stat-card trial">
-                    <div class="stat-icon">🟡</div>
-                    <div class="stat-content">
-                        <div class="stat-label">Pendientes</div>
-                        <div class="stat-value" id="billing-stat-pendientes">0</div>
-                    </div>
-                </div>
-                <div class="stat-card active">
-                    <div class="stat-icon">🟢</div>
-                    <div class="stat-content">
-                        <div class="stat-label">Al día</div>
-                        <div class="stat-value" id="billing-stat-aldia">0</div>
+                    <div class="card">
+                        <div class="card-header"><h3>🔴 Más atrasados</h3></div>
+                        <div class="card-body" id="billing-overdue-list"><div class="loading">Cargando...</div></div>
                     </div>
                 </div>
             </div>
 
+            <!-- TAB: CLIENTES -->
+            <div id="billing-tab-clientes" class="billing-tab-content" style="display:none;">
+                <div class="filters-bar">
+                    <input type="text" id="billing-search-input" placeholder="🔍 Buscar cliente..." class="search-input">
+                    <select id="billing-filter-status" class="filter-select">
+                        <option value="">Todos los estados</option>
+                        <option value="al_dia">Al día</option>
+                        <option value="pendiente">Pendiente</option>
+                        <option value="vencido">Vencido</option>
+                        <option value="pausado">Pausado</option>
+                    </select>
+                    <select id="billing-filter-plan" class="filter-select">
+                        <option value="">Todos los planes</option>
+                        <option value="basico">Básico</option>
+                        <option value="profesional">Profesional</option>
+                        <option value="empresarial">Empresarial</option>
+                        <option value="personalizado">Personalizado</option>
+                    </select>
+                    <button class="btn-secondary" onclick="applyBillingFilters()">Filtrar</button>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <div id="billing-table"><div class="loading">Cargando...</div></div>
+                        <div id="billing-pagination" class="clients-pagination"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: FACTURAS -->
+            <div id="billing-tab-facturas" class="billing-tab-content" style="display:none;">
+                <div class="filters-bar">
+                    <input type="text" id="invoices-search-input" placeholder="🔍 Buscar cliente o dominio..." class="search-input">
+                    <select id="invoices-filter-status" class="filter-select">
+                        <option value="">Todos los estados</option>
+                        <option value="sent">Enviada</option>
+                        <option value="paid">Pagada</option>
+                        <option value="unpaid">No pagada</option>
+                        <option value="overdue">Vencida</option>
+                        <option value="cancelled">Cancelada</option>
+                    </select>
+                    <input type="date" id="invoices-filter-from" class="filter-select" title="Desde">
+                    <input type="date" id="invoices-filter-to" class="filter-select" title="Hasta">
+                    <button class="btn-secondary" onclick="applyInvoiceFilters()">Filtrar</button>
+                </div>
+                <div class="card">
+                    <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
+                        <h3>Todas las facturas</h3>
+                        <small id="invoices-total" style="color:#6b7280;">—</small>
+                    </div>
+                    <div class="card-body">
+                        <div id="invoices-table"><div class="loading">Cargando...</div></div>
+                    </div>
+                </div>
+                <div id="invoices-pagination" style="display:flex;justify-content:center;gap:8px;margin-top:1rem;"></div>
+            </div>
+
+            <!-- TAB: PREVISIÓN -->
+            <div id="billing-tab-prevision" class="billing-tab-content" style="display:none;">
+                <div class="filters-bar">
+                    <label style="display:flex;align-items:center;gap:8px;font-weight:600;color:#374151;">
+                        Horizonte:
+                        <select id="prevision-days" class="filter-select" onchange="loadBillingPreview()" style="width:auto;">
+                            <option value="7">Próximos 7 días</option>
+                            <option value="14">Próximos 14 días</option>
+                            <option value="30" selected>Próximos 30 días</option>
+                            <option value="60">Próximos 60 días</option>
+                            <option value="90">Próximos 90 días</option>
+                        </select>
+                    </label>
+                </div>
+
+                <div class="stats-grid" style="margin-bottom:1.5rem;">
+                    <div class="stat-card">
+                        <div class="stat-icon">📊</div>
+                        <div class="stat-content">
+                            <div class="stat-label">Esperado en el período</div>
+                            <div class="stat-value" id="preview-stat-expected">—</div>
+                        </div>
+                    </div>
+                    <div class="stat-card active">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-content">
+                            <div class="stat-label">Ya cobrado</div>
+                            <div class="stat-value" id="preview-stat-collected">—</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header"><h3>📅 Cobros por día</h3></div>
+                    <div class="card-body" id="prevision-calendar"><div class="loading">Cargando previsión...</div></div>
+                </div>
+
+                <div class="card" style="margin-top:1.5rem;">
+                    <div class="card-header"><h3>🔴 Clientes vencidos prioritarios</h3></div>
+                    <div class="card-body" id="prevision-overdue"><div class="loading">Cargando...</div></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Activity View -->
+        <section id="activity-view" class="view">
+            <header class="page-header">
+                <div>
+                    <h1>Actividad de Superadmin</h1>
+                    <p>Historial de acciones críticas y trazabilidad del sistema</p>
+                </div>
+            </header>
+
             <div class="filters-bar">
-                <input type="text" id="billing-search-input" placeholder="🔍 Buscar cliente..." class="search-input">
-
-                <select id="billing-filter-status" class="filter-select">
-                    <option value="">Todos los estados</option>
-                    <option value="al_dia">Al día</option>
-                    <option value="pendiente">Pendiente</option>
-                    <option value="vencido">Vencido</option>
-                    <option value="pausado">Pausado</option>
+                <input type="text" id="activity-search-input" placeholder="🔍 Buscar por actor, acción, cliente o dominio..." class="search-input">
+                <select id="activity-filter-action" class="filter-select">
+                    <option value="">Todas las acciones</option>
+                    <option value="client.created">Alta cliente</option>
+                    <option value="client.updated">Edición cliente</option>
+                    <option value="client.activated">Activación cliente</option>
+                    <option value="client.deactivated">Desactivación cliente</option>
+                    <option value="billing.mark_paid">Marcar cobro pagado</option>
+                    <option value="client.activation_email_resent">Reenvío activación</option>
+                    <option value="client.deleted_logical">Baja lógica cliente</option>
                 </select>
-
-                <select id="billing-filter-plan" class="filter-select">
-                    <option value="">Todos los planes</option>
-                    <option value="basico">Básico</option>
-                    <option value="profesional">Profesional</option>
-                    <option value="empresarial">Empresarial</option>
-                    <option value="personalizado">Personalizado</option>
-                </select>
-
-                <button class="btn-secondary" onclick="applyBillingFilters()">Filtrar</button>
+                <button class="btn-secondary" onclick="applyActivityFilters()">Filtrar</button>
             </div>
 
             <div class="card">
+                <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;gap:1rem;">
+                    <h3>Eventos de auditoría</h3>
+                    <small id="activity-total" style="color:#6b7280;">0 eventos</small>
+                </div>
                 <div class="card-body">
-                    <div class="clients-table" id="billing-table">
-                        <div class="loading">Cargando facturación...</div>
+                    <div class="clients-table" id="activity-table">
+                        <div class="loading">Cargando actividad...</div>
                     </div>
+                    <div id="activity-pagination" class="clients-pagination"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Settings View -->
+        <!-- Users View -->
+        <section id="users-view" class="view">
+            <header class="page-header">
+                <div>
+                    <h1>Gestión de Usuarios</h1>
+                    <p>Administra usuarios con acceso al panel superadmin</p>
+                </div>
+            </header>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Usuarios Superadmin</h3>
+                    <button id="new-user-btn" class="btn-primary" style="display:none;" onclick="showNewUserModal()">➕ Nuevo Usuario</button>
+                </div>
+                <div class="card-body">
+                    <div id="users-table"></div>
                 </div>
             </div>
         </section>
