@@ -3,7 +3,8 @@ const express = require('express');
 const http = require('http');
 const socketIO = require('socket.io');
 const session = require('express-session');
-const { MongoStore } = require('connect-mongo');
+const MongoStoreModule = require('connect-mongo');
+const MongoStore = MongoStoreModule.default || MongoStoreModule;
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 
